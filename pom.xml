@@ -1,0 +1,172 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>25.0.0</version>
+	</parent>
+	<groupId>org.elephant</groupId>
+	<artifactId>elephant</artifactId>
+	<version>0.1.0</version>
+	<name>ELEPHANT: Tracking cell lineages in 3D by incremental deep learning</name>
+	<description>ELEPHANT client application implemented as a Mastodon plugin</description>
+	<url>https://github.com/elephant-track/elephant-client</url>
+	<inceptionYear>2019</inceptionYear>
+	<organization>
+		<name>Institut de génomique fonctionnelle de Lyon</name>
+		<url>http://igfl.ens-lyon.fr/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>BSD-2-Clause</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.trackmate</groupId>
+			<artifactId>trackmate</artifactId>
+			<version>1.0.0-beta-13-elephant</version>
+		</dependency>
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.eclipsesource.minimal-json</groupId>
+			<artifactId>minimal-json</artifactId>
+			<version>0.9.5</version>
+		</dependency>
+		<dependency>
+			<groupId>com.konghq</groupId>
+			<artifactId>unirest-java</artifactId>
+			<version>3.4.00</version>
+		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>5.8.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.lingala.zip4j</groupId>
+			<artifactId>zip4j</artifactId>
+			<version>2.6.4</version>
+		</dependency>
+	</dependencies>
+	<developers>
+		<developer>
+			<id>ksugar</id>
+			<name>Ko Sugawara</name>
+			<email>ko.sugawara@ens-lyon.fr</email>
+			<url>http://igfl.ens-lyon.fr/igfl/annuaire/sugawara-ko</url>
+			<organization>IGFL</organization>
+			<organizationUrl>http://igfl.ens-lyon.fr</organizationUrl>
+			<roles>
+				<role>lead</role>
+                <role>developer</role>
+                <role>debugger</role>
+                <role>reviewer</role>
+                <role>support</role>
+                <role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>No contributors yet</name>
+		</contributor>
+	</contributors>
+	<mailingLists>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/elephant</archive>
+		</mailingList>
+	</mailingLists>
+	<scm>
+		<connection>scm:git:git://github.com/elephant-track/elephant-client</connection>
+		<developerConnection>scm:git:git@github.com:elephant-track/elephant-client</developerConnection>
+		<tag>v0.1.0</tag>
+		<url>https://github.com/elephant-track/elephant-client</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/elephant-track/elephant-client/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis CI</system>
+		<!-- <url>TBD</url> -->
+	</ciManagement>
+	<properties>
+		<package-name>elephant</package-name>
+
+		<license.licenseName>BSD-2-Clause</license.licenseName>
+		<license.projectName>elephant</license.projectName>
+		<license.copyrightOwners>Ko Sugawara</license.copyrightOwners>
+
+		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<!-- <releaseProfiles>deploy-to-imagej</releaseProfiles> -->
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>desktop</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>client</classifier>
+							<archive>
+								<manifest>
+									<addClasspath>true</addClasspath>
+									<classpathPrefix>lib/</classpathPrefix>
+									<mainClass>org.elephant.Elephant</mainClass>
+								</manifest>
+							</archive>
+							<excludes>
+								<exclude>/org/elephant/ElephantExtra.class</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+	</repositories>
+</project>
