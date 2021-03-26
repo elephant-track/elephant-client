@@ -59,4 +59,10 @@ public abstract class AbstractElephantService extends AbstractElephantAction
 		throw new AssertionError();
 	}
 
+	@Override
+	void process()
+	{
+		throw new AssertionError();
+	}
+
 }

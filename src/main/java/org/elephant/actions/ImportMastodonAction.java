@@ -80,16 +80,8 @@ public class ImportMastodonAction extends AbstractElephantAction implements Elep
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final AtomicReference< File > fileReference = new AtomicReference<>();
 		try
 		{

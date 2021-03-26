@@ -55,16 +55,8 @@ public class ShowLogWindowAction extends AbstractElephantAction implements Logge
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		SwingUtilities.invokeLater( () -> showLogWindow() );
 	}
 

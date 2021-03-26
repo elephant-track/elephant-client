@@ -92,16 +92,8 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final Spot ref = getGraph().vertexRef();
 		Spot spot;
 		getGraph().getLock().writeLock().lock();

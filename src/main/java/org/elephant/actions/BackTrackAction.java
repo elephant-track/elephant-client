@@ -78,16 +78,8 @@ public class BackTrackAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final int timepoint = getCurrentTimepoint( 0 );
 		if ( timepoint < 1 )
 			return;

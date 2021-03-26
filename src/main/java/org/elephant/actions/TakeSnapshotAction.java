@@ -77,16 +77,8 @@ public class TakeSnapshotAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final List< MamutViewBdv > bdvWindows = getBdvWindows();
 		if ( 0 < bdvWindows.size() )
 		{

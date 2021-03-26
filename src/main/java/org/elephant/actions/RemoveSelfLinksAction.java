@@ -62,16 +62,8 @@ public class RemoveSelfLinksAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final Predicate< Link > edgeFilter = edge -> {
 			final Spot ref = getGraph().vertexRef();
 			try

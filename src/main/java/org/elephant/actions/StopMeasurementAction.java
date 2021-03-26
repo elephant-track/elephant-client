@@ -61,16 +61,8 @@ public class StopMeasurementAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final ObjTagMap< Spot, Tag > tagMap = getVertexTagMap( getDetectionTagSet() );
 		final Tag tpTag = getTag( getDetectionTagSet(), DETECTION_TP_TAG_NAME );
 		final Tag fnTag = getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME );

@@ -79,16 +79,8 @@ public class TrainFlowAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final int currentTimepoint = getCurrentTimepoint( 0 );
 		getLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
 		final int timepointEnd = getCurrentTimepoint( 0 );

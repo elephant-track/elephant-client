@@ -93,16 +93,8 @@ public class ShowPreferencesAction extends AbstractElephantAction implements Bdv
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		SwingUtilities.invokeLater( () -> dialog.setVisible( true ) );
 	}
 

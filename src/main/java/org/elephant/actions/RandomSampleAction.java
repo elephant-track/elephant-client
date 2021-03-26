@@ -71,16 +71,8 @@ public class RandomSampleAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final int size = getGraph().vertices().size();
 		final AtomicInteger nSamplesAtomic = new AtomicInteger( -1 );
 		try

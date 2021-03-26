@@ -76,16 +76,8 @@ public class AbortProcessingAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		getStateManager().setAborted( true );
 		// Send an abort signal to the server
 		final JsonObject jsonRootObject = Json.object().add( JSON_KEY_STATE, 0 );
