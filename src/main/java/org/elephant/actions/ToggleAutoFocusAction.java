@@ -68,16 +68,8 @@ public class ToggleAutoFocusAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		ElephantActionStateManager.INSTANCE.setAutoFocus( !ElephantActionStateManager.INSTANCE.isAutoFocus() );
 		final String autoFocusStatus = ElephantActionStateManager.INSTANCE.isAutoFocus() ? "On" : "Off";
 		showTextOverlayAnimator( "Auto Focus: " + autoFocusStatus, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );

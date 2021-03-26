@@ -70,16 +70,8 @@ public class TagProgenitorAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		getGraph().getLock().writeLock().lock();
 		getStateManager().setWriting( true );
 		try

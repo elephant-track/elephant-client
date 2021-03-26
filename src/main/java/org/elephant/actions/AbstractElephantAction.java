@@ -134,8 +134,13 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 			{
 				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
-			throw new ActionNotInitializedException();
+		}
+		else
+		{
+			process();
 		}
 	}
+
+	abstract void process();
 
 }

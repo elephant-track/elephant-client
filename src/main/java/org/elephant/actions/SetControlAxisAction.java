@@ -88,16 +88,8 @@ public class SetControlAxisAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		getStateManager().setAxis( axis );
 		showTextOverlayAnimator( "Set Control Axis: " + axis.name(), 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 	}

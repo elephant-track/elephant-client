@@ -71,16 +71,8 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final AtomicInteger minLinksAtomic = new AtomicInteger( -1 );
 		try
 		{

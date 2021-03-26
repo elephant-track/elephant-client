@@ -66,16 +66,8 @@ public class RemoveLinksByTagAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final String[] tagSetNames = getTagSetModel().getTagSetStructure().getTagSets().stream().map( TagSet::getName ).toArray( String[]::new );
 		final String[] tagNamesDetection = ArrayUtils.insert( 0,
 				getDetectionTagSet().getTags().stream().map( Tag::label ).toArray( String[]::new ),

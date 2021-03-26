@@ -133,16 +133,8 @@ public class ExportCTCAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 0, timepointEnd - ( timeRange - 1 ) );

@@ -118,16 +118,8 @@ public class TrainSegAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		if ( ElephantActionStateManager.INSTANCE.isLivemode() )
 			return;
 		final int currentTimepoint = getCurrentTimepoint( 0 );

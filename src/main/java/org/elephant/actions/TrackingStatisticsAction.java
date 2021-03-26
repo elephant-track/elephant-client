@@ -81,16 +81,8 @@ public class TrackingStatisticsAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		getGraph().getLock().readLock().lock();
 		try
 		{

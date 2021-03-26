@@ -76,16 +76,8 @@ public class ResetFlowModelAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void run()
+	public void process()
 	{
-		try
-		{
-			super.run();
-		}
-		catch ( final ActionNotInitializedException e )
-		{
-			return;
-		}
 		final AtomicInteger option = new AtomicInteger();
 		try
 		{
