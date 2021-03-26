@@ -40,6 +40,7 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 
@@ -127,7 +128,7 @@ public interface LoggerMixin
 		public void showMessage( final String msg, final Color color )
 		{
 			colorPane.append( color, msg );
-			this.validate();
+			SwingUtilities.invokeLater( () -> this.validate() );
 		}
 	}
 
@@ -159,7 +160,7 @@ public interface LoggerMixin
 
 		public void showLogWindow()
 		{
-			window.setVisible( true );
+			SwingUtilities.invokeLater( () -> window.setVisible( true ) );
 		}
 
 		@Override
