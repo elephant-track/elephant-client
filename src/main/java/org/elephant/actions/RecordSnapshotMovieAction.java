@@ -117,6 +117,14 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 						for ( int i = minTimepoint.get(); i <= maxTimepoint.get(); i++ )
 						{
 							viewerPanel.setTimepoint( i );
+							try
+							{
+								Thread.sleep( 1000 );
+							}
+							catch ( final InterruptedException e )
+							{
+								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+							}
 							final JComponent displayComponent = viewerPanel.getDisplay();
 							final BufferedImage image = new BufferedImage( displayComponent.getWidth(), displayComponent.getHeight(), BufferedImage.TYPE_INT_ARGB );
 							displayComponent.paint( image.getGraphics() );
