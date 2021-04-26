@@ -30,10 +30,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.elephant.setting.main.ElephantMainSettings;
-import org.mastodon.revised.io.yaml.AbstractWorkaroundConstruct;
-import org.mastodon.revised.io.yaml.WorkaroundConstructor;
-import org.mastodon.revised.io.yaml.WorkaroundRepresent;
-import org.mastodon.revised.io.yaml.WorkaroundRepresenter;
+import org.mastodon.io.yaml.AbstractWorkaroundConstruct;
+import org.mastodon.io.yaml.WorkaroundConstructor;
+import org.mastodon.io.yaml.WorkaroundRepresent;
+import org.mastodon.io.yaml.WorkaroundRepresenter;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;

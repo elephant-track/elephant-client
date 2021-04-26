@@ -29,13 +29,13 @@ package org.elephant.actions.mixins;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.mastodon.revised.bdv.BdvContextProvider;
-import org.mastodon.revised.bdv.overlay.wrap.OverlayContextWrapper;
-import org.mastodon.revised.mamut.MamutViewBdv;
-import org.mastodon.revised.mamut.WindowManager;
-import org.mastodon.revised.mamut.WindowManager.BdvViewCreatedListener;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.WindowManager;
+import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.views.bdv.BdvContextProvider;
+import org.mastodon.views.bdv.overlay.wrap.OverlayContextWrapper;
 
 /**
  * Handle @{@link WindowManager} and {@link MamutViewBdv}.

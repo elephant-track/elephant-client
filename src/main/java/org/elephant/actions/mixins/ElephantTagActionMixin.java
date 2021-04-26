@@ -33,12 +33,12 @@ import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
-import org.mastodon.revised.model.tag.TagSetStructure.TagSet;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure;
+import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.model.tag.TagSetStructure.TagSet;
 
 import com.opencsv.CSVReader;
 

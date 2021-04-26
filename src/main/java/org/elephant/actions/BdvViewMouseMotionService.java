@@ -29,10 +29,9 @@ package org.elephant.actions;
 import java.awt.event.MouseEvent;
 
 import org.elephant.actions.mixins.BdvViewMouseMotionMixin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.bdv.ViewerFrameMamut;
-import org.mastodon.revised.mamut.MamutViewBdv;
-import org.mastodon.revised.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
 import net.imglib2.realtransform.AffineTransform3D;
 
@@ -77,7 +76,7 @@ public class BdvViewMouseMotionService extends AbstractElephantService
 		renderTransform = new AffineTransform3D();
 	}
 
-	public void init( final MastodonPluginAppModel pluginAppModel )
+	public void init( final MamutPluginAppModel pluginAppModel )
 	{
 		super.init( pluginAppModel, null );
 		addBdvCreatedListener( new BdvViewCreatedListener()
@@ -86,8 +85,8 @@ public class BdvViewMouseMotionService extends AbstractElephantService
 			@Override
 			public void bdvViewCreated( MamutViewBdv view )
 			{
-				( ( ViewerFrameMamut ) view.getFrame() ).getViewerPanel().getDisplay().addHandler( BdvViewMouseMotionService.this );
-				( ( ViewerFrameMamut ) view.getFrame() ).getViewerPanel().addRenderTransformListener( BdvViewMouseMotionService.this );
+				view.getViewerPanelMamut().getDisplay().addHandler( BdvViewMouseMotionService.this );
+				view.getViewerPanelMamut().renderTransformListeners().add( BdvViewMouseMotionService.this );
 			}
 		} );
 	}

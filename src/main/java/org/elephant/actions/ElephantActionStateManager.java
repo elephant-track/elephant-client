@@ -27,7 +27,7 @@
 package org.elephant.actions;
 
 import org.elephant.actions.SetControlAxisAction.ControlAxis;
-import org.mastodon.util.Listeners;
+import org.scijava.listeners.Listeners;
 
 /**
  * A singleton instance for managing the state of application.

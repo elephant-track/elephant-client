@@ -29,7 +29,7 @@ package org.elephant.actions;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.model.Spot;
 
 import net.imglib2.util.LinAlgHelpers;
 

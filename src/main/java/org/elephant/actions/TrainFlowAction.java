@@ -38,7 +38,7 @@ import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.TimepointActionMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
-import org.mastodon.revised.model.mamut.Link;
+import org.mastodon.mamut.model.Link;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;

@@ -53,7 +53,7 @@ import org.mastodon.app.ui.settings.SelectAndEditProfileSettingsPage.ProfileEdit
 import org.mastodon.app.ui.settings.SelectAndEditProfileSettingsPage.ProfileManager;
 import org.mastodon.app.ui.settings.style.StyleProfile;
 import org.mastodon.app.ui.settings.style.StyleProfileManager;
-import org.mastodon.util.Listeners;
+import org.scijava.listeners.Listeners;
 
 public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettingsManager< M, S >, S extends AbstractElephantSettings< S > >
 {

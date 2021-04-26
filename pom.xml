@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>25.0.0</version>
+		<version>30.0.0</version>
 	</parent>
 	<groupId>org.elephant</groupId>
 	<artifactId>elephant</artifactId>
@@ -30,9 +30,38 @@
 			<artifactId>scijava-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.trackmate</groupId>
-			<artifactId>trackmate</artifactId>
-			<version>1.0.0-beta-13-elephant</version>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon</artifactId>
+			<version>1.0.0-beta-18-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-ui-swing</artifactId>
+		</dependency>
+		<!-- ImgLib2 dependencies -->
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm-gpl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-realtransform</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -108,6 +137,8 @@
 		<license.licenseName>BSD-2-Clause</license.licenseName>
 		<license.projectName>elephant</license.projectName>
 		<license.copyrightOwners>Ko Sugawara</license.copyrightOwners>
+		
+		<bigdataviewer-core.version>10.2.0</bigdataviewer-core.version>
 
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<!-- <releaseProfiles>deploy-to-imagej</releaseProfiles> -->

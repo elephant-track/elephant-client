@@ -40,9 +40,9 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
-import org.mastodon.revised.bdv.ViewerFrameMamut;
-import org.mastodon.revised.bdv.ViewerPanelMamut;
-import org.mastodon.revised.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdv;
+
+import bdv.viewer.ViewerPanel;
 
 /**
  * Record a snapshot movie.
@@ -113,7 +113,7 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 				{
 					if ( bdvWindow.getContextProvider().getName().equals( selectedWindowName.get() ) )
 					{
-						final ViewerPanelMamut viewerPanel = ( ( ViewerFrameMamut ) bdvWindow.getFrame() ).getViewerPanel();
+						final ViewerPanel viewerPanel = bdvWindow.getViewerPanelMamut();
 						for ( int i = minTimepoint.get(); i <= maxTimepoint.get(); i++ )
 						{
 							viewerPanel.setTimepoint( i );

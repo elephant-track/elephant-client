@@ -46,9 +46,9 @@ import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.collection.RefCollection;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.spatial.SpatialIndex;
 
 import com.eclipsesource.json.Json;

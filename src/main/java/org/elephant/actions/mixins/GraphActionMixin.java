@@ -26,7 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions.mixins;
 
-import org.mastodon.revised.model.mamut.ModelGraph;
+import org.mastodon.mamut.model.ModelGraph;
 
 /**
  * Provide access to {@link ModelGraph}.

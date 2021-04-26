@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.bdv.ViewerFrameMamut;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.views.bdv.ViewerFrameMamut;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -62,7 +62,7 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 
 	private List< Runnable > callbackListFailed = Collections.emptyList();
 
-	public RabbitMQService( final MastodonPluginAppModel pluginAppModel )
+	public RabbitMQService( final MamutPluginAppModel pluginAppModel )
 	{
 		super();
 		final List< Runnable > callbackListSucceeded = new ArrayList<>();

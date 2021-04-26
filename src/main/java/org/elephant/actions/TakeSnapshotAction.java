@@ -39,8 +39,8 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
-import org.mastodon.revised.bdv.ViewerFrameMamut;
-import org.mastodon.revised.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.views.bdv.ViewerFrameMamut;
 
 /**
  * Take a snapshot of the specified BDV window.

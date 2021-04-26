@@ -40,7 +40,7 @@ import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.GroupHandleMixin;
 import org.elephant.actions.mixins.LoggerMixin;
 import org.mastodon.grouping.GroupHandle;
-import org.mastodon.plugin.MastodonPluginAppModel;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
 /**
  * An abstract class for ELEPHANT actions.
@@ -65,7 +65,7 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 
 	private static final String LOG_DIR = System.getProperty( "user.home" ).replace( "\\", "/" ) + "/.mastodon/logs";
 
-	private MastodonPluginAppModel pluginAppModel;
+	private MamutPluginAppModel pluginAppModel;
 
 	private GroupHandle groupHandle;
 
@@ -85,7 +85,7 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 	}
 
 	@Override
-	public MastodonPluginAppModel getPluginAppModel()
+	public MamutPluginAppModel getPluginAppModel()
 	{
 		return pluginAppModel;
 	}
@@ -96,7 +96,7 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 		return groupHandle;
 	}
 
-	public void init( final MastodonPluginAppModel pluginAppModel, final GroupHandle groupHandle )
+	public void init( final MamutPluginAppModel pluginAppModel, final GroupHandle groupHandle )
 	{
 		this.pluginAppModel = pluginAppModel;
 		this.groupHandle = groupHandle;

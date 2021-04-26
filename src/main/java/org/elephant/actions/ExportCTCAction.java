@@ -48,11 +48,11 @@ import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.pool.PoolCollectionWrapper;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -195,7 +195,7 @@ public class ExportCTCAction extends AbstractElephantAction
 			final File file = Paths.get( dir.getAbsolutePath(), RES_FILENAME ).toFile();
 			try (final FileWriter fileWriter = new FileWriter( file ))
 			{
-				final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER );
+				final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
 				try
 				{
 					for ( int i = 0; i < trackList.size(); i++ )

@@ -26,7 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions.mixins;
 
-import org.mastodon.revised.bdv.overlay.util.JamaEigenvalueDecomposition;
+import org.mastodon.views.bdv.overlay.util.JamaEigenvalueDecomposition;
 
 /**
  * Provide access to a static instance of {@link JamaEigenvalueDecomposition}.

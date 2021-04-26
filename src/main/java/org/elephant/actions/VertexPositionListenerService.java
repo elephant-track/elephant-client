@@ -27,8 +27,8 @@
 package org.elephant.actions;
 
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.spatial.VertexPositionListener;
 
 /**
@@ -42,7 +42,7 @@ public class VertexPositionListenerService extends AbstractElephantService
 
 	private static final long serialVersionUID = 1L;
 
-	public VertexPositionListenerService( final MastodonPluginAppModel pluginAppModel )
+	public VertexPositionListenerService( final MamutPluginAppModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );

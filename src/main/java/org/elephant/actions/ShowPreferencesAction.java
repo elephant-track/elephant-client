@@ -41,7 +41,7 @@ import org.elephant.setting.main.ElephantMainSettingsManager;
 import org.elephant.setting.server.ElephantServerSettings;
 import org.elephant.setting.server.ElephantServerSettingsManager;
 import org.mastodon.grouping.GroupHandle;
-import org.mastodon.plugin.MastodonPluginAppModel;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
 /**
  * Show a preferences dialog.
@@ -71,7 +71,7 @@ public class ShowPreferencesAction extends AbstractElephantAction implements Bdv
 	}
 
 	@Override
-	public void init( MastodonPluginAppModel pluginAppModel, GroupHandle groupHandle )
+	public void init( MamutPluginAppModel pluginAppModel, GroupHandle groupHandle )
 	{
 		super.init( pluginAppModel, groupHandle );
 

@@ -29,6 +29,7 @@ package org.elephant;
 import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,8 +39,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 
-import org.apache.commons.lang.reflect.FieldUtils;
 import org.elephant.actions.AbortProcessingAction;
 import org.elephant.actions.AbstractElephantAction;
 import org.elephant.actions.BackTrackAction;
@@ -96,18 +98,23 @@ import org.elephant.actions.UpdateFlowLabelsAction;
 import org.elephant.actions.UpdateSegLabelsAction;
 import org.elephant.actions.UpdateTrainingParametersService;
 import org.elephant.actions.VertexPositionListenerService;
-import org.mastodon.app.ui.ViewMenuBuilder;
+import org.mastodon.app.plugin.MastodonPlugin;
+import org.mastodon.app.ui.ViewMenuBuilder.MenuItem;
 import org.mastodon.grouping.GroupHandle;
-import org.mastodon.plugin.MastodonPlugin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.project.MamutProject;
-import org.mastodon.project.MamutProjectIO;
-import org.mastodon.revised.mamut.Mastodon;
-import org.mastodon.revised.ui.keymap.Keymap.UpdateListener;
+import org.mastodon.mamut.MainWindow;
+import org.mastodon.mamut.WindowManager;
+import org.mastodon.mamut.plugin.MamutPlugin;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.project.MamutProject;
+import org.mastodon.mamut.project.MamutProjectIO;
+import org.mastodon.ui.keymap.Keymap.UpdateListener;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
+import org.scijava.command.ContextCommand;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.Actions;
+
+import mpicbg.spim.data.SpimDataException;
 
 /**
  * An implementation of {@link MastodonPlugin} that initializes and organizes
@@ -116,10 +123,10 @@ import org.scijava.ui.behaviour.util.Actions;
  * @author Ko Sugawara
  */
 @Plugin( type = Elephant.class )
-public class Elephant extends AbstractContextual implements MastodonPlugin, UpdateListener
+public class Elephant extends AbstractContextual implements MamutPlugin, UpdateListener
 {
 
-	private MastodonPluginAppModel pluginAppModel;
+	private MamutPluginAppModel pluginAppModel;
 
 	private GroupHandle groupHandle;
 
@@ -333,7 +340,7 @@ public class Elephant extends AbstractContextual implements MastodonPlugin, Upda
 	 * Set up {@link MastodonPluginAppModel}-dependent modules.
 	 */
 	@Override
-	public void setAppModel( final MastodonPluginAppModel pluginAppModel )
+	public void setAppPluginModel( final MamutPluginAppModel pluginAppModel )
 	{
 		this.pluginAppModel = pluginAppModel;
 		// Create a GroupHandle instance
@@ -371,25 +378,13 @@ public class Elephant extends AbstractContextual implements MastodonPlugin, Upda
 		final VertexPositionListenerService vertexPositionListenerService = new VertexPositionListenerService( pluginAppModel );
 		pluginAppModel.getAppModel().getModel().getGraph().addVertexPositionListener( vertexPositionListenerService );
 		// UpdateListener
-		try
-		{
-			@SuppressWarnings( "unchecked" )
-			final ArrayList< UpdateListener > list = ( ArrayList< UpdateListener > ) FieldUtils.readField( pluginAppModel.getAppModel().getKeymap().updateListeners(), "list", true );
-			final ArrayList< UpdateListener > updateListeners = new ArrayList<>( list );
-			pluginAppModel.getAppModel().getKeymap().updateListeners().removeAll( updateListeners );
-			pluginAppModel.getAppModel().getKeymap().updateListeners().add( this );
-			pluginAppModel.getAppModel().getKeymap().updateListeners().addAll( updateListeners );
-		}
-		catch ( final IllegalAccessException e )
-		{
-			e.printStackTrace();
-		}
+		pluginAppModel.getAppModel().getKeymap().updateListeners().add( 0, this );
 		// Create tag sets if not exists
 		new SetUpTagSetsService( pluginAppModel );
 	}
 
 	@Override
-	public List< ViewMenuBuilder.MenuItem > getMenuItems()
+	public List< MenuItem > getMenuItems()
 	{
 		return Arrays.asList(
 				menu( "Plugins",
@@ -456,28 +451,78 @@ public class Elephant extends AbstractContextual implements MastodonPlugin, Upda
 		installGlobalActions( pluginAppModel.getAppModel().getPlugins().getPluginActions() );
 	}
 
+	class Mastodon extends ContextCommand
+	{
+
+		private WindowManager windowManager;
+
+		private MainWindow mainWindow;
+
+		@Override
+		public void run()
+		{
+			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
+			windowManager = new WindowManager( getContext() );
+			mainWindow = new MainWindow( windowManager );
+			mainWindow.setVisible( true );
+		}
+
+		// FOR TESTING ONLY!
+		public void openProject( final MamutProject project ) throws IOException, SpimDataException
+		{
+			windowManager.getProjectManager().open( project );
+		}
+
+		// FOR TESTING ONLY!
+		public void setExitOnClose()
+		{
+			mainWindow.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+		}
+
+		// FOR TESTING ONLY!
+		public WindowManager getWindowManager()
+		{
+			return windowManager;
+		}
+	}
+
 	/**
 	 * Main method
 	 */
 	public static void main( final String[] args ) throws Exception
 	{
-		Locale.setDefault( Locale.US );
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+		setSystemLookAndFeelAndLocale();
 
-		final Mastodon mastodon = new Mastodon();
-		new Context().inject( mastodon );
-		mastodon.run();
-		mastodon.setExitOnClose();
+		final Elephant elephant = new Elephant();
+		final Mastodon mastodon = elephant.new Mastodon();
+		try (final Context context = new Context())
+		{
+			context.inject( mastodon );
+			mastodon.run();
+			mastodon.setExitOnClose();
+			try
+			{
+				final ResourceBundle rb = ResourceBundle.getBundle( "default" );
+				final MamutProject project = new MamutProjectIO().load( rb.getString( "project" ) );
+				mastodon.openProject( project );
+			}
+			catch ( final Exception e )
+			{
+				System.out.println( "Loading from resource failed. Start with empty project." );
+			}
+		}
+	}
 
+	private static final void setSystemLookAndFeelAndLocale()
+	{
+		Locale.setDefault( Locale.ROOT );
 		try
 		{
-			final ResourceBundle rb = ResourceBundle.getBundle( "default" );
-			final MamutProject project = new MamutProjectIO().load( rb.getString( "project" ) );
-			mastodon.openProject( project );
+			UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 		}
-		catch ( final Exception e )
+		catch ( ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e )
 		{
-			System.out.println( "Loading from resource failed. Start with empty project." );
+			e.printStackTrace();
 		}
 	}
 }

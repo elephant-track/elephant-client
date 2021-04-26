@@ -32,7 +32,7 @@ import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.setting.main.ElephantMainSettingsListener;
-import org.mastodon.plugin.MastodonPluginAppModel;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
@@ -55,7 +55,7 @@ public class UpdateTrainingParametersService extends AbstractElephantService
 
 	private static final long serialVersionUID = 1L;
 
-	public UpdateTrainingParametersService( final MastodonPluginAppModel pluginAppModel )
+	public UpdateTrainingParametersService( final MamutPluginAppModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );

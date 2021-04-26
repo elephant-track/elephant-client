@@ -28,12 +28,12 @@ package org.elephant.actions;
 
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.mastodon.graph.GraphListener;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
-import org.mastodon.revised.model.tag.TagSetStructure.TagSet;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.model.tag.TagSetStructure.TagSet;
 
 /**
  * Listen addition/removal of spots/links, writing logs and putting appropriate
@@ -47,7 +47,7 @@ public class GraphListenerService extends AbstractElephantService
 
 	private static final long serialVersionUID = 1L;
 
-	public GraphListenerService( final MastodonPluginAppModel pluginAppModel )
+	public GraphListenerService( final MamutPluginAppModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );

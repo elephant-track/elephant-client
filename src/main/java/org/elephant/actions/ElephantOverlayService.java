@@ -31,12 +31,11 @@ import java.awt.Graphics;
 
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.bdv.ViewerFrameMamut;
-import org.mastodon.revised.mamut.MamutViewBdv;
-import org.mastodon.revised.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
-import net.imglib2.ui.OverlayRenderer;
+import bdv.viewer.OverlayRenderer;
 
 /**
  * Provide a text overlay used in ELEPHANT.
@@ -48,7 +47,7 @@ public class ElephantOverlayService extends AbstractElephantService implements E
 
 	private static final long serialVersionUID = 1L;
 
-	public ElephantOverlayService( final MastodonPluginAppModel pluginAppModel )
+	public ElephantOverlayService( final MamutPluginAppModel pluginAppModel )
 	{
 		super.init( pluginAppModel, null );
 		addBdvCreatedListener( new BdvViewCreatedListener()
@@ -57,7 +56,7 @@ public class ElephantOverlayService extends AbstractElephantService implements E
 			@Override
 			public void bdvViewCreated( MamutViewBdv view )
 			{
-				( ( ViewerFrameMamut ) view.getFrame() ).getViewerPanel().getDisplay().addOverlayRenderer( new ElephantOverlay() );
+				view.getViewerPanelMamut().getDisplay().overlays().add( new ElephantOverlay() );
 			}
 		} );
 	}

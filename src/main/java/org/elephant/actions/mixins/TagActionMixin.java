@@ -26,11 +26,11 @@
  ******************************************************************************/
 package org.elephant.actions.mixins;
 
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.TagSetModel;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
-import org.mastodon.revised.model.tag.TagSetStructure.TagSet;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.model.tag.TagSetModel;
+import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.model.tag.TagSetStructure.TagSet;
 
 /**
  * Provide basic functionality for {@link Tag} and {@link TagSet}.

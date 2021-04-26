@@ -41,11 +41,11 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.pool.PoolCollectionWrapper;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
 
 import com.opencsv.CSVWriter;
 
@@ -161,7 +161,7 @@ public class CountDivisionsAction extends AbstractElephantAction
 				}
 				try (final FileWriter fileWriter = new FileWriter( file ))
 				{
-					final CSVWriter writer = new CSVWriter( fileWriter, ',' );
+					final CSVWriter writer = new CSVWriter( fileWriter );
 					try
 					{
 						for ( int i = 0; i < count.length; i++ )
@@ -213,7 +213,7 @@ public class CountDivisionsAction extends AbstractElephantAction
 
 					try (final FileWriter fileWriter = new FileWriter( file ))
 					{
-						final CSVWriter writer = new CSVWriter( fileWriter, ',' );
+						final CSVWriter writer = new CSVWriter( fileWriter );
 						writer.writeNext( labels );
 						try
 						{

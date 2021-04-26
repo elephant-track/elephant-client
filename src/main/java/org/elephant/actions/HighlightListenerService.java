@@ -29,15 +29,15 @@ package org.elephant.actions;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.elephant.actions.mixins.GraphActionMixin;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.ModelOverlayProperties;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.model.HighlightListener;
 import org.mastodon.model.NavigationHandler;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.bdv.overlay.wrap.OverlayEdgeWrapper;
-import org.mastodon.revised.bdv.overlay.wrap.OverlayGraphWrapper;
-import org.mastodon.revised.bdv.overlay.wrap.OverlayVertexWrapper;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.ModelOverlayProperties;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.views.bdv.overlay.wrap.OverlayEdgeWrapper;
+import org.mastodon.views.bdv.overlay.wrap.OverlayGraphWrapper;
+import org.mastodon.views.bdv.overlay.wrap.OverlayVertexWrapper;
 
 /**
  * Autofocus to the highlighted spot when the {@code isAutoFocus} is on.
@@ -57,7 +57,7 @@ public class HighlightListenerService extends AbstractElephantService
 
 	private int lastHightedVertexId;
 
-	public HighlightListenerService( final MastodonPluginAppModel pluginAppModel )
+	public HighlightListenerService( final MamutPluginAppModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );

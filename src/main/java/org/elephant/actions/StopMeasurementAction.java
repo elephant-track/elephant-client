@@ -30,9 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure.Tag;
 
 /**
  * Log a stop time of the measurement.

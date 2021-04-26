@@ -57,11 +57,11 @@ import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.kdtree.IncrementalNearestNeighborSearch;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
-import org.mastodon.revised.model.tag.TagSetStructure.TagSet;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.model.tag.TagSetStructure.TagSet;
 import org.mastodon.spatial.SpatialIndex;
 
 import com.eclipsesource.json.Json;

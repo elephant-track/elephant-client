@@ -38,7 +38,7 @@ import org.elephant.actions.mixins.TimepointActionMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.collection.RefCollection;
 import org.mastodon.collection.RefCollections;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.model.Spot;
 
 /**
  * Remove the spots in the visible area in the target BDV window.

@@ -43,14 +43,14 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
-import org.mastodon.project.MamutProject;
-import org.mastodon.project.MamutProjectIO;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Model;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.model.tag.ObjTagMap;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
-import org.mastodon.revised.model.tag.TagSetStructure.TagSet;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.project.MamutProject;
+import org.mastodon.mamut.project.MamutProjectIO;
+import org.mastodon.model.tag.ObjTagMap;
+import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.model.tag.TagSetStructure.TagSet;
 
 /**
  * Import spots and links from a masotodon project file.

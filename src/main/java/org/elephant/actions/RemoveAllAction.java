@@ -37,8 +37,8 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
 
 /**
  * Remove all spots and links.

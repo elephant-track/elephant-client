@@ -28,8 +28,8 @@ package org.elephant.actions.mixins;
 
 import java.awt.event.MouseMotionListener;
 
+import bdv.viewer.TransformListener;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.ui.TransformListener;
 
 /**
  * Get access to the mouse position and its global coordinates.

@@ -35,9 +35,9 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.tag.TagSetStructure.Tag;
-import org.mastodon.revised.model.tag.TagSetStructure.TagSet;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.model.tag.TagSetStructure.TagSet;
 
 /**
  * Remove the edges with the specified tag.

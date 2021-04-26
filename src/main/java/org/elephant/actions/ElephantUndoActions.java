@@ -26,8 +26,8 @@
  ******************************************************************************/
 package org.elephant.actions;
 
-import org.mastodon.revised.mamut.UndoActions;
-import org.mastodon.revised.model.mamut.Model;
+import org.mastodon.mamut.UndoActions;
+import org.mastodon.mamut.model.Model;
 import org.scijava.ui.behaviour.util.Actions;
 
 /**

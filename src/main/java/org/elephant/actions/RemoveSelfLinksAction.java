@@ -31,8 +31,8 @@ import java.util.function.Predicate;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
 
 /**
  * Remove accidentally generated self links (i.e. the source and target spots

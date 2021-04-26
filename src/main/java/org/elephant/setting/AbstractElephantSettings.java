@@ -28,7 +28,7 @@ package org.elephant.setting;
 
 import java.util.Objects;
 
-import org.mastodon.util.Listeners;
+import org.scijava.listeners.Listeners;
 
 public abstract class AbstractElephantSettings< S extends AbstractElephantSettings< S > > implements UpdatableStyle< S >
 {

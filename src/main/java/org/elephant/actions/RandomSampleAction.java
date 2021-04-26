@@ -42,7 +42,7 @@ import org.elephant.actions.mixins.GraphActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefSet;
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.model.Spot;
 
 /**
  * Randomly sample N spots specified by the user.

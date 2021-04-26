@@ -26,7 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions.mixins;
 
-import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.mamut.model.Spot;
 import org.mastodon.spatial.SpatioTemporalIndex;
 
 /**
