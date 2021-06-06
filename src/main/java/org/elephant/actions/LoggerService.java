@@ -28,13 +28,23 @@ package org.elephant.actions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.elephant.setting.main.ElephantMainSettingsListener;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.scijava.Context;
+import org.scijava.log.DefaultLogger;
+import org.scijava.log.LogListener;
+import org.scijava.log.LogService;
+import org.scijava.ui.swing.console.LoggingPanel;
 
 /**
  * Set up a logger. A static {@link Logger} instance is used across the process.
@@ -48,6 +58,11 @@ public class LoggerService extends AbstractElephantService implements ElephantMa
 
 	private static Logger logger; // to avoid GC
 
+	public void init( final MamutPluginAppModel pluginAppModel )
+	{
+		super.init( pluginAppModel, null );
+	}
+
 	public void setup()
 	{
 		logger = getLogger();
@@ -59,6 +74,34 @@ public class LoggerService extends AbstractElephantService implements ElephantMa
 		{
 			logger.severe( ExceptionUtils.getStackTrace( e ) );
 		}
+		final Context context = getContext();
+		final LogService logService = context.getService( LogService.class );
+		boolean hasLoggingPanel = false;
+		try
+		{
+			final DefaultLogger rootLogger = ( DefaultLogger ) FieldUtils.readField( logService, "rootLogger", true );
+			@SuppressWarnings( "unchecked" )
+			final List< LogListener > listeners = ( List< LogListener > ) FieldUtils.readField( rootLogger, "listeners", true );
+			for ( final LogListener logListener : listeners )
+			{
+				if ( logListener instanceof LoggingPanel )
+					hasLoggingPanel = true;
+			}
+		}
+		catch ( final IllegalAccessException e )
+		{
+			e.printStackTrace();
+		}
+		if ( !hasLoggingPanel )
+		{
+			final LoggingPanel loggingPanel = new LoggingPanel( context );
+			logService.addLogListener( loggingPanel );
+			final JFrame frame = new JFrame( "Plugin that logs" );
+			frame.add( loggingPanel );
+			frame.pack();
+			frame.setVisible( true );
+		}
+		logService.info( "hoge" );
 		Runtime.getRuntime().addShutdownHook( new Thread( () -> {
 			for ( final Handler handler : logger.getHandlers() )
 			{

@@ -36,6 +36,7 @@ import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.views.bdv.BdvContextProvider;
 import org.mastodon.views.bdv.overlay.wrap.OverlayContextWrapper;
+import org.scijava.Context;
 
 /**
  * Handle @{@link WindowManager} and {@link MamutViewBdv}.
@@ -48,6 +49,11 @@ public interface WindowManagerMixin extends ElephantActionMixin
 	default WindowManager getWindowManager()
 	{
 		return getPluginAppModel().getWindowManager();
+	}
+
+	default Context getContext()
+	{
+		return getWindowManager().getContext();
 	}
 
 	default List< MamutViewBdv > getBdvWindows()

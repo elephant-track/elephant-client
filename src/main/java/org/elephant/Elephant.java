@@ -228,12 +228,13 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
+	private final LoggerService loggerService;
+
 	private final BdvViewMouseMotionService mouseMotionService;
 
 	public Elephant()
 	{
-		final LoggerService loggerService = new LoggerService();
-		loggerService.setup();
+		loggerService = new LoggerService();
 		mouseMotionService = new BdvViewMouseMotionService();
 		backTrackAction = new BackTrackAction();
 		pluginActions.add( backTrackAction );
@@ -356,6 +357,9 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		ElephantUndoActions.installOverwrite( pluginAppModel.getAppModel().getAppActions(), pluginAppModel.getAppModel().getModel() );
 
 		// Initialize MastodonPluginAppModel-dependent services
+		// LoggerService
+		loggerService.init( pluginAppModel );
+		loggerService.setup();
 		// BdvViewMouseMotionService
 		mouseMotionService.init( pluginAppModel );
 		// ElephantOverlayService

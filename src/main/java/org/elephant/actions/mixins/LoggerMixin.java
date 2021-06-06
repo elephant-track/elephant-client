@@ -49,7 +49,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  * 
  * @author Ko Sugawara
  */
-public interface LoggerMixin
+public interface LoggerMixin extends WindowManagerMixin
 {
 
 	Logger getLogger();
