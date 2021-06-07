@@ -202,7 +202,8 @@ public class TrainSegAction extends AbstractElephantAction
 				.add( JSON_KEY_FALSE_WEIGHT, getMainSettings().getFalseWeight() )
 				.add( JSON_KEY_AUTO_BG_THRESH, getMainSettings().getAutoBgThreshold() )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
-				.add( JSON_KEY_SEG_LOG_DIR, getMainSettings().getSegLogName() );
+				.add( JSON_KEY_SEG_LOG_DIR, getMainSettings().getSegLogName() )
+				.add( JSON_KEY_IS_3D, !is2D() );
 
 		Unirest.post( getEndpointURL( ENDPOINT_TRAIN_SEG ) ).body( jsonRootObject.toString() )
 				.asStringAsync( new Callback< String >()

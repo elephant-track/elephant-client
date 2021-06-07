@@ -91,7 +91,8 @@ public class ResetFlowModelAction extends AbstractElephantAction
 		{
 			final JsonObject jsonRootObject = Json.object()
 					.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
-					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() );
+					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
+					.add( JSON_KEY_IS_3D, !is2D() );
 			Unirest.post( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ) ).body( jsonRootObject.toString() ).asStringAsync( new Callback< String >()
 			{
 

@@ -138,6 +138,8 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_N_KEEP_AXIALS = "n_keep_axials";
 
+	public static final String JSON_KEY_IS_3D = "is_3d";
+
 	public static final String JSON_KEY_SPOTS = "spots";
 
 	public static final String JSON_KEY_T_START = "t_start";

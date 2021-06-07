@@ -381,6 +381,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginAppModel.getAppModel().getKeymap().updateListeners().add( 0, this );
 		// Create tag sets if not exists
 		new SetUpTagSetsService( pluginAppModel );
+		// Reset ControlAxis
+		ElephantActionStateManager.INSTANCE.setAxis( ControlAxis.X );
 	}
 
 	@Override

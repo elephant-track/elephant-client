@@ -161,7 +161,8 @@ public class PredictSpotsAction extends AbstractElephantAction
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_OUTPUT_PREDICTION, getMainSettings().getOutputPrediction() )
 				.add( JSON_KEY_USE_MEDIAN, getMainSettings().getMedianCorrection() )
-				.add( JSON_KEY_IS_PAD, getMainSettings().getPad() );
+				.add( JSON_KEY_IS_PAD, getMainSettings().getPad() )
+				.add( JSON_KEY_IS_3D, !is2D() );
 		if ( getMainSettings().getPatch() )
 		{
 			jsonRootObject.add( JSON_KEY_PATCH, new JsonArray()

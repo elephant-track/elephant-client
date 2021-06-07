@@ -127,7 +127,8 @@ public class TrainFlowAction extends AbstractElephantAction
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_AUG_SCALE_FACTOR_BASE, getMainSettings().getAugScaleFactorBase() )
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
-				.add( JSON_KEY_FLOW_LOG_DIR, getMainSettings().getFlowLogName() );;
+				.add( JSON_KEY_FLOW_LOG_DIR, getMainSettings().getFlowLogName() )
+				.add( JSON_KEY_IS_3D, !is2D() );
 
 		Unirest.post( getEndpointURL( ENDPOINT_TRAIN_FLOW ) )
 				.body( jsonRootObject.toString() )

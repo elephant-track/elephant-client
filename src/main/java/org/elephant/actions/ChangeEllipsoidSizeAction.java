@@ -26,11 +26,15 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import org.elephant.actions.SetControlAxisAction.ControlAxis;
+import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
+import org.elephant.actions.mixins.UIActionMixin;
 import org.mastodon.mamut.model.Spot;
 
+import bdv.viewer.animate.TextOverlayAnimator;
 import net.imglib2.util.LinAlgHelpers;
 
 /**
@@ -40,7 +44,7 @@ import net.imglib2.util.LinAlgHelpers;
  * @author Ko Sugawara
  */
 public class ChangeEllipsoidSizeAction extends AbstractElephantAction
-		implements EllipsoidActionMixin, GraphChangeActionMixin, ElephantStateManagerMixin
+		implements BdvDataMixin, EllipsoidActionMixin, GraphChangeActionMixin, ElephantStateManagerMixin, UIActionMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -94,6 +98,12 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 	@Override
 	public void process()
 	{
+		// Validation for 2D data
+		if ( is2D() && getStateManager().getAxis() == ControlAxis.Z )
+		{
+			showTextOverlayAnimator( "Invalid control axis " + getStateManager().getAxis().name() + " for 2D data", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+			return;
+		}
 		final Spot ref = getGraph().vertexRef();
 		Spot spot;
 		getGraph().getLock().writeLock().lock();
@@ -112,7 +122,7 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 			final double[][] V = getEig().getV();
 			final double[] d = getEig().getRealEigenvalues();
 			final double[][] S = new double[ 3 ][ 3 ];
-			final int axis = ElephantActionStateManager.INSTANCE.getAxis().getIndex();
+			final int axis = getStateManager().getAxis().getIndex();
 			for ( int i = 0; i < 3; i++ )
 			{
 				for ( int j = 0; j < 3; j++ )

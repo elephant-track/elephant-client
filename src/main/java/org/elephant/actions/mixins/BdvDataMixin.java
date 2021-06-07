@@ -37,6 +37,11 @@ import net.imglib2.Dimensions;
 public interface BdvDataMixin extends ElephantActionMixin
 {
 
+	default boolean is2D()
+	{
+		return getAppModel().getSharedBdvData().is2D();
+	}
+
 	default Dimensions getDimensions()
 	{
 		return getAppModel().getSharedBdvData().getSpimData()

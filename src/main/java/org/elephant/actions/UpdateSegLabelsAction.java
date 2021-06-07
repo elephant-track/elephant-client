@@ -140,7 +140,8 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
 				.add( JSON_KEY_RESET, false )
 				.add( JSON_KEY_SCALES, scales )
-				.add( JSON_KEY_SPOTS, jsonSpots );
+				.add( JSON_KEY_SPOTS, jsonSpots )
+				.add( JSON_KEY_IS_3D, !is2D() );
 
 		Unirest.post( getEndpointURL( ENDPOINT_UPDATE_SEG ) )
 				.body( jsonRootObject.toString() )
