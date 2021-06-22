@@ -114,6 +114,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final boolean DEFAULT_USE_INTERPOLATION = false;
 
+	public static final boolean DEFAULT_USE_2D_MODEL = false;
+
 	public static final String DEFAULT_SEG_MODEL_NAME = "seg.pth";
 
 	public static final String DEFAULT_FLOW_MODEL_NAME = "flow.pth";
@@ -178,6 +180,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		nnMaxEdges = settings.nnMaxEdges;
 		useOpticalflow = settings.useOpticalflow;
 		useInterpolation = settings.useInterpolation;
+		use2dModel = settings.use2dModel;
 		segModelName = settings.segModelName;
 		flowModelName = settings.flowModelName;
 		segLogName = settings.segLogName;
@@ -260,6 +263,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 	private boolean useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 
 	private boolean useInterpolation = DEFAULT_USE_INTERPOLATION;
+
+	private boolean use2dModel = DEFAULT_USE_2D_MODEL;
 
 	private String segModelName = DEFAULT_SEG_MODEL_NAME;
 
@@ -791,6 +796,20 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
+	public boolean getUse2dModel()
+	{
+		return use2dModel;
+	}
+
+	public synchronized void setUse2dModel( final boolean use2dModel )
+	{
+		if ( this.use2dModel != use2dModel )
+		{
+			this.use2dModel = use2dModel;
+			notifyListeners();
+		}
+	}
+
 	public String getSegModelName()
 	{
 		return segModelName != null ? segModelName : DEFAULT_SEG_MODEL_NAME;
@@ -916,6 +935,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.nnMaxEdges = DEFAULT_NN_MAX_EDGES;
 		df.useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 		df.useInterpolation = DEFAULT_USE_INTERPOLATION;
+		df.use2dModel = DEFAULT_USE_2D_MODEL;
 		df.segModelName = DEFAULT_SEG_MODEL_NAME;
 		df.flowModelName = DEFAULT_FLOW_MODEL_NAME;
 		df.segLogName = DEFAULT_SEG_LOG_NAME;
