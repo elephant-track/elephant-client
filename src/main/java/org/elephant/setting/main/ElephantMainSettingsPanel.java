@@ -107,7 +107,7 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 
 				intElement( "number of crops", 0, 1000, style::getNumCrops, style::setNumCrops ),
 				intElement( "number of epochs", 0, 1000, style::getNumEpochs, style::setNumEpochs ),
-				intElement( "time range", 1, 1000, style::getTimeRange, style::setTimeRange ),
+				intElement( "time range", 1, 100000, style::getTimeRange, style::setTimeRange ),
 				doubleElementEx( "auto BG threshold", 0.0, 1, 0.001, style::getAutoBgThreshold, style::setAutoBgThreshold ),
 				doubleElementEx( "learning rate", 0.000001, 1, 0.000001, style::getLearningRate, style::setLearningRate ),
 				doubleElementEx( "probability threshold", 0.0, 1.0, 0.01, style::getProbThreshold, style::setProbThreshold ),
