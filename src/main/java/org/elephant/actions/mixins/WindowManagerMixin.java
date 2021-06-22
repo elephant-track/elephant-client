@@ -75,12 +75,12 @@ public interface WindowManagerMixin extends ElephantActionMixin
 
 	default void addBdvCreatedListener( final BdvViewCreatedListener listener )
 	{
-		getWindowManager().addBdvViewCreatedListner( listener );
+		getWindowManager().bdvViewCreatedListners().add( listener );
 	}
 
 	default void removeBdvCreatedListener( final BdvViewCreatedListener listener )
 	{
-		getWindowManager().removeBdvViewCreatedListner( listener );
+		getWindowManager().bdvViewCreatedListners().remove( listener );
 	}
 
 }
