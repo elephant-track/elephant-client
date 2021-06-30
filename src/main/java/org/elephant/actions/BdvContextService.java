@@ -49,6 +49,7 @@ public class BdvContextService extends AbstractElephantService implements Contex
 				contextChooser.updateContextProviders( contextProviders );
 				contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
 				bdv.onClose( () -> {
+					getWindowManager().bdvViewCreatedListners().remove( this );
 					contextProviders.remove( bdv.getContextProvider() );
 					contextChooser.updateContextProviders( contextProviders );
 					contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
