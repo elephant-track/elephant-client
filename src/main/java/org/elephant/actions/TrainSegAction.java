@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
@@ -70,13 +71,15 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class TrainSegAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
 		TimepointActionMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
 	private final TrainingMode trainingMode;
+
+	private final BdvContextService bdvContextService;
 
 	public static enum TrainingMode
 	{
@@ -111,10 +114,17 @@ public class TrainSegAction extends AbstractElephantAction
 		return trainingMode.getMenuText();
 	}
 
-	public TrainSegAction( TrainingMode trainingMode )
+	public TrainSegAction( final TrainingMode trainingMode, final BdvContextService bdvContextService )
 	{
 		super( trainingMode.getName() );
 		this.trainingMode = trainingMode;
+		this.bdvContextService = bdvContextService;
+	}
+
+	@Override
+	public BdvContextService getBdvContextService()
+	{
+		return bdvContextService;
 	}
 
 	@Override

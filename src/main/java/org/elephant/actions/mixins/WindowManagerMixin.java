@@ -32,10 +32,6 @@ import java.util.function.Consumer;
 import org.mastodon.mamut.MamutViewBdv;
 import org.mastodon.mamut.WindowManager;
 import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
-import org.mastodon.mamut.model.Link;
-import org.mastodon.mamut.model.Spot;
-import org.mastodon.views.bdv.BdvContextProvider;
-import org.mastodon.views.bdv.overlay.wrap.OverlayContextWrapper;
 
 /**
  * Handle @{@link WindowManager} and {@link MamutViewBdv}.
@@ -58,19 +54,6 @@ public interface WindowManagerMixin extends ElephantActionMixin
 	default void forEachBdvView( final Consumer< ? super MamutViewBdv > action )
 	{
 		getBdvWindows().forEach( action );
-	}
-
-	default Iterable< Spot > getVisibleVertices( final int timepoint )
-	{
-		if ( 0 < getBdvWindows().size() )
-		{
-			final MamutViewBdv bdv = getBdvWindows().get( 0 );
-			@SuppressWarnings( "unchecked" )
-			final OverlayContextWrapper< Spot, Link > overlayContextWrapper = ( ( BdvContextProvider< Spot, Link > ) bdv.getContextProvider() ).getOverlayContextWrapper();
-			final Iterable< Spot > vertices = overlayContextWrapper.getInsideVertices( timepoint );
-			return vertices;
-		}
-		return null;
 	}
 
 	default void addBdvCreatedListener( final BdvViewCreatedListener listener )

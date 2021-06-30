@@ -45,6 +45,7 @@ import javax.swing.WindowConstants;
 import org.elephant.actions.AbortProcessingAction;
 import org.elephant.actions.AbstractElephantAction;
 import org.elephant.actions.BackTrackAction;
+import org.elephant.actions.BdvContextService;
 import org.elephant.actions.BdvViewMouseMotionService;
 import org.elephant.actions.ChangeEllipsoidSizeAction;
 import org.elephant.actions.ChangeEllipsoidSizeAction.ChangeEllipsoidSizeActionMode;
@@ -230,25 +231,28 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final BdvViewMouseMotionService mouseMotionService;
 
+	private final BdvContextService bdvContextService;
+
 	public Elephant()
 	{
 		final LoggerService loggerService = new LoggerService();
 		loggerService.setup();
 		mouseMotionService = new BdvViewMouseMotionService();
+		bdvContextService = new BdvContextService();
 		backTrackAction = new BackTrackAction();
 		pluginActions.add( backTrackAction );
 		predictSpotsAction = new PredictSpotsAction( PredictSpotsActionMode.ENTIRE, mouseMotionService );
 		pluginActions.add( predictSpotsAction );
 		pluginActions.add( new PredictSpotsAction( PredictSpotsActionMode.AROUND_MOUSE, mouseMotionService ) );
-		updateSegLabelsAction = new UpdateSegLabelsAction();
+		updateSegLabelsAction = new UpdateSegLabelsAction( bdvContextService );
 		pluginActions.add( updateSegLabelsAction );
 		updateFlowLabelsAction = new UpdateFlowLabelsAction();
 		pluginActions.add( updateFlowLabelsAction );
-		liveTrainingAction = new TrainSegAction( TrainingMode.LIVE );
+		liveTrainingAction = new TrainSegAction( TrainingMode.LIVE, bdvContextService );
 		pluginActions.add( liveTrainingAction );
-		trainSelectedAction = new TrainSegAction( TrainingMode.SELECTED );
+		trainSelectedAction = new TrainSegAction( TrainingMode.SELECTED, bdvContextService );
 		pluginActions.add( trainSelectedAction );
-		trainAllAction = new TrainSegAction( TrainingMode.ALL );
+		trainAllAction = new TrainSegAction( TrainingMode.ALL, bdvContextService );
 		pluginActions.add( trainAllAction );
 		resetSegModelAction = new ResetSegModelAction();
 		pluginActions.add( resetSegModelAction );
@@ -280,7 +284,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( removeSpotsByTagAction );
 		removeEdgesByTagAction = new RemoveLinksByTagAction();
 		pluginActions.add( removeEdgesByTagAction );
-		removeVisibleSpotsAction = new RemoveVisibleSpotsAction();
+		removeVisibleSpotsAction = new RemoveVisibleSpotsAction( bdvContextService );
 		pluginActions.add( removeVisibleSpotsAction );
 		removeSelfLinksAction = new RemoveSelfLinksAction();
 		pluginActions.add( removeSelfLinksAction );
@@ -358,6 +362,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		// Initialize MastodonPluginAppModel-dependent services
 		// BdvViewMouseMotionService
 		mouseMotionService.init( pluginAppModel );
+		// BdvContextService
+		bdvContextService.init( pluginAppModel );
 		// ElephantOverlayService
 		new ElephantOverlayService( pluginAppModel );
 		// RabbitMQService

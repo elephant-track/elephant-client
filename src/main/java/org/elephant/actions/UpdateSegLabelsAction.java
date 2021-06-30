@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
@@ -63,7 +64,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class UpdateSegLabelsAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointActionMixin, UIActionMixin, URLMixin, WindowManagerMixin
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointActionMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -72,6 +73,8 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 	private static final String MENU_TEXT = "Update Seg Labels";
 
 	private static final String[] MENU_KEYS = new String[] { "U" };
+
+	private final BdvContextService bdvContextService;
 
 	@Override
 	public String getMenuText()
@@ -85,9 +88,16 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 		return MENU_KEYS;
 	}
 
-	public UpdateSegLabelsAction()
+	public UpdateSegLabelsAction( final BdvContextService bdvContextService )
 	{
 		super( NAME );
+		this.bdvContextService = bdvContextService;
+	}
+
+	@Override
+	public BdvContextService getBdvContextService()
+	{
+		return bdvContextService;
 	}
 
 	@Override
