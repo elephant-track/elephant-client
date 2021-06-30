@@ -138,6 +138,8 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_N_KEEP_AXIALS = "n_keep_axials";
 
+	public static final String JSON_KEY_IS_3D = "is_3d";
+
 	public static final String JSON_KEY_SPOTS = "spots";
 
 	public static final String JSON_KEY_T_START = "t_start";
@@ -173,6 +175,8 @@ public interface ElephantConstantsMixin
 	public static final String JSON_KEY_AUG_SCALE_FACTOR_BASE = "aug_scale_factor_base";
 
 	public static final String JSON_KEY_AUG_ROTATION_ANGLE = "aug_rotation_angle";
+
+	public static final String JSON_KEY_USE_2D_MODEL = "use_2d";
 
 	public static final String JSON_KEY_IS_LIVEMODE = "is_livemode";
 

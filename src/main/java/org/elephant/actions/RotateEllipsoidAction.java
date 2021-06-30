@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
@@ -40,7 +41,7 @@ import net.imglib2.util.LinAlgHelpers;
  * @author Ko Sugawara
  */
 public class RotateEllipsoidAction extends AbstractElephantAction
-		implements EllipsoidActionMixin, GraphChangeActionMixin, ElephantStateManagerMixin
+		implements BdvDataMixin, EllipsoidActionMixin, GraphChangeActionMixin, ElephantStateManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -112,31 +113,8 @@ public class RotateEllipsoidAction extends AbstractElephantAction
 			final double[][] V = getEig().getV();
 			final double[] d = getEig().getRealEigenvalues();
 			final double[][] R = new double[ 3 ][ 3 ];
-			switch ( ElephantActionStateManager.INSTANCE.getAxis() )
+			if ( is2D() )
 			{
-			case X:
-				R[ 0 ][ 0 ] = 1;
-				R[ 0 ][ 1 ] = 0;
-				R[ 0 ][ 2 ] = 0;
-				R[ 1 ][ 0 ] = 0;
-				R[ 1 ][ 1 ] = Math.cos( mode.getFactor() );
-				R[ 1 ][ 2 ] = -Math.sin( mode.getFactor() );
-				R[ 2 ][ 0 ] = 0;
-				R[ 2 ][ 1 ] = Math.sin( mode.getFactor() );
-				R[ 2 ][ 2 ] = Math.cos( mode.getFactor() );
-				break;
-			case Y:
-				R[ 0 ][ 0 ] = Math.cos( mode.getFactor() );
-				R[ 0 ][ 1 ] = 0;
-				R[ 0 ][ 2 ] = Math.sin( mode.getFactor() );
-				R[ 1 ][ 0 ] = 0;
-				R[ 1 ][ 1 ] = 1;
-				R[ 1 ][ 2 ] = 0;
-				R[ 2 ][ 0 ] = -Math.sin( mode.getFactor() );
-				R[ 2 ][ 1 ] = 0;
-				R[ 2 ][ 2 ] = Math.cos( mode.getFactor() );
-				break;
-			case Z:
 				R[ 0 ][ 0 ] = Math.cos( mode.getFactor() );
 				R[ 0 ][ 1 ] = -Math.sin( mode.getFactor() );
 				R[ 0 ][ 2 ] = 0;
@@ -146,9 +124,47 @@ public class RotateEllipsoidAction extends AbstractElephantAction
 				R[ 2 ][ 0 ] = 0;
 				R[ 2 ][ 1 ] = 0;
 				R[ 2 ][ 2 ] = 1;
-				break;
-			default:
-				break;
+			}
+			else
+			{
+				switch ( ElephantActionStateManager.INSTANCE.getAxis() )
+				{
+				case X:
+					R[ 0 ][ 0 ] = 1;
+					R[ 0 ][ 1 ] = 0;
+					R[ 0 ][ 2 ] = 0;
+					R[ 1 ][ 0 ] = 0;
+					R[ 1 ][ 1 ] = Math.cos( mode.getFactor() );
+					R[ 1 ][ 2 ] = -Math.sin( mode.getFactor() );
+					R[ 2 ][ 0 ] = 0;
+					R[ 2 ][ 1 ] = Math.sin( mode.getFactor() );
+					R[ 2 ][ 2 ] = Math.cos( mode.getFactor() );
+					break;
+				case Y:
+					R[ 0 ][ 0 ] = Math.cos( mode.getFactor() );
+					R[ 0 ][ 1 ] = 0;
+					R[ 0 ][ 2 ] = Math.sin( mode.getFactor() );
+					R[ 1 ][ 0 ] = 0;
+					R[ 1 ][ 1 ] = 1;
+					R[ 1 ][ 2 ] = 0;
+					R[ 2 ][ 0 ] = -Math.sin( mode.getFactor() );
+					R[ 2 ][ 1 ] = 0;
+					R[ 2 ][ 2 ] = Math.cos( mode.getFactor() );
+					break;
+				case Z:
+					R[ 0 ][ 0 ] = Math.cos( mode.getFactor() );
+					R[ 0 ][ 1 ] = -Math.sin( mode.getFactor() );
+					R[ 0 ][ 2 ] = 0;
+					R[ 1 ][ 0 ] = Math.sin( mode.getFactor() );
+					R[ 1 ][ 1 ] = Math.cos( mode.getFactor() );
+					R[ 1 ][ 2 ] = 0;
+					R[ 2 ][ 0 ] = 0;
+					R[ 2 ][ 1 ] = 0;
+					R[ 2 ][ 2 ] = 1;
+					break;
+				default:
+					break;
+				}
 			}
 			final double[][] VR = new double[ 3 ][ 3 ];
 			LinAlgHelpers.mult( R, V, VR );

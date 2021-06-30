@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 
@@ -37,7 +38,7 @@ import bdv.viewer.animate.TextOverlayAnimator;
  * @author Ko Sugawara
  */
 public class SetControlAxisAction extends AbstractElephantAction
-		implements UIActionMixin, ElephantStateManagerMixin
+		implements BdvDataMixin, UIActionMixin, ElephantStateManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -90,8 +91,15 @@ public class SetControlAxisAction extends AbstractElephantAction
 	@Override
 	public void process()
 	{
-		getStateManager().setAxis( axis );
-		showTextOverlayAnimator( "Set Control Axis: " + axis.name(), 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+		if ( is2D() && axis == ControlAxis.Z )
+		{
+			showTextOverlayAnimator( "Invalid control axis " + axis.name() + " for 2D data", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+		}
+		else
+		{
+			getStateManager().setAxis( axis );
+			showTextOverlayAnimator( "Set Control Axis: " + axis.name(), 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+		}
 	}
 
 }

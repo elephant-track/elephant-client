@@ -221,7 +221,8 @@ public class ExportCTCAction extends AbstractElephantAction
 					.add( JSON_KEY_SCALES, scales )
 					.add( JSON_KEY_SPOTS, jsonSpots )
 					.add( JSON_KEY_T_START, timepointStart )
-					.add( JSON_KEY_T_END, timepointEnd );
+					.add( JSON_KEY_T_END, timepointEnd )
+					.add( JSON_KEY_IS_3D, !is2D() );
 
 			final String zipAbsolutePath = Paths.get( dir.getAbsolutePath(), RES_ZIPNAME ).toString();
 			Unirest.post( getEndpointURL( "export/ctc" ) )

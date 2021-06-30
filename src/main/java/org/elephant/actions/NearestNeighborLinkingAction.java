@@ -180,7 +180,8 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_OUTPUT_PREDICTION, getMainSettings().getOutputPrediction() )
 				.add( JSON_KEY_SCALES, scales )
-				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() );
+				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
+				.add( JSON_KEY_IS_3D, !is2D() );;
 		if ( getMainSettings().getPatch() )
 		{
 			jsonRootObject.add( JSON_KEY_PATCH, new JsonArray()

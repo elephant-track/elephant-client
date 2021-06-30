@@ -105,7 +105,8 @@ public class ResetSegModelAction extends AbstractElephantAction
 					.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
 					.add( JSON_KEY_TRAIN_CROP_SIZE, cropSize )
 					.add( JSON_KEY_SEG_MODEL_NAME, getMainSettings().getSegModelName() )
-					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() );
+					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
+					.add( JSON_KEY_IS_3D, !is2D() );
 			Unirest.post( getEndpointURL( ENDPOINT_RESET_SEG_MODEL ) ).body( jsonRootObject.toString() ).asStringAsync( new Callback< String >()
 			{
 

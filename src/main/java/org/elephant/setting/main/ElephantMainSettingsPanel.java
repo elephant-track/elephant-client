@@ -157,6 +157,7 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				intElement( "NN search depth", 0, 100, style::getNNSearchDepth, style::setNNSearchDepth ),
 				intElement( "NN search neighbors", 0, 100, style::getNNSearchNeighbors, style::setNNSearchNeighbors ),
 				booleanElement( "use interpolation for linking", style::getUseInterpolation, style::setUseInterpolation ),
+				booleanElement( "use 2d model", style::getUse2dModel, style::setUse2dModel ),
 
 				separator(),
 
