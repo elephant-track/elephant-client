@@ -27,18 +27,17 @@ public class BdvContextService extends AbstractElephantService implements Contex
 
 	private ContextChooser< Spot > contextChooser;
 
+	private final BdvViewCreatedListener bdvViewCreatedListener;
+
 	/**
 	 * The {@link ContextProvider}s of all currently open BigDataViewer windows.
 	 */
 	private final List< ContextProvider< Spot > > contextProviders = new ArrayList<>();
 
-	public void init( final MamutPluginAppModel pluginAppModel )
+	public BdvContextService()
 	{
-		super.init( pluginAppModel, null );
-
-		contextChooser = new ContextChooser<>( this );
-		contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
-		getWindowManager().bdvViewCreatedListners().add( new BdvViewCreatedListener()
+		super();
+		bdvViewCreatedListener = new BdvViewCreatedListener()
 		{
 
 			@Override
@@ -49,13 +48,21 @@ public class BdvContextService extends AbstractElephantService implements Contex
 				contextChooser.updateContextProviders( contextProviders );
 				contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
 				bdv.onClose( () -> {
-					getWindowManager().bdvViewCreatedListners().remove( this );
 					contextProviders.remove( bdv.getContextProvider() );
 					contextChooser.updateContextProviders( contextProviders );
 					contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
 				} );
 			}
-		} );
+		};
+	}
+
+	public void init( final MamutPluginAppModel pluginAppModel )
+	{
+		super.init( pluginAppModel, null );
+
+		contextChooser = new ContextChooser<>( this );
+		contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
+		getWindowManager().bdvViewCreatedListners().add( bdvViewCreatedListener );
 	}
 
 	public Iterable< Spot > getVisibleVertices( final int timepoint )
