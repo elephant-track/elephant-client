@@ -503,7 +503,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 		final Elephant elephant = new Elephant();
 		final Mastodon mastodon = elephant.new Mastodon();
-		try (final Context context = new Context())
+		final Context context = new Context();
+		try
 		{
 			context.inject( mastodon );
 			mastodon.run();
@@ -518,6 +519,10 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 			{
 				System.out.println( "Loading from resource failed. Start with empty project." );
 			}
+		}
+		finally
+		{
+			context.dispose();
 		}
 	}
 
