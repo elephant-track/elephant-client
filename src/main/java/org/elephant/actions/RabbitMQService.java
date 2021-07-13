@@ -39,7 +39,10 @@ import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.ExceptionHandler;
+import com.rabbitmq.client.TopologyRecoveryException;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 
@@ -59,6 +62,8 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 
 	private final Listeners.List< ElephantStatusListener > rabbitMQStatusListeners;
 
+	private final ExceptionHandler emptyExceptionHandler = new EmptyExceptionHander();
+
 	public RabbitMQService()
 	{
 		super();
@@ -74,7 +79,7 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 				factory.setUsername( getServerSettings().getRabbitMQUsername() );
 				factory.setPassword( getServerSettings().getRabbitMQPassword() );
 				factory.setHost( getServerSettings().getRabbitMQHost() );
-				factory.setRequestedHeartbeat( 0 );
+				factory.setExceptionHandler( emptyExceptionHandler );
 				boolean isAvailable = false;
 				try (final Connection tempConnection = factory.newConnection())
 				{
@@ -89,7 +94,7 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 					closeConnection();
 				}
 				final ElephantStatus status = isAvailable ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE;
-				final String url = "amqp://" + getServerSettings().getRabbitMQHost() + ":5672";
+				final String url = "amqp://" + factory.getHost() + ":" + factory.getPort();
 				rabbitMQStatusListeners.list.forEach( l -> l.statusUpdated( status, url ) );
 				try
 				{
@@ -149,6 +154,43 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 	public Listeners< ElephantStatusListener > rabbitMQStatusListeners()
 	{
 		return rabbitMQStatusListeners;
+	}
+
+	private class EmptyExceptionHander implements ExceptionHandler
+	{
+
+		@Override
+		public void handleUnexpectedConnectionDriverException( Connection conn, Throwable exception )
+		{}
+
+		@Override
+		public void handleReturnListenerException( Channel channel, Throwable exception )
+		{}
+
+		@Override
+		public void handleConfirmListenerException( Channel channel, Throwable exception )
+		{}
+
+		@Override
+		public void handleBlockedListenerException( Connection connection, Throwable exception )
+		{}
+
+		@Override
+		public void handleConsumerException( Channel channel, Throwable exception, Consumer consumer, String consumerTag, String methodName )
+		{}
+
+		@Override
+		public void handleConnectionRecoveryException( Connection conn, Throwable exception )
+		{}
+
+		@Override
+		public void handleChannelRecoveryException( Channel ch, Throwable exception )
+		{}
+
+		@Override
+		public void handleTopologyRecoveryException( Connection conn, Channel ch, TopologyRecoveryException exception )
+		{}
+
 	}
 
 }

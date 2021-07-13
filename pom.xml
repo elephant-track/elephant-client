@@ -26,6 +26,15 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-swing</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-transcoder</artifactId>
+			<version>${batik.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.eclipsesource.minimal-json</groupId>
 			<artifactId>minimal-json</artifactId>
 			<version>0.9.5</version>
@@ -63,14 +72,14 @@
 			<artifactId>scijava-ui-swing</artifactId>
 		</dependency>
 		<dependency>
-				<groupId>org.scijava</groupId>
-				<artifactId>scijava-ui-awt</artifactId>
-			</dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-ui-awt</artifactId>
+		</dependency>
 		<dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>4.5.1</version>
-        </dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.5.1</version>
+		</dependency>
 		<!-- ImgLib2 dependencies -->
 		<dependency>
 			<groupId>net.imglib2</groupId>

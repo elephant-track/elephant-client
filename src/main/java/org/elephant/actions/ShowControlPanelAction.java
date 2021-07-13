@@ -15,7 +15,7 @@ public class ShowControlPanelAction extends AbstractElephantAction implements El
 
 	private static final String MENU_TEXT = "Control Panel";
 
-	private final ControlPanelDialog dialog = new ControlPanelDialog();
+	private static final ControlPanelDialog dialog = new ControlPanelDialog();
 
 	@Override
 	public String getMenuText()
@@ -26,6 +26,7 @@ public class ShowControlPanelAction extends AbstractElephantAction implements El
 	public ShowControlPanelAction()
 	{
 		super( NAME );
+		dialog.setVisible( true );
 	}
 
 	@Override
