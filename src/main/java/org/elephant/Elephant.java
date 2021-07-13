@@ -53,6 +53,8 @@ import org.elephant.actions.CountDivisionsAction;
 import org.elephant.actions.CountDivisionsAction.CountDivisionsActionMode;
 import org.elephant.actions.ElephantActionStateManager;
 import org.elephant.actions.ElephantOverlayService;
+import org.elephant.actions.ElephantStatusListener;
+import org.elephant.actions.ElephantStatusService;
 import org.elephant.actions.ElephantUndoActions;
 import org.elephant.actions.ExportCTCAction;
 import org.elephant.actions.GraphListenerService;
@@ -83,6 +85,7 @@ import org.elephant.actions.RotateEllipsoidAction.RotateEllipsoidActionMode;
 import org.elephant.actions.SetControlAxisAction;
 import org.elephant.actions.SetControlAxisAction.ControlAxis;
 import org.elephant.actions.SetUpTagSetsService;
+import org.elephant.actions.ShowControlPanelAction;
 import org.elephant.actions.ShowLogWindowAction;
 import org.elephant.actions.ShowPreferencesAction;
 import org.elephant.actions.TagDividingCellAction;
@@ -150,6 +153,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 	private final AbstractElephantAction nnLinkingAction;
 
 	private final AbstractElephantAction trainFlowAction;
+
+	private final AbstractElephantAction showControlPanelAction;
 
 	private final AbstractElephantAction showPreferencesAction;
 
@@ -233,12 +238,15 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final BdvContextService bdvContextService;
 
+	private final ElephantStatusService elephantStatusService;
+
 	public Elephant()
 	{
 		final LoggerService loggerService = new LoggerService();
 		loggerService.setup();
 		mouseMotionService = new BdvViewMouseMotionService();
 		bdvContextService = new BdvContextService();
+		elephantStatusService = new ElephantStatusService();
 		backTrackAction = new BackTrackAction();
 		pluginActions.add( backTrackAction );
 		predictSpotsAction = new PredictSpotsAction( PredictSpotsActionMode.ENTIRE, mouseMotionService );
@@ -271,6 +279,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( abortProcessingAction );
 		showLogWindowAction = new ShowLogWindowAction();
 		pluginActions.add( showLogWindowAction );
+		showControlPanelAction = new ShowControlPanelAction();
+		pluginActions.add( showControlPanelAction );
 		showPreferencesAction = new ShowPreferencesAction();
 		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( loggerService );
 		pluginActions.add( showPreferencesAction );
@@ -364,10 +374,15 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		mouseMotionService.init( pluginAppModel );
 		// BdvContextService
 		bdvContextService.init( pluginAppModel );
+		// ElephantStatusService
+		elephantStatusService.elephantServerStatusListeners().add( ( ElephantStatusListener ) showControlPanelAction );
+		elephantStatusService.init( pluginAppModel ).start();
 		// ElephantOverlayService
 		new ElephantOverlayService( pluginAppModel );
 		// RabbitMQService
 		final RabbitMQService rabbitMQService = new RabbitMQService( pluginAppModel );
+		rabbitMQService.rabbitMQStatusListeners().add( ( ElephantStatusListener ) showControlPanelAction );
+		rabbitMQService.startStatusDaemon();
 		ElephantActionStateManager.INSTANCE.livemodeListeners().add( rabbitMQService );
 		// UnirestService
 		new UnirestService();
@@ -432,6 +447,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( countDivisionsTrackwiseAction.name() ) ),
 								item( abortProcessingAction.name() ),
 								item( showLogWindowAction.name() ),
+								item( showControlPanelAction.name() ),
 								item( showPreferencesAction.name() ) ) ) );
 	}
 

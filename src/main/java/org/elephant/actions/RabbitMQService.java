@@ -32,9 +32,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.ElephantStatusService.ElephantStatus;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.views.bdv.ViewerFrameMamut;
+import org.scijava.listeners.Listeners;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -62,6 +65,8 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 
 	private List< Runnable > callbackListFailed = Collections.emptyList();
 
+	private final Listeners.List< ElephantStatusListener > rabbitMQStatusListeners;
+
 	public RabbitMQService( final MamutPluginAppModel pluginAppModel )
 	{
 		super();
@@ -77,6 +82,33 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 			pluginAppModel.getWindowManager().forEachBdvView( bdv -> ( ( ViewerFrameMamut ) bdv.getFrame() ).getViewerPanel().addOverlayAnimator( overlayAnimator ) );
 		} );
 		setCallbackListFailed( callbackListFailed );
+		rabbitMQStatusListeners = new Listeners.SynchronizedList<>();
+	}
+
+	public void startStatusDaemon()
+	{
+		new Thread( () -> {
+			while ( true )
+			{
+				final ConnectionFactory factory = new ConnectionFactory();
+				factory.setUsername( getServerSettings().getRabbitMQUsername() );
+				factory.setPassword( getServerSettings().getRabbitMQPassword() );
+				factory.setHost( getServerSettings().getRabbitMQHost() );
+				factory.setRequestedHeartbeat( 0 );
+				boolean isAvailable = false;
+				try (final Connection tempConnection = factory.newConnection())
+				{
+					isAvailable = true;
+				}
+				catch ( IOException | TimeoutException e )
+				{
+					// Do nothing
+				}
+				final ElephantStatus status = isAvailable ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE;
+				final String url = "amqp://" + getServerSettings().getRabbitMQHost() + ":5672";
+				rabbitMQStatusListeners.list.forEach( l -> l.statusUpdated( status, url ) );
+			}
+		} ).start();
 	}
 
 	private void setCallbackListSucceeded( final List< Runnable > callbackListSucceeded )
@@ -109,7 +141,7 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 		catch ( IOException | TimeoutException e )
 		{
 			callbackListFailed.forEach( Runnable::run );
-			e.printStackTrace();
+			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 	}
 
@@ -144,6 +176,11 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 			closeConnection();
 		}
 
+	}
+
+	public Listeners< ElephantStatusListener > rabbitMQStatusListeners()
+	{
+		return rabbitMQStatusListeners;
 	}
 
 }
