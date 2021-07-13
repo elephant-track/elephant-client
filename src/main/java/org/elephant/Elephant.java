@@ -376,14 +376,15 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		bdvContextService.init( pluginAppModel );
 		// ElephantStatusService
 		elephantStatusService.elephantServerStatusListeners().add( ( ElephantStatusListener ) showControlPanelAction );
-		elephantStatusService.init( pluginAppModel ).start();
+		elephantStatusService.init( pluginAppModel );
+		elephantStatusService.start();
 		// ElephantOverlayService
 		new ElephantOverlayService( pluginAppModel );
 		// RabbitMQService
-		final RabbitMQService rabbitMQService = new RabbitMQService( pluginAppModel );
+		final RabbitMQService rabbitMQService = new RabbitMQService();
+		rabbitMQService.init( pluginAppModel );
 		rabbitMQService.rabbitMQStatusListeners().add( ( ElephantStatusListener ) showControlPanelAction );
-		rabbitMQService.startStatusDaemon();
-		ElephantActionStateManager.INSTANCE.livemodeListeners().add( rabbitMQService );
+		rabbitMQService.start();
 		// UnirestService
 		new UnirestService();
 		// UpdateTrainingParameters

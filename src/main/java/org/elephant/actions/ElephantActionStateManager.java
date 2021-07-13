@@ -27,7 +27,6 @@
 package org.elephant.actions;
 
 import org.elephant.actions.SetControlAxisAction.ControlAxis;
-import org.scijava.listeners.Listeners;
 
 /**
  * A singleton instance for managing the state of application.
@@ -48,24 +47,6 @@ public enum ElephantActionStateManager
 
 	private ControlAxis axis = ControlAxis.X;
 
-	private final Listeners.List< LivemodeListener > livemodeListeners;
-
-	private ElephantActionStateManager()
-	{
-		livemodeListeners = new Listeners.SynchronizedList<>();
-	}
-
-	private void notifyListeners( final boolean isLivemode )
-	{
-		for ( final LivemodeListener l : livemodeListeners.list )
-			l.livemodeCahnged( isLivemode );
-	}
-
-	public Listeners< LivemodeListener > livemodeListeners()
-	{
-		return livemodeListeners;
-	}
-
 	public synchronized boolean isLivemode()
 	{
 		return isLivemode;
@@ -76,7 +57,6 @@ public enum ElephantActionStateManager
 		if ( this.isLivemode != isLivemode )
 		{
 			this.isLivemode = isLivemode;
-			notifyListeners( isLivemode );
 		}
 	}
 

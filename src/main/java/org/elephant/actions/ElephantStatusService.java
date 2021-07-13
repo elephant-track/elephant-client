@@ -7,7 +7,6 @@ import java.net.URL;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.scijava.listeners.Listeners;
 
 public class ElephantStatusService extends AbstractElephantService implements ElephantSettingsMixin
@@ -20,12 +19,6 @@ public class ElephantStatusService extends AbstractElephantService implements El
 	public ElephantStatusService()
 	{
 		elephantServerStatusListeners = new Listeners.SynchronizedList<>();
-	}
-
-	public ElephantStatusService init( MamutPluginAppModel pluginAppModel )
-	{
-		super.init( pluginAppModel, null );
-		return this;
 	}
 
 	public void start()

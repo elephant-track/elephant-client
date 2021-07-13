@@ -96,6 +96,11 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 		return groupHandle;
 	}
 
+	public void init( final MamutPluginAppModel pluginAppModel )
+	{
+		init( pluginAppModel, null );
+	}
+
 	public void init( final MamutPluginAppModel pluginAppModel, final GroupHandle groupHandle )
 	{
 		this.pluginAppModel = pluginAppModel;

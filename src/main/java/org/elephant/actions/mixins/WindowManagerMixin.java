@@ -32,6 +32,10 @@ import java.util.function.Consumer;
 import org.mastodon.mamut.MamutViewBdv;
 import org.mastodon.mamut.WindowManager;
 import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.views.bdv.ViewerFrameMamut;
+
+import bdv.viewer.animate.TextOverlayAnimator;
+import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 
 /**
  * Handle @{@link WindowManager} and {@link MamutViewBdv}.
@@ -64,6 +68,12 @@ public interface WindowManagerMixin extends ElephantActionMixin
 	default void removeBdvCreatedListener( final BdvViewCreatedListener listener )
 	{
 		getWindowManager().bdvViewCreatedListners().remove( listener );
+	}
+
+	default void addTextOverlayAnimator( final String text, final long duration, final TextPosition position )
+	{
+		final TextOverlayAnimator overlayAnimator = new TextOverlayAnimator( text, 3000, TextPosition.CENTER );
+		forEachBdvView( bdv -> ( ( ViewerFrameMamut ) bdv.getFrame() ).getViewerPanel().addOverlayAnimator( overlayAnimator ) );
 	}
 
 }

@@ -27,24 +27,20 @@
 package org.elephant.actions;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.views.bdv.ViewerFrameMamut;
+import org.elephant.actions.mixins.WindowManagerMixin;
 import org.scijava.listeners.Listeners;
 
+import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 
 /**
@@ -52,7 +48,7 @@ import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
  * 
  * @author Ko Sugawara
  */
-public class RabbitMQService extends AbstractElephantService implements LivemodeListener, ElephantSettingsMixin
+public class RabbitMQService extends AbstractElephantService implements ElephantSettingsMixin, WindowManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -61,31 +57,15 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 
 	private Connection connection;
 
-	private List< Runnable > callbackListSucceeded = Collections.emptyList();
-
-	private List< Runnable > callbackListFailed = Collections.emptyList();
-
 	private final Listeners.List< ElephantStatusListener > rabbitMQStatusListeners;
 
-	public RabbitMQService( final MamutPluginAppModel pluginAppModel )
+	public RabbitMQService()
 	{
 		super();
-		final List< Runnable > callbackListSucceeded = new ArrayList<>();
-		callbackListSucceeded.add( () -> {
-			final TextOverlayAnimator overlayAnimator = new TextOverlayAnimator( "Model updated", 3000, TextPosition.CENTER );
-			pluginAppModel.getWindowManager().forEachBdvView( bdv -> ( ( ViewerFrameMamut ) bdv.getFrame() ).getViewerPanel().addOverlayAnimator( overlayAnimator ) );
-		} );
-		setCallbackListSucceeded( callbackListSucceeded );
-		final List< Runnable > callbackListFailed = new ArrayList<>();
-		callbackListFailed.add( () -> {
-			final TextOverlayAnimator overlayAnimator = new TextOverlayAnimator( "The server is not responding", 3000, TextPosition.CENTER );
-			pluginAppModel.getWindowManager().forEachBdvView( bdv -> ( ( ViewerFrameMamut ) bdv.getFrame() ).getViewerPanel().addOverlayAnimator( overlayAnimator ) );
-		} );
-		setCallbackListFailed( callbackListFailed );
 		rabbitMQStatusListeners = new Listeners.SynchronizedList<>();
 	}
 
-	public void startStatusDaemon()
+	public void start()
 	{
 		new Thread( () -> {
 			while ( true )
@@ -99,29 +79,31 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 				try (final Connection tempConnection = factory.newConnection())
 				{
 					isAvailable = true;
+					if ( connection == null )
+					{
+						openConnection();
+					}
 				}
 				catch ( IOException | TimeoutException e )
 				{
-					// Do nothing
+					closeConnection();
 				}
 				final ElephantStatus status = isAvailable ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE;
 				final String url = "amqp://" + getServerSettings().getRabbitMQHost() + ":5672";
 				rabbitMQStatusListeners.list.forEach( l -> l.statusUpdated( status, url ) );
+				try
+				{
+					Thread.sleep( 1000 );
+				}
+				catch ( final InterruptedException e )
+				{
+					getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				}
 			}
 		} ).start();
 	}
 
-	private void setCallbackListSucceeded( final List< Runnable > callbackListSucceeded )
-	{
-		this.callbackListSucceeded = callbackListSucceeded;
-	}
-
-	private void setCallbackListFailed( final List< Runnable > callbackListFailed )
-	{
-		this.callbackListFailed = callbackListFailed;
-	}
-
-	private void openConnection()
+	private synchronized void openConnection()
 	{
 		final ConnectionFactory factory = new ConnectionFactory();
 		factory.setUsername( getServerSettings().getRabbitMQUsername() );
@@ -134,18 +116,18 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 			final Channel channel = connection.createChannel();
 			channel.queueDeclare( RABBITMQ_QUEUE_NAME, false, false, false, null );
 			final DeliverCallback deliverCallback = ( consumerTag, delivery ) -> {
-				callbackListSucceeded.forEach( Runnable::run );
+				final String message = new String( delivery.getBody(), "UTF-8" );
+				addTextOverlayAnimator( message, 3000, TextPosition.CENTER );
 			};
 			channel.basicConsume( RABBITMQ_QUEUE_NAME, true, deliverCallback, consumerTag -> {} );
 		}
 		catch ( IOException | TimeoutException e )
 		{
-			callbackListFailed.forEach( Runnable::run );
 			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 	}
 
-	public void closeConnection()
+	private synchronized void closeConnection()
 	{
 		if ( connection != null )
 		{
@@ -153,29 +135,15 @@ public class RabbitMQService extends AbstractElephantService implements Livemode
 			{
 				connection.close();
 			}
-			catch ( final IOException e )
+			catch ( IOException | AlreadyClosedException e )
 			{
-				e.printStackTrace();
+				// Do nothing
 			}
 			finally
 			{
 				connection = null;
 			}
 		}
-	}
-
-	@Override
-	public void livemodeCahnged( boolean isLivemode )
-	{
-		if ( isLivemode )
-		{
-			openConnection();
-		}
-		else
-		{
-			closeConnection();
-		}
-
 	}
 
 	public Listeners< ElephantStatusListener > rabbitMQStatusListeners()
