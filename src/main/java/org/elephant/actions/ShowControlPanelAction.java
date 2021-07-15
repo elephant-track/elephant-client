@@ -1,13 +1,14 @@
 package org.elephant.actions;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
 
-public class ShowControlPanelAction extends AbstractElephantAction implements ElephantStatusListener
+public class ShowControlPanelAction extends AbstractElephantAction implements ElephantServerStatusListener, ElephantGpuStatusListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -53,6 +54,12 @@ public class ShowControlPanelAction extends AbstractElephantAction implements El
 		{
 			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
+	}
+
+	@Override
+	public void statusUpdated( Collection< GPU > gpus )
+	{
+		dialog.updateGpuTableModel( gpus );
 	}
 
 }

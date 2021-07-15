@@ -114,6 +114,8 @@ public interface ElephantConstantsMixin
 
 	public static final String ENDPOINT_EXPORT_CTC = "export/ctc";
 
+	public static final String ENDPOINT_GPUS = "gpus";
+
 	/**
 	 * REST API JSON keys
 	 */

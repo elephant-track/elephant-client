@@ -1,6 +1,7 @@
 package org.elephant.actions;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collection;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -52,9 +54,47 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 
 	private final JButton btnColab = new JButton( "" );
 
+	private final JScrollPane scrollPane = new JScrollPane();
+
 	private final JTable gpuTable = new JTable();
 
-	private final JScrollPane scrollPane = new JScrollPane();
+	private static final String[] DEFAULT_ROW_VALUES = new String[] { "-", "-", "-" };
+
+	private final GpuTableModel gpuTableModel = new GpuTableModel(
+			new String[][] { DEFAULT_ROW_VALUES },
+			new String[] {
+					"GPU ID", "Name", "Memory-Usage"
+			} );
+
+	private class GpuTableModel extends DefaultTableModel
+	{
+		private static final long serialVersionUID = 1L;
+
+		private final Class< ? >[] columnTypes = new Class[] {
+				String.class, String.class, String.class
+		};
+
+		public GpuTableModel( Object[][] data, Object[] columnNames )
+		{
+			super( data, columnNames );
+		}
+
+		@Override
+		public Class< ? > getColumnClass( int columnIndex )
+		{
+			return columnTypes[ columnIndex ];
+		}
+
+		boolean[] columnEditables = new boolean[] {
+				false, false, false
+		};
+
+		@Override
+		public boolean isCellEditable( int row, int column )
+		{
+			return columnEditables[ column ];
+		}
+	}
 
 	public ControlPanelDialog()
 	{
@@ -132,36 +172,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			gpuTable.setEnabled( false );
 			gpuTable.setBackground( UIManager.getColor( "control" ) );
 			gpuTable.setRowSelectionAllowed( false );
-			gpuTable.setModel( new DefaultTableModel(
-					new Object[][] {
-							{ "-", "-", "-" },
-					},
-					new String[] {
-							"GPU", "Name", "Memory-Usage"
-					} )
-			{
-				private static final long serialVersionUID = 1L;
-
-				Class< ? >[] columnTypes = new Class[] {
-						String.class, String.class, String.class
-				};
-
-				@Override
-				public Class< ? > getColumnClass( int columnIndex )
-				{
-					return columnTypes[ columnIndex ];
-				}
-
-				boolean[] columnEditables = new boolean[] {
-						false, false, false
-				};
-
-				@Override
-				public boolean isCellEditable( int row, int column )
-				{
-					return columnEditables[ column ];
-				}
-			} );
+			gpuTable.setModel( gpuTableModel );
 			scrollPane.setBackground( UIManager.getColor( "control" ) );
 			scrollPane.setViewportView( gpuTable );
 			final GridBagConstraints gbc_scrollPane = new GridBagConstraints();
@@ -176,11 +187,13 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 
 		{
 			final GridBagConstraints gbc_btnHelp = new GridBagConstraints();
+			btnHelp.setCursor( new Cursor( Cursor.HAND_CURSOR ) );
 			gbc_btnHelp.insets = new Insets( 0, 0, 0, 5 );
 			gbc_btnHelp.gridx = 0;
 			gbc_btnHelp.gridy = 3;
 			btnHelp.addActionListener( new ActionListener()
 			{
+
 				@Override
 				public void actionPerformed( ActionEvent event )
 				{
@@ -194,8 +207,10 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 					}
 				}
 			} );
+
 			getContentPane().add( btnHelp, gbc_btnHelp );
 		}
+
 		{
 			SVGIcon svgIcon = null;
 			try
@@ -206,8 +221,10 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			{
 				e.printStackTrace();
 			}
+			btnColab.setCursor( new Cursor( Cursor.HAND_CURSOR ) );
 			btnColab.addActionListener( new ActionListener()
 			{
+
 				@Override
 				public void actionPerformed( ActionEvent event )
 				{
@@ -233,10 +250,12 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			gbc_btnColab.weightx = 1.0;
 			gbc_btnColab.gridx = 2;
 			gbc_btnColab.gridy = 3;
+
 			getContentPane().add( btnColab, gbc_btnColab );
 		}
 
 		pack();
+
 		setLocationRelativeTo( null );
 	}
 
@@ -256,7 +275,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 
 	public ImageIcon getImageIcon( final ElephantStatus status ) throws IOException
 	{
-		String iconPath = null;
+		String iconPath = "/org/elephant/bullet_yellow.png";
 		switch ( status )
 		{
 		case AVAILABLE:
@@ -270,6 +289,26 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 		}
 		final Image img = ImageIO.read( getClass().getResource( iconPath ) );
 		return new ImageIcon( img );
+	}
+
+	public void updateGpuTableModel( final Collection< GPU > gpus )
+	{
+		// Clear all first
+		gpuTableModel.setRowCount( 0 );
+		// Add GPU data
+		for ( final GPU gpu : gpus )
+		{
+			gpuTableModel.addRow( new String[] {
+					String.valueOf( gpu.getId() ),
+					gpu.getName(),
+					String.format( "%.0fMiB / %.0fMiB", gpu.getUsedMemory(), gpu.getTotalMemory() )
+			} );
+		}
+		if ( gpuTableModel.getRowCount() == 0 )
+		{
+			gpuTableModel.addRow( DEFAULT_ROW_VALUES );
+		}
+		gpuTableModel.fireTableDataChanged();
 	}
 
 	class SimpleHeaderRenderer extends JLabel implements TableCellRenderer

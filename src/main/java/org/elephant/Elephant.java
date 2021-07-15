@@ -52,8 +52,9 @@ import org.elephant.actions.ChangeEllipsoidSizeAction.ChangeEllipsoidSizeActionM
 import org.elephant.actions.CountDivisionsAction;
 import org.elephant.actions.CountDivisionsAction.CountDivisionsActionMode;
 import org.elephant.actions.ElephantActionStateManager;
+import org.elephant.actions.ElephantGpuStatusListener;
 import org.elephant.actions.ElephantOverlayService;
-import org.elephant.actions.ElephantStatusListener;
+import org.elephant.actions.ElephantServerStatusListener;
 import org.elephant.actions.ElephantStatusService;
 import org.elephant.actions.ElephantUndoActions;
 import org.elephant.actions.ExportCTCAction;
@@ -375,7 +376,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		// BdvContextService
 		bdvContextService.init( pluginAppModel );
 		// ElephantStatusService
-		elephantStatusService.elephantServerStatusListeners().add( ( ElephantStatusListener ) showControlPanelAction );
+		elephantStatusService.elephantServerStatusListeners().add( ( ElephantServerStatusListener ) showControlPanelAction );
+		elephantStatusService.elephantGpuStatusListeners().add( ( ElephantGpuStatusListener ) showControlPanelAction );
 		elephantStatusService.init( pluginAppModel );
 		elephantStatusService.start();
 		// ElephantOverlayService
@@ -383,7 +385,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		// RabbitMQService
 		final RabbitMQService rabbitMQService = new RabbitMQService();
 		rabbitMQService.init( pluginAppModel );
-		rabbitMQService.rabbitMQStatusListeners().add( ( ElephantStatusListener ) showControlPanelAction );
+		rabbitMQService.rabbitMQStatusListeners().add( ( ElephantServerStatusListener ) showControlPanelAction );
 		rabbitMQService.start();
 		// UnirestService
 		new UnirestService();

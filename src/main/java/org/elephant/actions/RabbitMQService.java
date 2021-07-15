@@ -60,7 +60,7 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 
 	private Connection connection;
 
-	private final Listeners.List< ElephantStatusListener > rabbitMQStatusListeners;
+	private final Listeners.List< ElephantServerStatusListener > rabbitMQStatusListeners;
 
 	private final ExceptionHandler emptyExceptionHandler = new EmptyExceptionHander();
 
@@ -151,7 +151,7 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 		}
 	}
 
-	public Listeners< ElephantStatusListener > rabbitMQStatusListeners()
+	public Listeners< ElephantServerStatusListener > rabbitMQStatusListeners()
 	{
 		return rabbitMQStatusListeners;
 	}
