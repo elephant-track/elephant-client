@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -231,7 +232,7 @@ public class TrainSegAction extends AbstractElephantAction
 					@Override
 					public void completed( final HttpResponse< String > response )
 					{
-						if ( response.getStatus() == 200 )
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
 							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
 							final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
@@ -241,7 +242,7 @@ public class TrainSegAction extends AbstractElephantAction
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == 500 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );

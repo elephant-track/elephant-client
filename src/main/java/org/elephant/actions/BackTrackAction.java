@@ -26,6 +26,8 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
@@ -146,7 +148,7 @@ public class BackTrackAction extends AbstractElephantAction
 						@Override
 						public void completed( final HttpResponse< String > response )
 						{
-							if ( response.getStatus() == 200 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
 								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
 								final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
@@ -204,7 +206,7 @@ public class BackTrackAction extends AbstractElephantAction
 							else
 							{
 								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == 500 )
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 								{
 									sb.append( ": " );
 									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );

@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -241,7 +242,7 @@ public class ExportCTCAction extends AbstractElephantAction
 						@Override
 						public void completed( final HttpResponse< File > response )
 						{
-							if ( response.getStatus() == 200 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
 								try
 								{
@@ -257,7 +258,7 @@ public class ExportCTCAction extends AbstractElephantAction
 								}
 								showTextOverlayAnimator( "completed", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 							}
-							else if ( response.getStatus() == 204 )
+							else if ( response.getStatus() == HttpURLConnection.HTTP_NO_CONTENT )
 							{
 								showTextOverlayAnimator( "cancelled", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 							}

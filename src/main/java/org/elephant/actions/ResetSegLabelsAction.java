@@ -27,6 +27,7 @@
 package org.elephant.actions;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JOptionPane;
@@ -107,14 +108,14 @@ public class ResetSegLabelsAction extends AbstractElephantAction
 						@Override
 						public void completed( final HttpResponse< String > response )
 						{
-							if ( response.getStatus() == 200 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
 								showTextOverlayAnimator( "Segmentation labels are reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 							}
 							else
 							{
 								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == 500 )
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 								{
 									sb.append( ": " );
 									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );

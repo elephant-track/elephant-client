@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -217,7 +218,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 					@Override
 					public void completed( final HttpResponse< String > response )
 					{
-						if ( response.getStatus() == 200 )
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
 							final String body = response.getBody();
 							final RefCollection< Spot > spots = getGraph().vertices();
@@ -239,7 +240,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == 500 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
