@@ -85,12 +85,12 @@ public class RemoveVisibleSpotsAction extends AbstractElephantAction
 		if ( showContextChooserDialog() )
 		{
 			final int timepointEnd = getCurrentTimepoint( 0 );
-			final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+			final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 			final int timepointStart = Math.max( 0, timepointEnd - timeRange + 1 );
 			final List< Integer > timepoints = IntStream.rangeClosed( timepointStart, timepointEnd ).boxed().collect( Collectors.toList() );
 
 			getGraph().getLock().writeLock().lock();
-			getStateManager().setWriting( true );
+			getActionStateManager().setWriting( true );
 			try
 			{
 				for ( final int t : timepoints )
@@ -109,7 +109,7 @@ public class RemoveVisibleSpotsAction extends AbstractElephantAction
 			}
 			finally
 			{
-				getStateManager().setWriting( false );
+				getActionStateManager().setWriting( false );
 				getModel().setUndoPoint();
 				getGraph().getLock().writeLock().unlock();
 				notifyGraphChanged();

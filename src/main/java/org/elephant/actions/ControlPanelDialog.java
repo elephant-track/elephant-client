@@ -36,13 +36,17 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 {
 	private static final long serialVersionUID = 1L;
 
-	final JLabel lblElephantServerStatus = new JLabel( "Checking..." );
+	private final JLabel lblElephantServerStatus = new JLabel( "Checking..." );
 
-	final JLabel lblElephantServerAddress = new JLabel( "http://localhost:8080" );
+	private final JLabel lblElephantServerAddress = new JLabel( "http://localhost:8080" );
 
-	final JLabel lblRabbitMQStatus = new JLabel( "Checking..." );
+	private final JLabel lblElephantServerErrorMessage = new JLabel( ElephantServerStateManager.NO_ERROR_MESSAGE );
 
-	final JLabel lblRabbitMQAddress = new JLabel( "amqp://localhost:5672" );
+	private final JLabel lblRabbitMQStatus = new JLabel( "Checking..." );
+
+	private final JLabel lblRabbitMQAddress = new JLabel( "amqp://localhost:5672" );
+
+	private final JLabel lblRabbitMQErrorMessage = new JLabel( ElephantServerStateManager.NO_ERROR_MESSAGE );
 
 	private final static String COLAB_SVG_URL = "https://colab.research.google.com/assets/colab-badge.svg";
 
@@ -101,9 +105,9 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 		setTitle( "ELEPHANT Control Panel" );
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 1, 1, 1 };
-		gridBagLayout.rowHeights = new int[] { 1, 1, 1 };
+		gridBagLayout.rowHeights = new int[] { 1, 1, 1, 1, 1, 1 };
 		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 1.0 };
-		gridBagLayout.rowWeights = new double[] { 1.0, 1.0, 1.0 };
+		gridBagLayout.rowWeights = new double[] { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 		getContentPane().setLayout( gridBagLayout );
 
 		{
@@ -137,12 +141,23 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 		}
 
 		{
+			final GridBagConstraints gbc_lblElephantServerErrorMessage = new GridBagConstraints();
+			gbc_lblElephantServerErrorMessage.weighty = 1.0;
+			gbc_lblElephantServerErrorMessage.weightx = 1.0;
+			gbc_lblElephantServerErrorMessage.gridwidth = 2;
+			gbc_lblElephantServerErrorMessage.insets = new Insets( 0, 5, 5, 5 );
+			gbc_lblElephantServerErrorMessage.gridx = 1;
+			gbc_lblElephantServerErrorMessage.gridy = 1;
+			getContentPane().add( lblElephantServerErrorMessage, gbc_lblElephantServerErrorMessage );
+		}
+
+		{
 			final JLabel lblRabbitMQ = new JLabel( "RabbitMQ" );
 			final GridBagConstraints gbc_lblRabbitMQ = new GridBagConstraints();
 			gbc_lblRabbitMQ.weighty = 1.0;
 			gbc_lblRabbitMQ.insets = new Insets( 5, 5, 5, 5 );
 			gbc_lblRabbitMQ.gridx = 0;
-			gbc_lblRabbitMQ.gridy = 1;
+			gbc_lblRabbitMQ.gridy = 2;
 			getContentPane().add( lblRabbitMQ, gbc_lblRabbitMQ );
 		}
 
@@ -150,7 +165,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			final GridBagConstraints gbc_lblRabbitMQStatus = new GridBagConstraints();
 			gbc_lblRabbitMQStatus.insets = new Insets( 5, 5, 5, 5 );
 			gbc_lblRabbitMQStatus.gridx = 1;
-			gbc_lblRabbitMQStatus.gridy = 1;
+			gbc_lblRabbitMQStatus.gridy = 2;
 			getContentPane().add( lblRabbitMQStatus, gbc_lblRabbitMQStatus );
 		}
 
@@ -160,11 +175,23 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			gbc_lblRabbitMQAddress.weighty = 1.0;
 			gbc_lblRabbitMQAddress.weightx = 1.0;
 			gbc_lblRabbitMQAddress.gridx = 2;
-			gbc_lblRabbitMQAddress.gridy = 1;
+			gbc_lblRabbitMQAddress.gridy = 2;
 			getContentPane().add( lblRabbitMQAddress, gbc_lblRabbitMQAddress );
 		}
+
+		{
+			final GridBagConstraints gbc_lblRabbitMQServerErrorMessage = new GridBagConstraints();
+			gbc_lblRabbitMQServerErrorMessage.weightx = 1.0;
+			gbc_lblRabbitMQServerErrorMessage.gridwidth = 2;
+			gbc_lblRabbitMQServerErrorMessage.insets = new Insets( 0, 5, 5, 5 );
+			gbc_lblRabbitMQServerErrorMessage.gridx = 1;
+			gbc_lblRabbitMQServerErrorMessage.gridy = 3;
+			getContentPane().add( lblRabbitMQErrorMessage, gbc_lblRabbitMQServerErrorMessage );
+		}
+
 		{
 			gpuTable.getTableHeader().setDefaultRenderer( new SimpleHeaderRenderer() );
+
 			gpuTable.setPreferredScrollableViewportSize(
 					new Dimension(
 							gpuTable.getPreferredSize().width,
@@ -181,7 +208,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			gbc_scrollPane.gridwidth = 3;
 			gbc_scrollPane.insets = new Insets( 0, 0, 5, 0 );
 			gbc_scrollPane.gridx = 0;
-			gbc_scrollPane.gridy = 2;
+			gbc_scrollPane.gridy = 4;
 			getContentPane().add( scrollPane, gbc_scrollPane );
 		}
 
@@ -190,7 +217,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			btnHelp.setCursor( new Cursor( Cursor.HAND_CURSOR ) );
 			gbc_btnHelp.insets = new Insets( 0, 0, 0, 5 );
 			gbc_btnHelp.gridx = 0;
-			gbc_btnHelp.gridy = 3;
+			gbc_btnHelp.gridy = 5;
 			btnHelp.addActionListener( new ActionListener()
 			{
 
@@ -249,33 +276,35 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			gbc_btnColab.weighty = 1.0;
 			gbc_btnColab.weightx = 1.0;
 			gbc_btnColab.gridx = 2;
-			gbc_btnColab.gridy = 3;
+			gbc_btnColab.gridy = 5;
 
 			getContentPane().add( btnColab, gbc_btnColab );
 		}
 
-		pack();
+		setSize( 500, 300 );
 
 		setLocationRelativeTo( null );
 	}
 
-	public void updateElephantServerStatus( final ElephantStatus status, final String url ) throws IOException
+	public void updateElephantServerStatus( final ElephantStatus status, final String url, final String errorMessage ) throws IOException
 	{
 		lblElephantServerStatus.setIcon( getImageIcon( status ) );
 		lblElephantServerStatus.setText( StringUtils.capitalize( status.toString().toLowerCase() ) );
 		lblElephantServerAddress.setText( url );
+		lblElephantServerErrorMessage.setText( errorMessage );
 	}
 
-	public void updateRabbitMQStatus( final ElephantStatus status, final String url ) throws IOException
+	public void updateRabbitMQStatus( final ElephantStatus status, final String url, final String errorMessage ) throws IOException
 	{
 		lblRabbitMQStatus.setIcon( getImageIcon( status ) );
 		lblRabbitMQStatus.setText( StringUtils.capitalize( status.toString().toLowerCase() ) );
 		lblRabbitMQAddress.setText( url );
+		lblRabbitMQErrorMessage.setText( errorMessage );
 	}
 
 	public ImageIcon getImageIcon( final ElephantStatus status ) throws IOException
 	{
-		String iconPath = "/org/elephant/bullet_yellow.png";
+		String iconPath = "/org/elephant/bullet_gray.png";
 		switch ( status )
 		{
 		case AVAILABLE:
@@ -283,6 +312,9 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 			break;
 		case UNAVAILABLE:
 			iconPath = "/org/elephant/bullet_red.png";
+			break;
+		case WARNING:
+			iconPath = "/org/elephant/bullet_yellow.png";
 			break;
 		default:
 			break;

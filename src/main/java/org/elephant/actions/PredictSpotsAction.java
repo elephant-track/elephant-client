@@ -142,7 +142,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 	public void process()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
-		final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 0, timepointEnd - ( timeRange - 1 ) );
 		ElephantActionStateManager.INSTANCE.setAborted( false );
 		final VoxelDimensions voxelSize = getVoxelDimensions();
@@ -232,7 +232,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 							addSpotsFromJsonString( body );
 							summary( timepoint );
 							showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
-							if ( getStateManager().isAborted() )
+							if ( getActionStateManager().isAborted() )
 								showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 							else
 								predictSpotsAt( timepoint + 1, timepointEnd );
@@ -304,7 +304,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 		map.put( getTag( getDetectionTagSet(), DETECTION_FB_TAG_NAME ), getTag( getDetectionTagSet(), DETECTION_TB_TAG_NAME ) );
 
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			for ( final Spot spot : spots )
@@ -319,7 +319,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 		}
 	}
@@ -396,7 +396,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 				case CREATE:
 					getGraph().getLock().readLock().unlock();
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						final Spot spot = getGraph().addVertex( ref ).init( jsonRef.t, jsonRef.pos, jsonRef.covariance );
@@ -406,14 +406,14 @@ public class PredictSpotsAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getGraph().getLock().writeLock().unlock();
 					}
 					break;
 				case REFIT:
 					getGraph().getLock().readLock().unlock();
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						ref.refTo( nearestSpot );
@@ -423,7 +423,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getGraph().getLock().writeLock().unlock();
 					}
 					break;

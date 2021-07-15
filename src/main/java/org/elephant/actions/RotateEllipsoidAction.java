@@ -98,7 +98,7 @@ public class RotateEllipsoidAction extends AbstractElephantAction
 		final Spot ref = getGraph().vertexRef();
 		Spot spot;
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			spot = getAppModel().getHighlightModel().getHighlightedVertex( ref );
@@ -174,7 +174,7 @@ public class RotateEllipsoidAction extends AbstractElephantAction
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getModel().setUndoPoint();
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();

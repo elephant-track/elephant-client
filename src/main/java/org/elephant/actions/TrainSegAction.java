@@ -163,7 +163,7 @@ public class TrainSegAction extends AbstractElephantAction
 				break;
 			case SELECTED:
 				final int timepointEnd = getCurrentTimepoint( 0 );
-				final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+				final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 				final int timepointStart = Math.max( 0, timepointEnd - timeRange + 1 );
 				timepoints.addAll( IntStream.rangeClosed( timepointStart, timepointEnd ).boxed().collect( Collectors.toList() ) );
 				addSpotsToJson( getGraph().vertices(), jsonSpots, spotFilter );

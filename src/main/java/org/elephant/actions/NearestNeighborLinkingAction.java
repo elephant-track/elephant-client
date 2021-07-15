@@ -161,14 +161,14 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 	public void process()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
-		final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 1, timepointEnd - timeRange + 1 );
 		final Iterator< Integer > timepointIterator = IntStream.rangeClosed( timepointStart, timepointEnd )
 				.boxed().sorted( Collections.reverseOrder() ).iterator();
 
 		final double[] pos = new double[ 3 ];
 		final double[][] cov = new double[ 3 ][ 3 ];
-		getStateManager().setAborted( false );
+		getActionStateManager().setAborted( false );
 
 		final VoxelDimensions voxelSize = getVoxelDimensions();
 		final JsonArray scales = new JsonArray()
@@ -275,7 +275,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 									final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
 									linkSpots( jsonSpots, timepoint, tagsToProcess, timepointIterator, pos, cov );
 									showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
-									if ( getStateManager().isAborted() )
+									if ( getActionStateManager().isAborted() )
 										showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 									else
 										processNext( timepointIterator, pos, cov );
@@ -305,7 +305,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			{
 				linkSpots( jsonSpots, timepoint, tagsToProcess, timepointIterator, pos, cov );
 				showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
-				if ( getStateManager().isAborted() )
+				if ( getActionStateManager().isAborted() )
 					showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 				else
 					processNext( timepointIterator, pos, cov );
@@ -429,7 +429,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 										spot.getCovariance( cov );
 										getGraph().getLock().readLock().unlock();
 										getGraph().getLock().writeLock().lock();
-										getStateManager().setWriting( true );
+										getActionStateManager().setWriting( true );
 										try
 										{
 											final Spot newSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, pos, cov );
@@ -441,13 +441,13 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 										}
 										finally
 										{
-											getStateManager().setWriting( false );
+											getActionStateManager().setWriting( false );
 											getGraph().getLock().writeLock().unlock();
 										}
 									}
 									getGraph().getLock().readLock().unlock();
 									getGraph().getLock().writeLock().lock();
-									getStateManager().setWriting( true );
+									getActionStateManager().setWriting( true );
 									try
 									{
 										final Link edge = getGraph().addEdge( nearestSpot, spot ).init();
@@ -459,7 +459,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 									}
 									finally
 									{
-										getStateManager().setWriting( false );
+										getActionStateManager().setWriting( false );
 										getGraph().getLock().writeLock().unlock();
 									}
 									break;
@@ -473,7 +473,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			}
 			getGraph().getLock().readLock().unlock();
 			getGraph().getLock().writeLock().lock();
-			getStateManager().setWriting( true );
+			getActionStateManager().setWriting( true );
 			try
 			{
 				for ( final Link edge : linksToRemove )
@@ -487,7 +487,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			}
 			finally
 			{
-				getStateManager().setWriting( false );
+				getActionStateManager().setWriting( false );
 				getGraph().getLock().writeLock().unlock();
 			}
 			getGraph().releaseRef( sourceRef );

@@ -101,7 +101,7 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 			return;
 
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final PoolCollectionWrapper< Spot > spots = getGraph().vertices();
@@ -131,7 +131,7 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 		finally
 		{
 			getModel().setUndoPoint();
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}

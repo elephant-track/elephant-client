@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.scijava.listeners.Listeners;
 
@@ -24,19 +25,16 @@ import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 
 public class ElephantStatusService extends AbstractElephantService
-		implements ElephantSettingsMixin, ElephantConstantsMixin, URLMixin
+		implements ElephantConstantsMixin, ElephantSettingsMixin, ElephantStateManagerMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
 	private final Listeners.List< ElephantServerStatusListener > elephantServerStatusListeners;
 
-	private final Listeners.List< ElephantGpuStatusListener > elephantGpuStatusListeners;
-
 	public ElephantStatusService()
 	{
 		elephantServerStatusListeners = new Listeners.SynchronizedList<>();
-		elephantGpuStatusListeners = new Listeners.SynchronizedList<>();
 	}
 
 	public void start()
@@ -47,13 +45,12 @@ public class ElephantStatusService extends AbstractElephantService
 				try
 				{
 					final URL serverUrl = new URL( getServerSettings().getServerURL() );
-					final boolean is_available = checkAvailability( serverUrl.getHost(), serverUrl.getPort() );
+					ElephantStatus serverStatus = ElephantStatus.UNAVAILABLE;
 					final List< GPU > gpus = new ArrayList<>();
-					if ( is_available )
+					if ( isAvailable( serverUrl.getHost(), serverUrl.getPort() ) )
 					{
 						try
 						{
-
 							final HttpResponse< String > response = Unirest.get( getEndpointURL( ENDPOINT_GPUS ) ).asString();
 							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
@@ -68,11 +65,17 @@ public class ElephantStatusService extends AbstractElephantService
 									final float usedMemory = jsonGpu.get( "mem_used" ).asFloat();
 									gpus.add( new GPU( id, name, totalMemory, usedMemory ) );
 								}
+								serverStatus = ElephantStatus.AVAILABLE;
+								getServerStateManager().setElephantServerErrorMessage( ElephantServerStateManager.NO_ERROR_MESSAGE );
 							}
 							else
 							{
-								// Ignore 502 Bad Gateway
-								if ( response.getStatus() != HttpURLConnection.HTTP_BAD_GATEWAY )
+								if ( response.getStatus() == HttpURLConnection.HTTP_NOT_FOUND )
+								{
+									serverStatus = ElephantStatus.WARNING;
+									getServerStateManager().setElephantServerErrorMessage( ElephantServerStateManager.OUTDATED_MESSAGE );
+								}
+								else
 								{
 									final StringBuilder sb = new StringBuilder( String.valueOf( response.getStatus() ) );
 									sb.append( " " );
@@ -81,21 +84,24 @@ public class ElephantStatusService extends AbstractElephantService
 									{
 										sb.append( ": " );
 										sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+										getLogger().severe( sb.toString() ); // Do not log other errors
 									}
-									getLogger().severe( sb.toString() );
+									getServerStateManager().setElephantServerErrorMessage( sb.toString() );
 								}
 							}
 						}
 						catch ( final UnirestException e )
 						{
-							// Dismiss this error
+							getServerStateManager().setElephantServerErrorMessage( e.getMessage() );
 						}
 					}
-					elephantServerStatusListeners.list.forEach( l -> l.statusUpdated(
-							is_available ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE,
-							serverUrl.toString() ) );
-					elephantGpuStatusListeners.list.forEach( l -> l.statusUpdated( gpus ) );
-
+					else
+					{
+						getServerStateManager().setElephantServerErrorMessage( ElephantServerStateManager.SERVER_NOT_FOUND_MESSAGE );
+					}
+					getServerStateManager().setElephantServerStatus( serverStatus );
+					getServerStateManager().setGpus( gpus );
+					elephantServerStatusListeners.list.forEach( l -> l.serverStatusUpdated() );
 					Thread.sleep( 1000 );
 				}
 				catch ( final MalformedURLException e )
@@ -110,9 +116,9 @@ public class ElephantStatusService extends AbstractElephantService
 		} ).start();
 	}
 
-	public static boolean checkAvailability( final String host, final int port )
+	public static boolean isAvailable( final String host, final int port )
 	{
-		try (Socket s = new Socket( host, port ))
+		try (final Socket s = new Socket( host, port ))
 		{
 			return true;
 		}
@@ -127,17 +133,12 @@ public class ElephantStatusService extends AbstractElephantService
 	{
 		UNAVAILABLE,
 		AVAILABLE,
-		PROCESSING
+		WARNING
 	}
 
 	public Listeners< ElephantServerStatusListener > elephantServerStatusListeners()
 	{
 		return elephantServerStatusListeners;
-	}
-
-	public Listeners< ElephantGpuStatusListener > elephantGpuStatusListeners()
-	{
-		return elephantGpuStatusListeners;
 	}
 
 }

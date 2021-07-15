@@ -1,14 +1,17 @@
 package org.elephant.actions;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
+import org.elephant.actions.mixins.ElephantSettingsMixin;
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
 
-public class ShowControlPanelAction extends AbstractElephantAction implements ElephantServerStatusListener, ElephantGpuStatusListener
+public class ShowControlPanelAction extends AbstractElephantAction
+		implements ElephantServerStatusListener, ElephantSettingsMixin, ElephantStateManagerMixin, RabbitMQStatusListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -37,29 +40,37 @@ public class ShowControlPanelAction extends AbstractElephantAction implements El
 	}
 
 	@Override
-	public void statusUpdated( final ElephantStatus status, final String url )
+	public void serverStatusUpdated()
 	{
+		final ElephantStatus status = getServerStateManager().getElephantServerStatus();
+		final String url = getServerSettings().getServerURL();
+		final String errorMessage = getServerStateManager().getElephantServerErrorMessage();
 		try
 		{
-			if ( url.startsWith( "amqp://" ) )
-			{
-				dialog.updateRabbitMQStatus( status, url );
-			}
-			else
-			{
-				dialog.updateElephantServerStatus( status, url );
-			}
+			dialog.updateElephantServerStatus( status, url, errorMessage );
 		}
 		catch ( final IOException e )
 		{
 			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
+		final List< GPU > gpus = getServerStateManager().getGpus();
+		dialog.updateGpuTableModel( gpus );
 	}
 
 	@Override
-	public void statusUpdated( Collection< GPU > gpus )
+	public void rabbitMQStatusUpdated()
 	{
-		dialog.updateGpuTableModel( gpus );
+		final ElephantStatus status = getServerStateManager().getRabbitMQStatus();
+		final String url = "amqp://" + getServerSettings().getRabbitMQHost() + ":" + String.valueOf( getServerSettings().getRabbitMQPort() );
+		final String errorMessage = getServerStateManager().getRabbitMQErrorMessage();
+		try
+		{
+			dialog.updateRabbitMQStatus( status, url, errorMessage );
+		}
+		catch ( final IOException e )
+		{
+			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+		}
 	}
 
 }

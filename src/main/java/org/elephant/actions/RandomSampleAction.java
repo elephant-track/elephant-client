@@ -102,7 +102,7 @@ public class RandomSampleAction extends AbstractElephantAction
 			return;
 
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final List< Integer > indexSampler = IntStream.range( 0, size ).boxed().collect( Collectors.toList() );
@@ -124,7 +124,7 @@ public class RandomSampleAction extends AbstractElephantAction
 		finally
 		{
 			getModel().setUndoPoint();
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}

@@ -51,6 +51,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.elephant.setting.StyleElementsEx.DoubleElementEx;
+import org.elephant.setting.StyleElementsEx.IntElementEx;
 import org.elephant.setting.StyleElementsEx.PasswordElement;
 import org.elephant.setting.StyleElementsEx.StringElement;
 import org.elephant.setting.StyleElementsEx.StyleElementVisitorEx;
@@ -187,6 +188,14 @@ public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S
 								new IntSpinner( element.getValue() ) );
 					}
 
+					@Override
+					public void visit( final IntElementEx element )
+					{
+						addToLayout(
+								new JLabel( element.getLabel(), JLabel.TRAILING ),
+								new IntSpinner( element.getValue(), element.getDecimalFormatPatterne() ) );
+					}
+
 					class IntSpinner extends JSpinner implements BoundedValue.UpdateListener
 					{
 						private static final long serialVersionUID = 2389419890620020612L;
@@ -194,6 +203,11 @@ public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S
 						private final BoundedValue model;
 
 						public IntSpinner( final BoundedValue model )
+						{
+							this( model, null );
+						}
+
+						public IntSpinner( final BoundedValue model, final String decimalFormatPattern )
 						{
 							super();
 							setModel( new SpinnerNumberModel( model.getCurrentValue(), model.getRangeMin(), model.getRangeMax(), Math.max( 1, model.getRangeMin() ) ) );
@@ -208,6 +222,10 @@ public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S
 							} );
 
 							this.model = model;
+							if ( decimalFormatPattern != null )
+							{
+								setEditor( new JSpinner.NumberEditor( this, decimalFormatPattern ) );
+							}
 							model.setUpdateListener( this );
 						}
 

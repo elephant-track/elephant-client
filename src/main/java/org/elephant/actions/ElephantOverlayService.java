@@ -72,12 +72,12 @@ public class ElephantOverlayService extends AbstractElephantService implements E
 		@Override
 		public void drawOverlays( final Graphics g )
 		{
-			if ( getStateManager().isLivemode() )
+			if ( getActionStateManager().isLivemode() )
 			{
 				g.setFont( new Font( "Monospaced", Font.PLAIN, 12 ) );
 				g.drawString( "live mode", ( int ) g.getClipBounds().getWidth() / 2, 38 );
 			}
-			if ( getStateManager().isAutoFocus() )
+			if ( getActionStateManager().isAutoFocus() )
 			{
 				g.setFont( new Font( "Monospaced", Font.PLAIN, 12 ) );
 				g.drawString( "autofocus", ( int ) g.getClipBounds().getWidth() / 2, 50 );

@@ -78,7 +78,7 @@ public class AbortProcessingAction extends AbstractElephantAction
 	@Override
 	public void process()
 	{
-		getStateManager().setAborted( true );
+		getActionStateManager().setAborted( true );
 		// Send an abort signal to the server
 		final JsonObject jsonRootObject = Json.object().add( JSON_KEY_STATE, 0 );
 		Unirest.post( getEndpointURL( ENDPOINT_STATE ) ).body( jsonRootObject.toString() ).asStringAsync( new Callback< String >()
@@ -95,7 +95,7 @@ public class AbortProcessingAction extends AbstractElephantAction
 			public void completed( final HttpResponse< String > response )
 			{
 				showTextOverlayAnimator( "Sent abort signal", 3000, TextOverlayAnimator.TextPosition.CENTER );
-				getStateManager().setLivemode( false );
+				getActionStateManager().setLivemode( false );
 			}
 
 			@Override

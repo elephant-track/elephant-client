@@ -105,7 +105,7 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 	public void process()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
-		final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 0, timepointEnd - timeRange + 1 );
 		final List< Integer > timepoints = IntStream.rangeClosed( timepointStart, timepointEnd ).boxed().collect( Collectors.toList() );
 		final JsonArray jsonSpots = Json.array();
@@ -120,7 +120,7 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 			tagsToProcess.add( getTag( getDetectionTagSet(), DETECTION_TB_TAG_NAME ) );
 			tagsToProcess.add( getTag( getDetectionTagSet(), DETECTION_FB_TAG_NAME ) );
 			Iterable< Spot > spots;
-			if ( getStateManager().isLivemode() )
+			if ( getActionStateManager().isLivemode() )
 			{
 				spots = getVisibleVertices( timepointStart );
 				if ( spots != null )

@@ -97,7 +97,7 @@ public class SetControlAxisAction extends AbstractElephantAction
 		}
 		else
 		{
-			getStateManager().setAxis( axis );
+			getActionStateManager().setAxis( axis );
 			showTextOverlayAnimator( "Set Control Axis: " + axis.name(), 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 		}
 	}

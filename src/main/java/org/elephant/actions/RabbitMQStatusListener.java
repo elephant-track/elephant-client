@@ -26,37 +26,11 @@
  ******************************************************************************/
 package org.elephant.actions;
 
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.mastodon.mamut.model.Spot;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.spatial.VertexPositionListener;
-
 /**
- * Log changes in the position of the spot.
- * 
- * @author Ko Sugawara
+ * Classes that implement {@link RabbitMQStatusListener} get a notification when
+ * the ELEPHANT status is updated.
  */
-public class VertexPositionListenerService extends AbstractElephantService
-		implements ElephantStateManagerMixin, VertexPositionListener< Spot >
+public interface RabbitMQStatusListener
 {
-
-	private static final long serialVersionUID = 1L;
-
-	public VertexPositionListenerService( final MamutPluginAppModel pluginAppModel )
-	{
-		super();
-		super.init( pluginAppModel, null );
-	}
-
-	/**
-	 * VertexPositionListener< Spot >
-	 */
-
-	@Override
-	public void vertexPositionChanged( Spot vertex )
-	{
-		if ( !getActionStateManager().isWriting() )
-			getLogger().info( vertex + " changed" );
-	}
-
+	void rabbitMQStatusUpdated();
 }

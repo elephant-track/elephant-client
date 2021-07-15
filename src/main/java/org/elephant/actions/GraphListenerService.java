@@ -67,7 +67,7 @@ public class GraphListenerService extends AbstractElephantService
 	public void vertexAdded( Spot vertex )
 	{
 		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		if ( !getActionStateManager().isWriting() )
 		{
 			getLogger().info( vertex + " added" );
 			final ObjTagMap< Spot, Tag > tagMapDetection = getTagSetModel().getVertexTags().tags( getDetectionTagSet() );
@@ -95,7 +95,7 @@ public class GraphListenerService extends AbstractElephantService
 	public void vertexRemoved( Spot vertex )
 	{
 		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		if ( !getActionStateManager().isWriting() )
 		{
 			getLogger().info( vertex + " removed" );
 		}
@@ -105,7 +105,7 @@ public class GraphListenerService extends AbstractElephantService
 	public void edgeAdded( Link edge )
 	{
 		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		if ( !getActionStateManager().isWriting() )
 		{
 			getLogger().info( edge + " added" );
 			final TagSet tagSetTracking = getTrackingTagSet();
@@ -131,7 +131,7 @@ public class GraphListenerService extends AbstractElephantService
 	public void edgeRemoved( Link edge )
 	{
 		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		if ( !getActionStateManager().isWriting() )
 		{
 			getLogger().info( edge + " removed" );
 		}

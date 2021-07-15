@@ -148,7 +148,7 @@ public class MapTagAction extends AbstractElephantAction
 					final ObjTagMap< Spot, Tag > tagMapToSpot = getTagSetModel().getVertexTags().tags( tagSetTo );
 
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						final Spot ref = getGraph().vertexRef();
@@ -163,7 +163,7 @@ public class MapTagAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getModel().setUndoPoint();
 						getGraph().getLock().writeLock().unlock();
 						notifyGraphChanged();
@@ -174,7 +174,7 @@ public class MapTagAction extends AbstractElephantAction
 					final ObjTagMap< Link, Tag > tagMapToLink = getTagSetModel().getEdgeTags().tags( tagSetTo );
 
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						final Link ref = getGraph().edgeRef();
@@ -189,7 +189,7 @@ public class MapTagAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getModel().setUndoPoint();
 						getGraph().getLock().writeLock().unlock();
 						notifyGraphChanged();

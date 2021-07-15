@@ -93,7 +93,7 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 	public void process()
 	{
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final ObjTagMap< Spot, Tag > tagMapDetection = getVertexTagMap( getDetectionTagSet() );
@@ -109,7 +109,7 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getModel().setUndoPoint();
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();

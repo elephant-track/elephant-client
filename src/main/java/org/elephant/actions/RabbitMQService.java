@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.scijava.listeners.Listeners;
 
@@ -51,7 +52,8 @@ import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
  * 
  * @author Ko Sugawara
  */
-public class RabbitMQService extends AbstractElephantService implements ElephantSettingsMixin, WindowManagerMixin
+public class RabbitMQService extends AbstractElephantService
+		implements ElephantStateManagerMixin, ElephantSettingsMixin, WindowManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -60,7 +62,7 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 
 	private Connection connection;
 
-	private final Listeners.List< ElephantServerStatusListener > rabbitMQStatusListeners;
+	private final Listeners.List< RabbitMQStatusListener > rabbitMQStatusListeners;
 
 	private final ExceptionHandler emptyExceptionHandler = new EmptyExceptionHander();
 
@@ -76,26 +78,29 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 			while ( true )
 			{
 				final ConnectionFactory factory = new ConnectionFactory();
+				factory.setHost( getServerSettings().getRabbitMQHost() );
+				factory.setPort( getServerSettings().getRabbitMQPort() );
 				factory.setUsername( getServerSettings().getRabbitMQUsername() );
 				factory.setPassword( getServerSettings().getRabbitMQPassword() );
-				factory.setHost( getServerSettings().getRabbitMQHost() );
 				factory.setExceptionHandler( emptyExceptionHandler );
 				boolean isAvailable = false;
 				try (final Connection tempConnection = factory.newConnection())
 				{
-					isAvailable = true;
 					if ( connection == null )
 					{
 						openConnection();
 					}
+					isAvailable = true;
+					getServerStateManager().setRabbitMQErrorMessage( ElephantServerStateManager.NO_ERROR_MESSAGE );
 				}
 				catch ( IOException | TimeoutException e )
 				{
+					getServerStateManager().setRabbitMQErrorMessage( e.getMessage() );
 					closeConnection();
 				}
-				final ElephantStatus status = isAvailable ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE;
-				final String url = "amqp://" + factory.getHost() + ":" + factory.getPort();
-				rabbitMQStatusListeners.list.forEach( l -> l.statusUpdated( status, url ) );
+				final ElephantStatus rabbitMQStatus = isAvailable ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE;
+				getServerStateManager().setRabbitMQStatus( rabbitMQStatus );
+				rabbitMQStatusListeners.list.forEach( l -> l.rabbitMQStatusUpdated() );
 				try
 				{
 					Thread.sleep( 1000 );
@@ -108,28 +113,22 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 		} ).start();
 	}
 
-	private synchronized void openConnection()
+	private synchronized void openConnection() throws IOException, TimeoutException
 	{
 		final ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost( getServerSettings().getRabbitMQHost() );
+		factory.setPort( getServerSettings().getRabbitMQPort() );
 		factory.setUsername( getServerSettings().getRabbitMQUsername() );
 		factory.setPassword( getServerSettings().getRabbitMQPassword() );
-		factory.setHost( getServerSettings().getRabbitMQHost() );
 		factory.setRequestedHeartbeat( 0 );
-		try
-		{
-			connection = factory.newConnection();
-			final Channel channel = connection.createChannel();
-			channel.queueDeclare( RABBITMQ_QUEUE_NAME, false, false, false, null );
-			final DeliverCallback deliverCallback = ( consumerTag, delivery ) -> {
-				final String message = new String( delivery.getBody(), "UTF-8" );
-				addTextOverlayAnimator( message, 3000, TextPosition.CENTER );
-			};
-			channel.basicConsume( RABBITMQ_QUEUE_NAME, true, deliverCallback, consumerTag -> {} );
-		}
-		catch ( IOException | TimeoutException e )
-		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-		}
+		connection = factory.newConnection();
+		final Channel channel = connection.createChannel();
+		channel.queueDeclare( RABBITMQ_QUEUE_NAME, false, false, false, null );
+		final DeliverCallback deliverCallback = ( consumerTag, delivery ) -> {
+			final String message = new String( delivery.getBody(), "UTF-8" );
+			addTextOverlayAnimator( message, 3000, TextPosition.CENTER );
+		};
+		channel.basicConsume( RABBITMQ_QUEUE_NAME, true, deliverCallback, consumerTag -> {} );
 	}
 
 	private synchronized void closeConnection()
@@ -151,7 +150,7 @@ public class RabbitMQService extends AbstractElephantService implements Elephant
 		}
 	}
 
-	public Listeners< ElephantServerStatusListener > rabbitMQStatusListeners()
+	public Listeners< RabbitMQStatusListener > rabbitMQStatusListeners()
 	{
 		return rabbitMQStatusListeners;
 	}

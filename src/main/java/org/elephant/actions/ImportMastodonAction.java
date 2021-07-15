@@ -109,7 +109,7 @@ public class ImportMastodonAction extends AbstractElephantAction implements Elep
 		if ( file != null )
 		{
 			getGraph().getLock().writeLock().lock();
-			getStateManager().setWriting( true );
+			getActionStateManager().setWriting( true );
 			try
 			{
 				final MamutProject project = new MamutProjectIO().load( file.getAbsolutePath() );
@@ -188,7 +188,7 @@ public class ImportMastodonAction extends AbstractElephantAction implements Elep
 			}
 			finally
 			{
-				getStateManager().setWriting( false );
+				getActionStateManager().setWriting( false );
 				getModel().setUndoPoint();
 				getGraph().getLock().writeLock().unlock();
 				notifyGraphChanged();

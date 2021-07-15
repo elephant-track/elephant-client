@@ -99,15 +99,15 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 	public void process()
 	{
 		// Validation for 2D data
-		if ( is2D() && getStateManager().getAxis() == ControlAxis.Z )
+		if ( is2D() && getActionStateManager().getAxis() == ControlAxis.Z )
 		{
-			showTextOverlayAnimator( "Invalid control axis " + getStateManager().getAxis().name() + " for 2D data", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+			showTextOverlayAnimator( "Invalid control axis " + getActionStateManager().getAxis().name() + " for 2D data", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 			return;
 		}
 		final Spot ref = getGraph().vertexRef();
 		Spot spot;
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			spot = getAppModel().getHighlightModel().getHighlightedVertex( ref );
@@ -122,7 +122,7 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 			final double[][] V = getEig().getV();
 			final double[] d = getEig().getRealEigenvalues();
 			final double[][] S = new double[ 3 ][ 3 ];
-			final int axis = getStateManager().getAxis().getIndex();
+			final int axis = getActionStateManager().getAxis().getIndex();
 			for ( int i = 0; i < 3; i++ )
 			{
 				for ( int j = 0; j < 3; j++ )
@@ -141,7 +141,7 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getModel().setUndoPoint();
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();

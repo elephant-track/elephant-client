@@ -73,7 +73,7 @@ public class TagProgenitorAction extends AbstractElephantAction
 	public void process()
 	{
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final PoolCollectionWrapper< Spot > spots = getGraph().vertices();
@@ -115,7 +115,7 @@ public class TagProgenitorAction extends AbstractElephantAction
 		finally
 		{
 			getModel().setUndoPoint();
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}

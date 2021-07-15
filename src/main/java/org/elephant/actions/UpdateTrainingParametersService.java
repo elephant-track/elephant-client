@@ -27,8 +27,10 @@
 package org.elephant.actions;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.ElephantStatusService.ElephantStatus;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.setting.main.ElephantMainSettingsListener;
@@ -50,7 +52,7 @@ import kong.unirest.UnirestException;
  * @author Ko Sugawara
  */
 public class UpdateTrainingParametersService extends AbstractElephantService
-		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, UIActionMixin, URLMixin
+		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -64,6 +66,8 @@ public class UpdateTrainingParametersService extends AbstractElephantService
 	@Override
 	public void mainSettingsUpdated()
 	{
+		if ( getServerStateManager().getElephantServerStatus() == ElephantStatus.UNAVAILABLE ) { return; }
+
 		final JsonObject jsonRootObject = Json.object()
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() );
