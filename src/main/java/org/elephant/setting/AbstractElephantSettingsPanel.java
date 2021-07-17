@@ -41,12 +41,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -55,14 +51,13 @@ import org.elephant.setting.StyleElementsEx.IntElementEx;
 import org.elephant.setting.StyleElementsEx.PasswordElement;
 import org.elephant.setting.StyleElementsEx.StringElement;
 import org.elephant.setting.StyleElementsEx.StyleElementVisitorEx;
+import org.elephant.swing.DoubleSpinner;
+import org.elephant.swing.IntSpinner;
 import org.mastodon.app.ui.settings.StyleElements.BooleanElement;
 import org.mastodon.app.ui.settings.StyleElements.IntElement;
 import org.mastodon.app.ui.settings.StyleElements.LabelElement;
 import org.mastodon.app.ui.settings.StyleElements.Separator;
 import org.mastodon.app.ui.settings.StyleElements.StyleElement;
-
-import bdv.util.BoundedValue;
-import bdv.util.BoundedValueDouble;
 
 public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S > > extends JPanel
 {
@@ -177,7 +172,7 @@ public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S
 					{
 						addToLayout(
 								new JLabel( element.getLabel(), JLabel.TRAILING ),
-								new DoubleSpinner( element.getValue(), element.getStepSize() ) );
+								new DoubleSpinner( element.getValue(), element.getStepSize(), tfCols ) );
 					}
 
 					@Override
@@ -194,86 +189,6 @@ public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S
 						addToLayout(
 								new JLabel( element.getLabel(), JLabel.TRAILING ),
 								new IntSpinner( element.getValue(), element.getDecimalFormatPatterne() ) );
-					}
-
-					class IntSpinner extends JSpinner implements BoundedValue.UpdateListener
-					{
-						private static final long serialVersionUID = 2389419890620020612L;
-
-						private final BoundedValue model;
-
-						public IntSpinner( final BoundedValue model )
-						{
-							this( model, null );
-						}
-
-						public IntSpinner( final BoundedValue model, final String decimalFormatPattern )
-						{
-							super();
-							setModel( new SpinnerNumberModel( model.getCurrentValue(), model.getRangeMin(), model.getRangeMax(), Math.max( 1, model.getRangeMin() ) ) );
-							addChangeListener( new ChangeListener()
-							{
-								@Override
-								public void stateChanged( final ChangeEvent e )
-								{
-									final int value = ( ( Integer ) getValue() ).intValue();
-									model.setCurrentValue( value );
-								}
-							} );
-
-							this.model = model;
-							if ( decimalFormatPattern != null )
-							{
-								setEditor( new JSpinner.NumberEditor( this, decimalFormatPattern ) );
-							}
-							model.setUpdateListener( this );
-						}
-
-						@Override
-						public void update()
-						{
-							final int value = model.getCurrentValue();
-							setValue( value );
-						}
-					}
-
-					class DoubleSpinner extends JSpinner implements BoundedValueDouble.UpdateListener
-					{
-						private static final long serialVersionUID = -2622218113093499557L;
-
-						private final BoundedValueDouble model;
-
-						public DoubleSpinner( final BoundedValueDouble model, final double stepSize )
-						{
-							super();
-							setModel( new SpinnerNumberModel( model.getCurrentValue(), model.getRangeMin(), model.getRangeMax(), stepSize ) );
-							addChangeListener( new ChangeListener()
-							{
-								@Override
-								public void stateChanged( final ChangeEvent e )
-								{
-									final double value = ( ( Double ) getValue() ).doubleValue();
-									model.setCurrentValue( value );
-								}
-							} );
-
-							( ( JSpinner.NumberEditor ) getEditor() ).getFormat().applyPattern( "0.#######" );
-							( ( JSpinner.NumberEditor ) getEditor() ).getTextField().setColumns( tfCols );
-							// Workaround for avoiding displaying "0" at
-							// initialization of the panel, which only happens
-							// the value is small (e.g. 0.00001)
-							( ( JSpinner.NumberEditor ) getEditor() ).getTextField().setValue( getValue() );
-
-							this.model = model;
-							model.setUpdateListener( this );
-						}
-
-						@Override
-						public void update()
-						{
-							final double value = model.getCurrentValue();
-							setValue( value );
-						}
 					}
 
 					private void addToLayout( final JComponent comp1, final JComponent comp2 )
