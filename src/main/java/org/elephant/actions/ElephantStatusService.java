@@ -42,12 +42,11 @@ public class ElephantStatusService extends AbstractElephantService
 		new Thread( () -> {
 			while ( true )
 			{
+				ElephantStatus serverStatus = ElephantStatus.UNAVAILABLE;
+				final List< GPU > gpus = new ArrayList<>();
 				try
 				{
-					final URL serverUrl = new URL( getServerSettings().getServerURL() );
-					ElephantStatus serverStatus = ElephantStatus.UNAVAILABLE;
-					final List< GPU > gpus = new ArrayList<>();
-					if ( isAvailable( serverUrl.getHost(), serverUrl.getPort() ) )
+					if ( isAvailable( getServerSettings().getServerURL() ) )
 					{
 						try
 						{
@@ -99,14 +98,17 @@ public class ElephantStatusService extends AbstractElephantService
 					{
 						getServerStateManager().setElephantServerErrorMessage( ElephantServerStateManager.SERVER_NOT_FOUND_MESSAGE );
 					}
-					getServerStateManager().setElephantServerStatus( serverStatus );
-					getServerStateManager().setGpus( gpus );
-					elephantServerStatusListeners.list.forEach( l -> l.serverStatusUpdated() );
-					Thread.sleep( 1000 );
 				}
 				catch ( final MalformedURLException e )
 				{
-					getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+					getServerStateManager().setElephantServerErrorMessage( e.getMessage() );
+				}
+				getServerStateManager().setElephantServerStatus( serverStatus );
+				getServerStateManager().setGpus( gpus );
+				elephantServerStatusListeners.list.forEach( l -> l.serverStatusUpdated() );
+				try
+				{
+					Thread.sleep( 1000 );
 				}
 				catch ( final InterruptedException e )
 				{
@@ -116,9 +118,10 @@ public class ElephantStatusService extends AbstractElephantService
 		} ).start();
 	}
 
-	public static boolean isAvailable( final String host, final int port )
+	public static boolean isAvailable( final String serverUrlString ) throws MalformedURLException
 	{
-		try (final Socket s = new Socket( host, port ))
+		final URL serverUrl = new URL( serverUrlString );
+		try (final Socket s = new Socket( serverUrl.getHost(), serverUrl.getPort() ))
 		{
 			return true;
 		}
