@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractCellEditor;
@@ -38,6 +39,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.apache.batik.transcoder.TranscoderException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
 import org.elephant.actions.mixins.AWTMixin;
@@ -112,7 +114,33 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 
 	private final IntSpinner spinnerRemotePort = new IntSpinner( new BoundedValue( 1, 65535, 80 ), "#" );
 
-	final JButton btnDelete = new JButton( "Delete" );
+	private final JButton btnDelete = new JButton( "Delete" );
+
+	private final static ImageIcon imageIconGray = createImageIcon( "/org/elephant/bullet_gray.png" );
+
+	private final static ImageIcon imageIconGreen = createImageIcon( "/org/elephant/bullet_green.png" );
+
+	private final static ImageIcon imageIconRed = createImageIcon( "/org/elephant/bullet_red.png" );
+
+	private final static ImageIcon imageIconYellow = createImageIcon( "/org/elephant/bullet_yellow.png" );
+
+	private final static Logger logger = Logger.getLogger( "elephant" );
+
+	private static ImageIcon createImageIcon( final String iconPath )
+	{
+		final ImageIcon imageIcon = new ImageIcon();
+		try
+		{
+			final Image image = ImageIO.read( ControlPanelDialog.class.getResource( iconPath ) );
+			imageIcon.setImage( image );
+		}
+		catch ( final IOException e )
+		{
+			logger.severe( ExceptionUtils.getStackTrace( e ) );
+		}
+		return imageIcon;
+
+	}
 
 	private class GpuTableModel extends DefaultTableModel
 	{
@@ -689,23 +717,17 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 
 	public ImageIcon getImageIcon( final ElephantStatus status ) throws IOException
 	{
-		String iconPath = "/org/elephant/bullet_gray.png";
 		switch ( status )
 		{
 		case AVAILABLE:
-			iconPath = "/org/elephant/bullet_green.png";
-			break;
+			return imageIconGreen;
 		case UNAVAILABLE:
-			iconPath = "/org/elephant/bullet_red.png";
-			break;
+			return imageIconRed;
 		case WARNING:
-			iconPath = "/org/elephant/bullet_yellow.png";
-			break;
+			return imageIconYellow;
 		default:
-			break;
+			return imageIconGray;
 		}
-		final Image img = ImageIO.read( getClass().getResource( iconPath ) );
-		return new ImageIcon( img );
 	}
 
 	public void updateGpuTableModel( final Collection< GPU > gpus )
