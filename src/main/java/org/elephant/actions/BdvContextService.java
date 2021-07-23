@@ -56,13 +56,14 @@ public class BdvContextService extends AbstractElephantService implements Contex
 		};
 	}
 
+	@Override
 	public void init( final MamutPluginAppModel pluginAppModel )
 	{
 		super.init( pluginAppModel, null );
 
 		contextChooser = new ContextChooser<>( this );
 		contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
-		getWindowManager().bdvViewCreatedListners().add( bdvViewCreatedListener );
+		getWindowManager().bdvViewCreatedListeners().add( bdvViewCreatedListener );
 	}
 
 	public Iterable< Spot > getVisibleVertices( final int timepoint )

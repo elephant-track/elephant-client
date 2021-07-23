@@ -62,12 +62,12 @@ public interface WindowManagerMixin extends ElephantActionMixin
 
 	default void addBdvCreatedListener( final BdvViewCreatedListener listener )
 	{
-		getWindowManager().bdvViewCreatedListners().add( listener );
+		getWindowManager().bdvViewCreatedListeners().add( listener );
 	}
 
 	default void removeBdvCreatedListener( final BdvViewCreatedListener listener )
 	{
-		getWindowManager().bdvViewCreatedListners().remove( listener );
+		getWindowManager().bdvViewCreatedListeners().remove( listener );
 	}
 
 	default void addTextOverlayAnimator( final String text, final long duration, final TextPosition position )
