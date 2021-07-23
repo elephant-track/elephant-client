@@ -40,6 +40,10 @@ import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -67,6 +71,29 @@ public class BackTrackAction extends AbstractElephantAction
 	private static final String NAME = "[elephant] back track";
 
 	private static final String[] MENU_KEYS = new String[] { "alt C" };
+
+	private static final String DESCRIPTION = "Track the highlighted vertex backward in time.";
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME,
+					MENU_KEYS,
+					DESCRIPTION );
+		}
+	}
 
 	@Override
 	public String[] getMenuKeys()

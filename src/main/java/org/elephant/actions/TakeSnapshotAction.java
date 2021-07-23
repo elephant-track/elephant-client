@@ -40,7 +40,11 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.mastodon.views.bdv.ViewerFrameMamut;
+import org.scijava.plugin.Plugin;
 
 /**
  * Take a snapshot of the specified BDV window.
@@ -57,7 +61,28 @@ public class TakeSnapshotAction extends AbstractElephantAction
 
 	private static final String MENU_TEXT = "Take a Snapshot";
 
-	private static final String[] MENU_KEYS = new String[] { "H" };
+	private static final String[] MENU_KEYS = new String[] { "alt H" };
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME,
+					MENU_KEYS,
+					"Take a snapshot of the specified BDV view" );
+		}
+	}
 
 	@Override
 	public String getMenuText()

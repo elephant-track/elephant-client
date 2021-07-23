@@ -31,6 +31,10 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.mastodon.mamut.model.Spot;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import net.imglib2.util.LinAlgHelpers;
 
@@ -46,30 +50,50 @@ public class RotateEllipsoidAction extends AbstractElephantAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String WORD_TO_REPLACE = "CLOCKWISE/COUNTERCLOCKWISE";
+	private static final String NAME_BASE = "[elephant] rotate ellipsoid %s";
 
-	private static final String NAME = "[elephant] rotate ellipsoid " + WORD_TO_REPLACE;
+	private static final String NAME_CLOCKWISE = String.format( NAME_BASE, "clockwise" );
+
+	private static final String NAME_COUNTERCLOCKWISE = String.format( NAME_BASE, "counterclockwise" );
+
+	private static final String[] MENU_KEYS_CLOCKWISE = new String[] { "alt RIGHT" };
+
+	private static final String[] MENU_KEYS_COUNTERCLOCKWISE = new String[] { "alt LEFT" };
+
+	private static final String DESCRIPTION_BASE = "Rotate the highlighted ellipsoid %s.";
+
+	private static final String DESCRIPTION_CLOCKWISE = String.format( DESCRIPTION_BASE, "clockwise" );
+
+	private static final String DESCRIPTION_COUNTERCLOCKWISE = String.format( DESCRIPTION_BASE, "counterclockwise" );
 
 	public static final double ROTATION_CHANGE_FACTOR = Math.toRadians( 1.0 );
 
 	public enum RotateEllipsoidActionMode
 	{
-		CLOCKWISE( -ROTATION_CHANGE_FACTOR, new String[] { "alt RIGHT" } ),
-		COUNTERCLOCKWISE( ROTATION_CHANGE_FACTOR, new String[] { "alt LEFT" } );
+		CLOCKWISE( -ROTATION_CHANGE_FACTOR, NAME_CLOCKWISE, MENU_KEYS_CLOCKWISE ),
+		COUNTERCLOCKWISE( ROTATION_CHANGE_FACTOR, NAME_COUNTERCLOCKWISE, MENU_KEYS_COUNTERCLOCKWISE );
 
-		private double factor;
+		private final double factor;
+
+		private final String name;
 
 		private final String[] menuKeys;
 
-		private RotateEllipsoidActionMode( final double factor, final String[] menuKeys )
+		private RotateEllipsoidActionMode( final double factor, final String name, final String[] menuKeys )
 		{
 			this.factor = factor;
+			this.name = name;
 			this.menuKeys = menuKeys;
 		}
 
 		public double getFactor()
 		{
 			return factor;
+		}
+
+		public String getName()
+		{
+			return name;
 		}
 
 		public String[] getMenuKeys()
@@ -80,6 +104,31 @@ public class RotateEllipsoidAction extends AbstractElephantAction
 
 	private final RotateEllipsoidActionMode mode;
 
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_CLOCKWISE,
+					MENU_KEYS_CLOCKWISE,
+					DESCRIPTION_CLOCKWISE );
+			descriptions.add(
+					NAME_COUNTERCLOCKWISE,
+					MENU_KEYS_COUNTERCLOCKWISE,
+					DESCRIPTION_COUNTERCLOCKWISE );
+		}
+	}
+
 	@Override
 	public String[] getMenuKeys()
 	{
@@ -88,7 +137,7 @@ public class RotateEllipsoidAction extends AbstractElephantAction
 
 	public RotateEllipsoidAction( final RotateEllipsoidActionMode mode )
 	{
-		super( NAME.replace( WORD_TO_REPLACE, mode.name().toLowerCase() ) );
+		super( mode.getName() );
 		this.mode = mode;
 	}
 

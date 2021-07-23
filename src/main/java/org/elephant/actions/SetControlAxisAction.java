@@ -29,6 +29,10 @@ package org.elephant.actions;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 
@@ -43,29 +47,55 @@ public class SetControlAxisAction extends AbstractElephantAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String WORD_TO_REPLACE = "AXIS";
+	private static final String NAME_BASE = "[elephant] set control axis %s";
 
-	private static final String NAME = "[elephant] set control axis " + WORD_TO_REPLACE;
+	private static final String NAME_X = String.format( NAME_BASE, "x" );
+
+	private static final String NAME_Y = String.format( NAME_BASE, "y" );
+
+	private static final String NAME_Z = String.format( NAME_BASE, "z" );
+
+	private static final String[] MENU_KEYS_X = new String[] { "alt X" };
+
+	private static final String[] MENU_KEYS_Y = new String[] { "alt Y" };
+
+	private static final String[] MENU_KEYS_Z = new String[] { "alt Z" };
+
+	private static final String DESCRIPTION_BASE = "Set control axis to %s.";
+
+	private static final String DESCRIPTION_X = String.format( DESCRIPTION_BASE, "x" );
+
+	private static final String DESCRIPTION_Y = String.format( DESCRIPTION_BASE, "y" );
+
+	private static final String DESCRIPTION_Z = String.format( DESCRIPTION_BASE, "z" );
 
 	public enum ControlAxis
 	{
-		X( 0, new String[] { "alt X" } ),
-		Y( 1, new String[] { "alt Y" } ),
-		Z( 2, new String[] { "alt Z" } );
+		X( 0, NAME_X, MENU_KEYS_X ),
+		Y( 1, NAME_Y, MENU_KEYS_Y ),
+		Z( 2, NAME_Z, MENU_KEYS_Z );
 
-		private int index;
+		private final int index;
 
-		private String[] menuKeys;
+		private final String name;
 
-		ControlAxis( final int index, final String[] menuKeys )
+		private final String[] menuKeys;
+
+		ControlAxis( final int index, final String name, final String[] menuKeys )
 		{
 			this.index = index;
+			this.name = name;
 			this.menuKeys = menuKeys;
 		}
 
 		public int getIndex()
 		{
 			return index;
+		}
+
+		public String getName()
+		{
+			return name;
 		}
 
 		public String[] getMenuKeys()
@@ -76,6 +106,35 @@ public class SetControlAxisAction extends AbstractElephantAction
 
 	private final ControlAxis axis;
 
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_X,
+					MENU_KEYS_X,
+					DESCRIPTION_X );
+			descriptions.add(
+					NAME_Y,
+					MENU_KEYS_Y,
+					DESCRIPTION_Y );
+			descriptions.add(
+					NAME_Z,
+					MENU_KEYS_Z,
+					DESCRIPTION_Z );
+		}
+	}
+
 	@Override
 	public String[] getMenuKeys()
 	{
@@ -84,7 +143,7 @@ public class SetControlAxisAction extends AbstractElephantAction
 
 	public SetControlAxisAction( final ControlAxis axis )
 	{
-		super( NAME.replace( WORD_TO_REPLACE, axis.name().toLowerCase() ) );
+		super( axis.getName() );
 		this.axis = axis;
 	}
 

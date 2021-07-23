@@ -273,7 +273,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( resetFlowLabelsAction );
 		nnLinkingAction = new NearestNeighborLinkingAction( NearestNeighborLinkingActionMode.ENTIRE, mouseMotionService );
 		pluginActions.add( nnLinkingAction );
-		pluginActions.add( new NearestNeighborLinkingAction( NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT, mouseMotionService ) );
+		pluginActions.add( new NearestNeighborLinkingAction( NearestNeighborLinkingActionMode.AROUND_MOUSE, mouseMotionService ) );
 		trainFlowAction = new TrainFlowAction();
 		pluginActions.add( trainFlowAction );
 		abortProcessingAction = new AbortProcessingAction();

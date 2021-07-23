@@ -51,6 +51,10 @@ import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -79,14 +83,28 @@ public class PredictSpotsAction extends AbstractElephantAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] predict spots%s";
+	private static final String NAME_BASE = "[elephant] predict spots%s";
+
+	private static final String NAME_ENTIRE = String.format( NAME_BASE, "" );
+
+	private static final String NAME_AROUND_MOUSE = String.format( NAME_BASE, " (around mouse)" );
 
 	private static final String MENU_TEXT = "Predict Spots";
 
+	private static final String[] MENU_KEYS_ENTIRE = new String[] { "alt S" };
+
+	private static final String[] MENU_KEYS_AROUND_MOUSE = new String[] { "alt shift S" };
+
+	private static final String DESCRIPTION_BASE = "Predict spots. %s";
+
+	private static final String DESCRIPTION_ENTIRE = String.format( DESCRIPTION_BASE, "(entire view)" );
+
+	private static final String DESCRIPTION_AROUND_MOUSE = String.format( DESCRIPTION_BASE, "(around mouse)" );
+
 	public enum PredictSpotsActionMode
 	{
-		ENTIRE( String.format( NAME, "" ), new String[] { "alt F" } ),
-		AROUND_MOUSE( String.format( NAME, " (around selection)" ), new String[] { "alt shift F" } );
+		ENTIRE( NAME_ENTIRE, MENU_KEYS_ENTIRE ),
+		AROUND_MOUSE( NAME_AROUND_MOUSE, MENU_KEYS_AROUND_MOUSE );
 
 		private String name;
 
@@ -118,6 +136,31 @@ public class PredictSpotsAction extends AbstractElephantAction
 	private VoxelDimensions cropBoxSize;
 
 	private JsonObject jsonRootObject;
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_ENTIRE,
+					MENU_KEYS_ENTIRE,
+					DESCRIPTION_ENTIRE );
+			descriptions.add(
+					NAME_AROUND_MOUSE,
+					MENU_KEYS_AROUND_MOUSE,
+					DESCRIPTION_AROUND_MOUSE );
+		}
+	}
 
 	@Override
 	public String getMenuText()

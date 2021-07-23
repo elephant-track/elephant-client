@@ -31,6 +31,10 @@ import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
@@ -57,6 +61,29 @@ public class AbortProcessingAction extends AbstractElephantAction
 	private static final String MENU_TEXT = "Abort Processing";
 
 	private static final String[] MENU_KEYS = new String[] { "ctrl C" };
+
+	private static final String DESCRIPTION = "Abort processing.";
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME,
+					MENU_KEYS,
+					DESCRIPTION );
+		}
+	}
 
 	@Override
 	public String getMenuText()

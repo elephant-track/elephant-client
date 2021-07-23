@@ -64,6 +64,10 @@ import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.model.tag.TagSetStructure.TagSet;
 import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -90,14 +94,28 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] nearest neighbor linking%s";
+	private static final String NAME_BASE = "[elephant] nearest neighbor linking%s";
+
+	private static final String NAME_ENTIRE = String.format( NAME_BASE, "" );
+
+	private static final String NAME_AROUND_MOUSE = String.format( NAME_BASE, " (around mouse)" );
 
 	private static final String MENU_TEXT = "Nearest Neighbor Linking";
 
+	private static final String[] MENU_KEYS_ENTIRE = new String[] { "alt L" };
+
+	private static final String[] MENU_KEYS_AROUND_MOUSE = new String[] { "alt shift L" };
+
+	private static final String DESCRIPTION_BASE = "Link spots by the nearest neighbor algorithm. %s";
+
+	private static final String DESCRIPTION_ENTIRE = String.format( DESCRIPTION_BASE, "(entire view)" );
+
+	private static final String DESCRIPTION_AROUND_MOUSE = String.format( DESCRIPTION_BASE, "(around mouse)" );
+
 	public enum NearestNeighborLinkingActionMode
 	{
-		ENTIRE( String.format( NAME, "" ), new String[] { "alt L" } ),
-		AROUND_HIGHLIGHT( String.format( NAME, " (around selection)" ), new String[] { "alt shift L" } );
+		ENTIRE( NAME_ENTIRE, MENU_KEYS_ENTIRE ),
+		AROUND_MOUSE( NAME_AROUND_MOUSE, MENU_KEYS_AROUND_MOUSE );
 
 		private String name;
 
@@ -137,6 +155,31 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 	private double squaredDistanceThreshold;
 
 	private int maxEdges;
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_ENTIRE,
+					MENU_KEYS_ENTIRE,
+					DESCRIPTION_ENTIRE );
+			descriptions.add(
+					NAME_AROUND_MOUSE,
+					MENU_KEYS_AROUND_MOUSE,
+					DESCRIPTION_AROUND_MOUSE );
+		}
+	}
 
 	@Override
 	public String getMenuText()
@@ -191,7 +234,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 					.add( getMainSettings().getPatchSizeZ() ) );
 		}
 
-		if ( mode == NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT )
+		if ( mode == NearestNeighborLinkingActionMode.AROUND_MOUSE )
 		{
 			final long[] cropOrigin = new long[ 3 ];
 			final long[] cropSize = new long[ 3 ];
@@ -227,7 +270,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			final Tag trackingUnlabeledTag = getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME );
 			Predicate< Link > edgeFilter = edge -> edge.getTarget().getTimepoint() == timepoint;
 			edgeFilter = edgeFilter.and( edge -> getEdgeTagMap( getTrackingTagSet() ).get( edge ) == trackingUnlabeledTag );
-			if ( mode == NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT )
+			if ( mode == NearestNeighborLinkingActionMode.AROUND_MOUSE )
 				edgeFilter = edgeFilter.and( edge -> ElephantUtils.edgeIsInside( edge, cropBoxOrigin, cropBoxSize ) );
 			// acquire lock inside removeEdgesTaggedWith
 			removeEdges( getGraph().edges(), edgeFilter );
@@ -241,7 +284,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 				Predicate< Spot > spotFilter = spot -> spot.getTimepoint() == timepoint;
 				spotFilter = spotFilter.and( spot -> tagsToProcess.contains( tagMapDetection.get( spot ) ) );
 				spotFilter = spotFilter.and( spot -> spot.incomingEdges().size() == 0 );
-				if ( mode == NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT )
+				if ( mode == NearestNeighborLinkingActionMode.AROUND_MOUSE )
 					spotFilter = spotFilter.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
 				addSpotsToJsonFlow( getGraph().vertices(), jsonSpots, spotFilter );
 			}

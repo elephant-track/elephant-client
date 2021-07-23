@@ -730,7 +730,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 		}
 	}
 
-	public void updateGpuTableModel( final Collection< GPU > gpus )
+	public synchronized void updateGpuTableModel( final Collection< GPU > gpus )
 	{
 		// Clear all first
 		gpuTableModel.setRowCount( 0 );
@@ -750,7 +750,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 		SwingUtilities.invokeLater( () -> gpuTableModel.fireTableDataChanged() );
 	}
 
-	private void updatePortForwardTableModel() throws JSchException
+	private synchronized void updatePortForwardTableModel() throws JSchException
 	{
 		// Clear all first
 		portForwardTableModel.setRowCount( 0 );

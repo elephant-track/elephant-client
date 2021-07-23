@@ -33,6 +33,10 @@ import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.mastodon.mamut.model.Spot;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import net.imglib2.util.LinAlgHelpers;
@@ -49,25 +53,45 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String WORD_TO_REPLACE = "INCREASE/DECREASE";
+	private static final String NAME_BASE = "[elephant] %s ellipsoid size";
 
-	private static final String NAME = "[elephant] " + WORD_TO_REPLACE + " ellipsoid size";
+	private static final String NAME_INCREASE = String.format( NAME_BASE, "increase" );
+
+	private static final String NAME_DECREASE = String.format( NAME_BASE, "decrease" );
+
+	private static final String[] MENU_KEYS_INCREASE = new String[] { "alt E" };
+
+	private static final String[] MENU_KEYS_DECREASE = new String[] { "alt Q" };
+
+	private static final String DESCRIPTION_BASE = "%s the size of the highlighted vertex in the specified axis.";
+
+	private static final String DESCRIPTION_INCREASE = String.format( DESCRIPTION_BASE, "Increase" );
+
+	private static final String DESCRIPTION_DECREASE = String.format( DESCRIPTION_BASE, "Decrease" );
 
 	private static final double SIZE_CHANGE_FACTOR_BASE = 0.1;
 
 	public enum ChangeEllipsoidSizeActionMode
 	{
-		INCREASE( 1 + SIZE_CHANGE_FACTOR_BASE, new String[] { "alt E" } ),
-		DECREASE( 1 - SIZE_CHANGE_FACTOR_BASE, new String[] { "alt Q" } );
+		INCREASE( 1 + SIZE_CHANGE_FACTOR_BASE, NAME_INCREASE, MENU_KEYS_INCREASE ),
+		DECREASE( 1 - SIZE_CHANGE_FACTOR_BASE, NAME_DECREASE, MENU_KEYS_DECREASE );
 
 		private double factor;
 
+		private String name;
+
 		private String[] menuKeys;
 
-		private ChangeEllipsoidSizeActionMode( final double factor, final String[] menuKeys )
+		private ChangeEllipsoidSizeActionMode( final double factor, final String name, final String[] menuKeys )
 		{
 			this.factor = factor;
+			this.name = name;
 			this.menuKeys = menuKeys;
+		}
+
+		public String getName()
+		{
+			return name;
 		}
 
 		public double getFactor()
@@ -83,6 +107,31 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 
 	private final ChangeEllipsoidSizeActionMode mode;
 
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_INCREASE,
+					MENU_KEYS_INCREASE,
+					DESCRIPTION_INCREASE );
+			descriptions.add(
+					NAME_DECREASE,
+					MENU_KEYS_DECREASE,
+					DESCRIPTION_DECREASE );
+		}
+	}
+
 	@Override
 	public String[] getMenuKeys()
 	{
@@ -91,7 +140,7 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 
 	public ChangeEllipsoidSizeAction( final ChangeEllipsoidSizeActionMode mode )
 	{
-		super( NAME.replace( WORD_TO_REPLACE, mode.name().toLowerCase() ) );
+		super( mode.getName() );
 		this.mode = mode;
 	}
 
