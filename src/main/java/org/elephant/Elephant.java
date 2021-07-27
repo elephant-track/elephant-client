@@ -102,6 +102,7 @@ import org.elephant.actions.UnirestService;
 import org.elephant.actions.UpdateFlowLabelsAction;
 import org.elephant.actions.UpdateSegLabelsAction;
 import org.elephant.actions.UpdateTrainingParametersService;
+import org.elephant.actions.UploadAction;
 import org.elephant.actions.VertexPositionListenerService;
 import org.mastodon.app.plugin.MastodonPlugin;
 import org.mastodon.app.ui.ViewMenuBuilder.MenuItem;
@@ -233,6 +234,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction showLogWindowAction;
 
+	private final AbstractElephantAction uploadAction;
+
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
 	private final BdvViewMouseMotionService mouseMotionService;
@@ -349,6 +352,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( importMastodonAction );
 		exportCTCAction = new ExportCTCAction();
 		pluginActions.add( exportCTCAction );
+		uploadAction = new UploadAction();
+		pluginActions.add( uploadAction );
 	}
 
 	/**
@@ -440,7 +445,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( takeSnapshotAction.name() ),
 										item( recordSnapshotMovieAction.name() ),
 										item( importMastodonAction.name() ),
-										item( exportCTCAction.name() ) ),
+										item( exportCTCAction.name() ),
+										item( uploadAction.name() ) ),
 								menu( "Analysis",
 										item( tagProgenitorAction.name() ),
 										item( tagProliferatorAction.name() ),

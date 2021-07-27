@@ -116,6 +116,8 @@ public interface ElephantConstantsMixin
 
 	public static final String ENDPOINT_GPUS = "gpus";
 
+	public static final String ENDPOINT_UPLOAD = "upload";
+
 	/**
 	 * REST API JSON keys
 	 */

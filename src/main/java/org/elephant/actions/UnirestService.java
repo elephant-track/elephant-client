@@ -48,7 +48,6 @@ public class UnirestService extends AbstractElephantService
 				.socketTimeout( UNIREST_TIMEOUT )
 				.connectTimeout( UNIREST_TIMEOUT )
 				.concurrency( 10, 2 )
-				.setDefaultHeader( "Content-Type", "application/json" )
 				.addDefaultHeader( "Cache-Control", "no-cache" )
 				.addDefaultHeader( "Connection", "keep-alive" );
 	}
