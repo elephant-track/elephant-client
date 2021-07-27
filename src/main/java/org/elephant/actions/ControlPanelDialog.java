@@ -687,7 +687,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 					updatePortForwardTableModel();
 					Thread.sleep( 5000 );
 				}
-				catch ( final InterruptedException | JSchException e )
+				catch ( final InterruptedException e )
 				{
 					handleError( e );
 				}
@@ -732,48 +732,59 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 
 	public synchronized void updateGpuTableModel( final Collection< GPU > gpus )
 	{
-		// Clear all first
-		gpuTableModel.setRowCount( 0 );
-		// Add GPU data
-		for ( final GPU gpu : gpus )
-		{
-			gpuTableModel.addRow( new String[] {
-					String.valueOf( gpu.getId() ),
-					gpu.getName(),
-					String.format( "%.0fMiB / %.0fMiB", gpu.getUsedMemory(), gpu.getTotalMemory() )
-			} );
-		}
-		if ( gpuTableModel.getRowCount() == 0 )
-		{
-			gpuTableModel.addRow( DEFAULT_ROW_VALUES_GPU );
-		}
-		SwingUtilities.invokeLater( () -> gpuTableModel.fireTableDataChanged() );
+		SwingUtilities.invokeLater( () -> {
+			// Clear all first
+			gpuTableModel.setRowCount( 0 );
+			// Add GPU data
+			for ( final GPU gpu : gpus )
+			{
+				gpuTableModel.addRow( new String[] {
+						String.valueOf( gpu.getId() ),
+						gpu.getName(),
+						String.format( "%.0fMiB / %.0fMiB", gpu.getUsedMemory(), gpu.getTotalMemory() )
+				} );
+			}
+			if ( gpuTableModel.getRowCount() == 0 )
+			{
+				gpuTableModel.addRow( DEFAULT_ROW_VALUES_GPU );
+			}
+			gpuTableModel.fireTableDataChanged();
+		} );
 	}
 
-	private synchronized void updatePortForwardTableModel() throws JSchException
+	private synchronized void updatePortForwardTableModel()
 	{
-		// Clear all first
-		portForwardTableModel.setRowCount( 0 );
-		// Add rows
-		for ( final Session session : sessionSet )
-		{
-			if ( session.isConnected() )
+		SwingUtilities.invokeLater( () -> {
+			// Clear all first
+			portForwardTableModel.setRowCount( 0 );
+			// Add rows
+			for ( final Session session : sessionSet )
 			{
-				for ( final String portForwardString : session.getPortForwardingL() )
+				if ( session.isConnected() )
 				{
-					portForwardTableModel.addRow( new Object[] {
-							session.getUserName() + "@" + session.getHost() + ":" + session.getPort(),
-							portForwardString,
-							btnDelete
-					} );
+					try
+					{
+						for ( final String portForwardString : session.getPortForwardingL() )
+						{
+							portForwardTableModel.addRow( new Object[] {
+									session.getUserName() + "@" + session.getHost() + ":" + session.getPort(),
+									portForwardString,
+									btnDelete
+							} );
+						}
+					}
+					catch ( final JSchException e )
+					{
+						handleError( e );
+					}
 				}
 			}
-		}
-		if ( portForwardTableModel.getRowCount() == 0 )
-		{
-			portForwardTableModel.addRow( DEFAULT_ROW_VALUES_PORT_FORWARD );
-		}
-		SwingUtilities.invokeLater( () -> portForwardTableModel.fireTableDataChanged() );
+			if ( portForwardTableModel.getRowCount() == 0 )
+			{
+				portForwardTableModel.addRow( DEFAULT_ROW_VALUES_PORT_FORWARD );
+			}
+			portForwardTableModel.fireTableDataChanged();
+		} );
 	}
 
 	private class SimpleHeaderRenderer extends JLabel implements TableCellRenderer
