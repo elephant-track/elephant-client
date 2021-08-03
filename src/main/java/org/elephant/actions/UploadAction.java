@@ -27,12 +27,14 @@
 package org.elephant.actions;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -58,6 +60,8 @@ public class UploadAction extends AbstractElephantAction
 	private static final String NAME = "[elephant] upload an image data (.h5) to the server";
 
 	private static final String MENU_TEXT = "Upload an Image Data";
+
+	final static int CHUNK_SIZE = 10 * 1024 * 1024;
 
 	@Override
 	public String getMenuText()
@@ -98,27 +102,60 @@ public class UploadAction extends AbstractElephantAction
 		}
 		if ( hdf5File != null )
 		{
-			final JFrame frame = new JFrame( "Uploading..." );
-			frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-			final JProgressBar progressBar = new JProgressBar();
-			progressBar.setValue( 0 );
-			progressBar.setStringPainted( true );
-			frame.add( progressBar );
-			frame.pack();
-			frame.setLocationRelativeTo( null );
-			SwingUtilities.invokeLater( () -> frame.setVisible( true ) );
-			Unirest.post( getEndpointURL( ENDPOINT_UPLOAD ) )
-					.field( "dataset", getMainSettings().getDatasetName() )
-					.field( "file", hdf5File, hdf5File.getName() )
-					.uploadMonitor( ( field, fileName, bytesWritten, totalBytes ) -> {
-						System.out.println( String.format( "%.2f / %.2f", toMB( bytesWritten ), toMB( totalBytes ) ) );
-						progressBar.setValue( ( int ) ( 100 * bytesWritten / totalBytes ) );
-						if ( bytesWritten >= totalBytes )
+			final UploadDialog uploadDialog = new UploadDialog();
+			SwingUtilities.invokeLater( () -> uploadDialog.setVisible( true ) );
+			try
+			{
+				final byte[] buff = new byte[ CHUNK_SIZE ];
+				final long fileSize = hdf5File.length();
+				int bytesOffset = 0;
+				try (final InputStream fis = new FileInputStream( hdf5File ))
+				{
+					while ( !uploadDialog.isCancelled() )
+					{
+						final int readBytes = fis.read( buff );
+						if ( readBytes == -1 )
 						{
-							SwingUtilities.invokeLater( () -> frame.setVisible( false ) );
+							break;
 						}
-					} )
-					.asEmpty();
+						final long bytesOffsetL = bytesOffset;
+						final File tempFile = File.createTempFile( "elephant", ".h5", null );
+						try
+						{
+							try (final FileOutputStream fos = new FileOutputStream( tempFile ))
+							{
+								fos.write( buff );
+							}
+							Unirest.post( getEndpointURL( ENDPOINT_UPLOAD ) )
+									.field( "dataset", getMainSettings().getDatasetName() )
+									.field( "filename", hdf5File.getName() )
+									.field( "action", bytesOffset == 0 ? "init" : "append" )
+									.field( "file", tempFile )
+									.uploadMonitor( ( field, fileName, bytesWritten, totalBytes ) -> {
+										uploadDialog.setLabelText( String.format( "%.2f MB / %.2f MB", toMB( bytesOffsetL + bytesWritten ), toMB( fileSize ) ) );
+										uploadDialog.setProgressBarValue( ( int ) ( 100 * ( bytesOffsetL + bytesWritten ) / fileSize ) );
+									} )
+									.asEmpty();
+							bytesOffset += readBytes;
+						}
+						finally
+						{
+							tempFile.delete();
+						}
+					}
+					Unirest.post( getEndpointURL( ENDPOINT_UPLOAD ) )
+							.field( "dataset", getMainSettings().getDatasetName() )
+							.field( "filename", hdf5File.getName() )
+							.field( "action", uploadDialog.isCancelled() ? "cancel" : "complete" )
+							.asEmpty();
+				}
+				SwingUtilities.invokeLater( () -> uploadDialog.dispose() );
+			}
+			catch ( final IOException e )
+			{
+				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				return;
+			}
 		}
 	}
 
