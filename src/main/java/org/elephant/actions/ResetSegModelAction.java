@@ -45,10 +45,6 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
@@ -56,7 +52,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class ResetSegModelAction extends AbstractElephantAction
+public class ResetSegModelAction extends AbstractElephantDatasetAction
 		implements BdvDataMixin, ElephantConstantsMixin, UIActionMixin, URLMixin
 {
 
@@ -78,7 +74,7 @@ public class ResetSegModelAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final AtomicInteger option = new AtomicInteger();
 		try
@@ -108,44 +104,24 @@ public class ResetSegModelAction extends AbstractElephantAction
 					.add( JSON_KEY_SEG_MODEL_NAME, getMainSettings().getSegModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 					.add( JSON_KEY_IS_3D, !is2D() );
-			Unirest.post( getEndpointURL( ENDPOINT_RESET_SEG_MODEL ) ).body( jsonRootObject.toString() ).asStringAsync( new Callback< String >()
-			{
-
-				@Override
-				public void failed( final UnirestException e )
-				{
-					getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-					getLogger().severe( "The request has failed" );
-					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-				}
-
-				@Override
-				public void completed( final HttpResponse< String > response )
-				{
-					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-					{
-						showTextOverlayAnimator( "Segmentation model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
-					}
-					else
-					{
-						final StringBuilder sb = new StringBuilder( response.getStatusText() );
-						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+			postAsStringAsync( getEndpointURL( ENDPOINT_RESET_SEG_MODEL ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							sb.append( ": " );
-							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							showTextOverlayAnimator( "Segmentation model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 						}
-						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getLogger().severe( sb.toString() );
-					}
-				}
-
-				@Override
-				public void cancelled()
-				{
-					getLogger().info( "The request has been cancelled" );
-				}
-
-			} );
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							{
+								sb.append( ": " );
+								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							}
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getLogger().severe( sb.toString() );
+						}
+					} );
 		}
 	}
 

@@ -106,6 +106,11 @@ public interface LoggerMixin
 		JFrameHandler.getInstance().showLogWindow();
 	}
 
+	default void handleError( Exception e )
+	{
+		getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+	}
+
 	/**
 	 * Modified from the following original code:
 	 * http://www.java2s.com/Tutorial/Java/0480__Log/WindowHandlerdisplaylogmessageinawindowJFrame.htm

@@ -33,13 +33,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
@@ -56,10 +55,6 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
@@ -68,8 +63,8 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class UpdateSegLabelsAction extends AbstractElephantAction
-		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointActionMixin, UIActionMixin, URLMixin, WindowManagerMixin
+public class UpdateSegLabelsAction extends AbstractElephantDatasetAction
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -129,7 +124,7 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
@@ -180,48 +175,25 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_SPOTS, jsonSpots )
 				.add( JSON_KEY_IS_3D, !is2D() );
-
-		Unirest.post( getEndpointURL( ENDPOINT_UPDATE_SEG ) )
-				.body( jsonRootObject.toString() )
-				.asStringAsync( new Callback< String >()
-				{
-
-					@Override
-					public void failed( final UnirestException e )
+		postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_SEG ), jsonRootObject.toString(),
+				response -> {
+					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-						getLogger().severe( "The request has failed" );
-						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
+						final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+						final String message = rootObject.get( "completed" ).asBoolean() ? "Segmentation labels are updated" : "Update aborted";
+						showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.CENTER );
 					}
-
-					@Override
-					public void completed( final HttpResponse< String > response )
+					else
 					{
-						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+						final StringBuilder sb = new StringBuilder( response.getStatusText() );
+						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 						{
-							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final String message = rootObject.get( "completed" ).asBoolean() ? "Segmentation labels are updated" : "Update aborted";
-							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.CENTER );
+							sb.append( ": " );
+							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 						}
-						else
-						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
-							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
-						}
+						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+						getLogger().severe( sb.toString() );
 					}
-
-					@Override
-					public void cancelled()
-					{
-						getLogger().info( "The request has been cancelled" );
-					}
-
 				} );
 	}
 

@@ -187,16 +187,16 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 	{
 		getGraph().getLock().writeLock().lock();
 		getActionStateManager().setWriting( true );
+		Spot spot = null;
 		try
 		{
 			final ObjTagMap< Spot, Tag > tagMapDetection = getVertexTagMap( getDetectionTagSet() );
 			final Spot ref = getGraph().vertexRef();
-			final Spot spot = getAppModel().getHighlightModel().getHighlightedVertex( ref );
+			spot = getAppModel().getHighlightModel().getHighlightedVertex( ref );
 
 			if ( spot != null )
 			{
-				tagMapDetection.set( spot, getTag( getDetectionTagSet(), tagMode.getName() ) );
-				getLogger().info( spot + " was tagged with " + tagMode.getName() );
+				tagMapDetection.set( spot, getTag( getDetectionTagSet(), tagMode.name().toLowerCase() ) );
 			}
 			getGraph().releaseRef( ref );
 		}
@@ -205,6 +205,7 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 			getActionStateManager().setWriting( false );
 			getModel().setUndoPoint();
 			getGraph().getLock().writeLock().unlock();
+			getLogger().info( spot + " was tagged with " + tagMode.name() );
 			notifyGraphChanged();
 		}
 	}

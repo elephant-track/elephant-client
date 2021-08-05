@@ -26,8 +26,14 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.awt.BorderLayout;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
@@ -36,6 +42,8 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.scijava.listeners.Listeners;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
 import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -58,13 +66,19 @@ public class RabbitMQService extends AbstractElephantService
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String RABBITMQ_QUEUE_NAME = "update";
+	private static final String RABBITMQ_QUEUE_UPDATE = "update";
+
+	private static final String RABBITMQ_QUEUE_DATASET = "dataset";
 
 	private Connection connection;
+
+	private Channel channel;
 
 	private final Listeners.List< RabbitMQStatusListener > rabbitMQStatusListeners;
 
 	private final ExceptionHandler emptyExceptionHandler = new EmptyExceptionHander();
+
+	private final ProgressDialog progressDialog = new ProgressDialog();
 
 	public RabbitMQService()
 	{
@@ -122,13 +136,33 @@ public class RabbitMQService extends AbstractElephantService
 		factory.setPassword( getServerSettings().getRabbitMQPassword() );
 		factory.setRequestedHeartbeat( 0 );
 		connection = factory.newConnection();
-		final Channel channel = connection.createChannel();
-		channel.queueDeclare( RABBITMQ_QUEUE_NAME, false, false, false, null );
-		final DeliverCallback deliverCallback = ( consumerTag, delivery ) -> {
+		channel = connection.createChannel();
+		channel.queueDeclare( RABBITMQ_QUEUE_UPDATE, false, false, false, null );
+		final DeliverCallback callbackUpdate = ( consumerTag, delivery ) -> {
 			final String message = new String( delivery.getBody(), "UTF-8" );
 			addTextOverlayAnimator( message, 3000, TextPosition.CENTER );
 		};
-		channel.basicConsume( RABBITMQ_QUEUE_NAME, true, deliverCallback, consumerTag -> {} );
+		channel.basicConsume( RABBITMQ_QUEUE_UPDATE, true, callbackUpdate, consumerTag -> {} );
+		channel.queueDeclare( RABBITMQ_QUEUE_DATASET, false, false, false, null );
+		final DeliverCallback callbackDataset = ( consumerTag, delivery ) -> {
+			final String message = new String( delivery.getBody(), "UTF-8" );
+			final JsonObject jsonObject = Json.parse( message ).asObject();
+			final int tMax = jsonObject.get( "t_max" ).asInt();
+			final int tCurrent = jsonObject.get( "t_current" ).asInt();
+			if ( tCurrent < tMax )
+			{
+				progressDialog.setProgressBarValue( 100 * tCurrent / tMax );
+				progressDialog.setLabelText( String.format( "%d / %d", tCurrent, tMax ) );
+				progressDialog.setVisible( true );
+			}
+			else
+			{
+				progressDialog.setProgressBarValue( 0 );
+				progressDialog.setLabelText( "" );
+				progressDialog.setVisible( false );
+			}
+		};
+		channel.basicConsume( RABBITMQ_QUEUE_DATASET, true, callbackDataset, consumerTag -> {} );
 	}
 
 	private synchronized void closeConnection()
@@ -190,6 +224,41 @@ public class RabbitMQService extends AbstractElephantService
 		public void handleTopologyRecoveryException( Connection conn, Channel ch, TopologyRecoveryException exception )
 		{}
 
+	}
+
+	private class ProgressDialog extends JDialog
+	{
+		private static final long serialVersionUID = 1L;
+
+		private final JProgressBar progressBar = new JProgressBar();
+
+		private final JLabel lblText = new JLabel( "" );
+
+		public ProgressDialog()
+		{
+			setDefaultCloseOperation( JDialog.DO_NOTHING_ON_CLOSE );
+			setTitle( "Gnerate Dataset" );
+
+			progressBar.setValue( 0 );
+			progressBar.setStringPainted( true );
+			getContentPane().add( progressBar, BorderLayout.CENTER );
+
+			lblText.setHorizontalAlignment( SwingConstants.CENTER );
+			getContentPane().add( lblText, BorderLayout.NORTH );
+
+			pack();
+			setLocationRelativeTo( null );
+		}
+
+		public void setLabelText( final String text )
+		{
+			lblText.setText( text );
+		}
+
+		public void setProgressBarValue( final int value )
+		{
+			progressBar.setValue( value );
+		}
 	}
 
 }

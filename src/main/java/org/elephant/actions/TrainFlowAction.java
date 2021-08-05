@@ -32,11 +32,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.mamut.model.Link;
@@ -47,10 +46,6 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
@@ -58,8 +53,8 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class TrainFlowAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, TimepointActionMixin, UIActionMixin, URLMixin
+public class TrainFlowAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, TimepointMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -80,7 +75,7 @@ public class TrainFlowAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final int currentTimepoint = getCurrentTimepoint( 0 );
 		getLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
@@ -130,48 +125,25 @@ public class TrainFlowAction extends AbstractElephantAction
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
 				.add( JSON_KEY_FLOW_LOG_DIR, getMainSettings().getFlowLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
-
-		Unirest.post( getEndpointURL( ENDPOINT_TRAIN_FLOW ) )
-				.body( jsonRootObject.toString() )
-				.asStringAsync( new Callback< String >()
-				{
-
-					@Override
-					public void failed( final UnirestException e )
+		postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_FLOW ), jsonRootObject.toString(),
+				response -> {
+					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-						getLogger().severe( "The request has failed" );
-						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
+						final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+						final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
+						showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 					}
-
-					@Override
-					public void completed( final HttpResponse< String > response )
+					else
 					{
-						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+						final StringBuilder sb = new StringBuilder( response.getStatusText() );
+						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 						{
-							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
-							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+							sb.append( ": " );
+							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 						}
-						else
-						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
-							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
-						}
+						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+						getLogger().severe( sb.toString() );
 					}
-
-					@Override
-					public void cancelled()
-					{
-						getLogger().info( "The request has been cancelled" );
-					}
-
 				} );
 	}
 

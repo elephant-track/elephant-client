@@ -26,50 +26,47 @@
  ******************************************************************************/
 package org.elephant.actions;
 
-import org.elephant.actions.ElephantStatusService.ElephantStatus;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
-import org.elephant.actions.mixins.UnirestMixin;
-import org.elephant.setting.main.ElephantMainSettingsListener;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import java.lang.reflect.InvocationTargetException;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
-import bdv.viewer.animate.TextOverlayAnimator;
+import org.elephant.actions.mixins.ElephantDatasetMixin;
 
 /**
- * Send a request for updating the training parameters.
+ * An abstract class for ELEPHANT actions that depends a dataset on the server.
  * 
  * @author Ko Sugawara
  */
-public class UpdateTrainingParametersService extends AbstractElephantService
-		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin, UnirestMixin, URLMixin
+public abstract class AbstractElephantDatasetAction extends AbstractElephantAction implements ElephantDatasetMixin
 {
+
+	public AbstractElephantDatasetAction( final String name )
+	{
+		super( name );
+	}
 
 	private static final long serialVersionUID = 1L;
 
-	public UpdateTrainingParametersService( final MamutPluginAppModel pluginAppModel )
-	{
-		super();
-		super.init( pluginAppModel, null );
-	}
-
 	@Override
-	public void mainSettingsUpdated()
+	void process()
 	{
-		if ( getServerStateManager().getElephantServerStatus() == ElephantStatus.UNAVAILABLE ) { return; }
-
-		final JsonObject jsonRootObject = Json.object()
-				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
-				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() );
-		postAsStringAsync( getEndpointURL( ENDPOINT_PARAMS ), jsonRootObject.toString(),
-				response -> {
-					showTextOverlayAnimator( "Params updated", 3000, TextOverlayAnimator.TextPosition.CENTER );
-				} );
+		final boolean isReady = ensureDataset();
+		if ( !isReady )
+		{
+			try
+			{
+				SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Dataset is not ready." ) );
+			}
+			catch ( InvocationTargetException | InterruptedException e )
+			{
+				handleError( e );
+			}
+			return;
+		}
+		processDataset();
 	}
+
+	abstract void processDataset();
 
 }

@@ -52,7 +52,7 @@ import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantUtils;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.collection.RefCollections;
@@ -75,10 +75,6 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RealPoint;
@@ -88,8 +84,8 @@ import net.imglib2.RealPoint;
  * 
  * @author Ko Sugawara
  */
-public class NearestNeighborLinkingAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantGraphTagActionMixin, UIActionMixin, SpatioTemporalIndexActionMinxin, TimepointActionMixin, URLMixin
+public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantGraphTagActionMixin, UIActionMixin, SpatioTemporalIndexActionMinxin, TimepointMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -201,7 +197,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
@@ -296,52 +292,30 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			{
 				jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
 				jsonRootObject.set( JSON_KEY_SPOTS, jsonSpots );
-				Unirest.post( getEndpointURL( ENDPOINT_PREDICT_FLOW ) )
-						.body( jsonRootObject.toString() )
-						.asStringAsync( new Callback< String >()
-						{
-
-							@Override
-							public void failed( final UnirestException e )
+				postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
+						response -> {
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
-								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-								getLogger().severe( "The request has failed" );
-								showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-							}
-
-							@Override
-							public void completed( final HttpResponse< String > response )
-							{
-								if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-								{
-									final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-									final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
-									linkSpots( jsonSpots, timepoint, tagsToProcess, timepointIterator, pos, cov );
-									showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
-									if ( getActionStateManager().isAborted() )
-										showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
-									else
-										processNext( timepointIterator, pos, cov );
-								}
+								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+								final JsonArray jsonSpotsRes = rootObject.get( "spots" ).asArray();
+								linkSpots( jsonSpotsRes, timepoint, tagsToProcess, timepointIterator, pos, cov );
+								showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
+								if ( getActionStateManager().isAborted() )
+									showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 								else
-								{
-									final StringBuilder sb = new StringBuilder( response.getStatusText() );
-									if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
-									{
-										sb.append( ": " );
-										sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-									}
-									showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-									getLogger().severe( sb.toString() );
-								}
+									processNext( timepointIterator, pos, cov );
 							}
-
-							@Override
-							public void cancelled()
+							else
 							{
-								getLogger().info( "The request has been cancelled" );
+								final StringBuilder sb = new StringBuilder( response.getStatusText() );
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+								{
+									sb.append( ": " );
+									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								}
+								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+								getLogger().severe( sb.toString() );
 							}
-
 						} );
 			}
 			else

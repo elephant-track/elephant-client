@@ -118,6 +118,10 @@ public interface ElephantConstantsMixin
 
 	public static final String ENDPOINT_UPLOAD = "upload";
 
+	public static final String ENDPOINT_DATASET_CHECK = "dataset/check";
+
+	public static final String ENDPOINT_DATASET_GENERATE = "dataset/generate";
+
 	/**
 	 * REST API JSON keys
 	 */
@@ -141,6 +145,8 @@ public interface ElephantConstantsMixin
 	public static final String JSON_KEY_TRAIN_CROP_SIZE = "crop_size";
 
 	public static final String JSON_KEY_N_KEEP_AXIALS = "n_keep_axials";
+
+	public static final String JSON_KEY_IS_2D = "is_2d";
 
 	public static final String JSON_KEY_IS_3D = "is_3d";
 
@@ -195,5 +201,7 @@ public interface ElephantConstantsMixin
 	public static final String JSON_KEY_USE_MEDIAN = "use_median";
 
 	public static final String JSON_KEY_IS_PAD = "is_pad";
+
+	public static final String JSON_KEY_SHAPE = "shape";
 
 }

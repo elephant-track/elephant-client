@@ -39,16 +39,13 @@ import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.elephant.actions.mixins.UnirestMixin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 
 /**
  * Send a request for reseting a flow model to the server.
@@ -56,7 +53,7 @@ import kong.unirest.UnirestException;
  * @author Ko Sugawara
  */
 public class ResetFlowModelAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantSettingsMixin, UIActionMixin, URLMixin
+		implements BdvDataMixin, ElephantConstantsMixin, ElephantSettingsMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -94,44 +91,24 @@ public class ResetFlowModelAction extends AbstractElephantAction
 					.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 					.add( JSON_KEY_IS_3D, !is2D() );
-			Unirest.post( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ) ).body( jsonRootObject.toString() ).asStringAsync( new Callback< String >()
-			{
-
-				@Override
-				public void failed( final UnirestException e )
-				{
-					getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-					getLogger().severe( "The request has failed" );
-					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-				}
-
-				@Override
-				public void completed( final HttpResponse< String > response )
-				{
-					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-					{
-						showTextOverlayAnimator( "Flow model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
-					}
-					else
-					{
-						final StringBuilder sb = new StringBuilder( response.getStatusText() );
-						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+			postAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							sb.append( ": " );
-							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							showTextOverlayAnimator( "Flow model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 						}
-						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getLogger().severe( sb.toString() );
-					}
-				}
-
-				@Override
-				public void cancelled()
-				{
-					getLogger().info( "The request has been cancelled" );
-				}
-
-			} );
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							{
+								sb.append( ": " );
+								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							}
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getLogger().severe( sb.toString() );
+						}
+					} );
 		}
 	}
 

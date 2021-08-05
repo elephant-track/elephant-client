@@ -35,7 +35,7 @@ import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.collection.RefCollection;
 import org.mastodon.collection.RefCollections;
@@ -51,7 +51,7 @@ import org.mastodon.mamut.model.Spot;
  * @author Ko Sugawara
  */
 public class RemoveVisibleSpotsAction extends AbstractElephantAction
-		implements BdvContextMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, ElephantSettingsMixin, TimepointActionMixin, WindowManagerMixin
+		implements BdvContextMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, ElephantSettingsMixin, TimepointMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 

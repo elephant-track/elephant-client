@@ -56,6 +56,7 @@ import org.elephant.actions.ElephantOverlayService;
 import org.elephant.actions.ElephantServerStatusListener;
 import org.elephant.actions.ElephantStatusService;
 import org.elephant.actions.ElephantUndoActions;
+import org.elephant.actions.EnsureDatasetAction;
 import org.elephant.actions.ExportCTCAction;
 import org.elephant.actions.GraphListenerService;
 import org.elephant.actions.HighlightListenerService;
@@ -236,6 +237,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction uploadAction;
 
+	private final AbstractElephantAction ensureDatasetAction;
+
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
 	private final BdvViewMouseMotionService mouseMotionService;
@@ -354,6 +357,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( exportCTCAction );
 		uploadAction = new UploadAction();
 		pluginActions.add( uploadAction );
+		ensureDatasetAction = new EnsureDatasetAction();
+		pluginActions.add( ensureDatasetAction );
 	}
 
 	/**
@@ -446,7 +451,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( recordSnapshotMovieAction.name() ),
 										item( importMastodonAction.name() ),
 										item( exportCTCAction.name() ),
-										item( uploadAction.name() ) ),
+										item( uploadAction.name() ),
+										item( ensureDatasetAction.name() ) ),
 								menu( "Analysis",
 										item( tagProgenitorAction.name() ),
 										item( tagProliferatorAction.name() ),

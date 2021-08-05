@@ -1,0 +1,137 @@
+/*******************************************************************************
+ * Copyright (C) 2021, Ko Sugawara
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ ******************************************************************************/
+package org.elephant.actions.mixins;
+
+import java.io.File;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
+import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
+import kong.unirest.Callback;
+import kong.unirest.HttpResponse;
+import kong.unirest.RequestBodyEntity;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestException;
+
+/**
+ * Wrapper for Unirest.
+ * 
+ * @author Ko Sugawara
+ */
+public interface UnirestMixin extends ElephantActionMixin, LoggerMixin, UIActionMixin
+{
+	default RequestBodyEntity postBaseJson( final String endpointUrl, final String body )
+	{
+		return Unirest.post( endpointUrl )
+				.header( "Content-Type", "application/json" )
+				.body( body );
+	}
+
+	default CompletableFuture< HttpResponse< String > > postAsStringAsync( final String endpointUrl, final String body,
+			final Consumer< HttpResponse< String > > completed )
+	{
+		return postAsStringAsync( endpointUrl, body, completed,
+				e -> {
+					handleError( e );
+					getLogger().severe( "The request has failed" );
+					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
+				},
+				() -> getLogger().info( "The request has been cancelled" ) );
+	}
+
+	default CompletableFuture< HttpResponse< String > > postAsStringAsync( final String endpointUrl, final String body,
+			final Consumer< HttpResponse< String > > completed, final Consumer< UnirestException > failed, final Runnable cancelled )
+	{
+		return postBaseJson( endpointUrl, body ).asStringAsync( new Callback< String >()
+		{
+
+			@Override
+			public void failed( UnirestException e )
+			{
+				failed.accept( e );
+			};
+
+			@Override
+			public void completed( HttpResponse< String > response )
+			{
+				completed.accept( response );
+			}
+
+			@Override
+			public void cancelled()
+			{
+				cancelled.run();
+			}
+
+		} );
+	}
+
+	default HttpResponse< String > postAsString( final String endpointUrl, final String body )
+	{
+		return postBaseJson( endpointUrl, body ).asString();
+	}
+
+	default CompletableFuture< HttpResponse< File > > postAsFileAsync( final String endpointUrl, final String body,
+			final String path, final Consumer< HttpResponse< File > > completed )
+	{
+		return postAsFileAsync( endpointUrl, body, path, completed,
+				e -> {
+					handleError( e );
+					getLogger().severe( "The request has failed" );
+					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
+				},
+				() -> getLogger().info( "The request has been cancelled" ) );
+	}
+
+	default CompletableFuture< HttpResponse< File > > postAsFileAsync( final String endpointUrl, final String body, final String path,
+			final Consumer< HttpResponse< File > > completed, final Consumer< UnirestException > failed, final Runnable cancelled )
+	{
+		return postBaseJson( endpointUrl, body ).asFileAsync( path, new Callback< File >()
+		{
+
+			@Override
+			public void failed( UnirestException e )
+			{
+				failed.accept( e );
+			};
+
+			@Override
+			public void completed( HttpResponse< File > response )
+			{
+				completed.accept( response );
+			}
+
+			@Override
+			public void cancelled()
+			{
+				cancelled.run();
+			}
+
+		} );
+	}
+
+}

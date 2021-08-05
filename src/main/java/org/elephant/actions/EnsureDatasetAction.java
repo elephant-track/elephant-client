@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020, Ko Sugawara
+ * Copyright (C) 2021, Ko Sugawara
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -24,22 +24,67 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.elephant.actions.mixins;
+package org.elephant.actions;
 
-import org.mastodon.adapter.TimepointModelAdapter;
+import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import org.elephant.actions.mixins.ElephantDatasetMixin;
 
 /**
- * Provide timepoint.
+ * Ensure the dataset on the server.
  * 
  * @author Ko Sugawara
  */
-public interface TimepointActionMixin extends ElephantActionMixin, GroupHandleMixin
+public class EnsureDatasetAction extends AbstractElephantAction
+		implements ElephantDatasetMixin
 {
 
-	default int getCurrentTimepoint( final int groupId )
+	private static final long serialVersionUID = 1L;
+
+	private static final String NAME = "[elephant] ensure the dataset on the server";
+
+	private static final String MENU_TEXT = "Ensure Dataset";
+
+	@Override
+	public String getMenuText()
 	{
-		getGroupHandle().setGroupId( groupId );
-		return new TimepointModelAdapter( getGroupHandle().getModel( getAppModel().TIMEPOINT ) ).getTimepoint();
+		return MENU_TEXT;
+	}
+
+	public EnsureDatasetAction()
+	{
+		super( NAME );
+	}
+
+	@Override
+	void process()
+	{
+		final boolean isReady = ensureDataset();
+		if ( !isReady )
+		{
+			try
+			{
+				SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Dataset is not ready." ) );
+			}
+			catch ( InvocationTargetException | InterruptedException e )
+			{
+				handleError( e );
+			}
+		}
+		else
+		{
+			try
+			{
+				SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Dataset is ready." ) );
+			}
+			catch ( InvocationTargetException | InterruptedException e )
+			{
+				handleError( e );
+			}
+		}
 	}
 
 }

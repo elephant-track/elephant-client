@@ -44,9 +44,10 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.elephant.actions.mixins.UnirestMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.mamut.model.Link;
@@ -62,10 +63,6 @@ import com.opencsv.CSVWriter;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -81,8 +78,8 @@ import net.lingala.zip4j.util.Zip4jUtil;
  *
  * @author Ko Sugawara
  */
-public class ExportCTCAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantGraphTagActionMixin, TimepointActionMixin, UIActionMixin, URLMixin
+public class ExportCTCAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantGraphTagActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -134,7 +131,7 @@ public class ExportCTCAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getMainSettings().getTimeRange();
@@ -226,64 +223,42 @@ public class ExportCTCAction extends AbstractElephantAction
 					.add( JSON_KEY_IS_3D, !is2D() );
 
 			final String zipAbsolutePath = Paths.get( dir.getAbsolutePath(), RES_ZIPNAME ).toString();
-			Unirest.post( getEndpointURL( "export/ctc" ) )
-					.body( jsonRootObject.toString() )
-					.asFileAsync( zipAbsolutePath, new Callback< File >()
-					{
-
-						@Override
-						public void failed( final UnirestException e )
+			postAsFileAsync( getEndpointURL( ENDPOINT_EXPORT_CTC ), jsonRootObject.toString(), zipAbsolutePath,
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-							getLogger().severe( "The request has failed" );
-							showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-						}
-
-						@Override
-						public void completed( final HttpResponse< File > response )
-						{
-							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-							{
-								try
-								{
-									final ZipFile zipFile = new ZipFile( zipAbsolutePath );
-									final List< FileHeader > fileHeaders = zipFile.getFileHeaders();
-									final long currentTime = System.currentTimeMillis();
-									fileHeaders.forEach( header -> header.setLastModifiedTime( Zip4jUtil.epochToExtendedDosTime( currentTime ) ) );
-									zipFile.extractAll( dir.getAbsolutePath() );
-								}
-								catch ( final ZipException e )
-								{
-									getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-								}
-								showTextOverlayAnimator( "completed", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
-							}
-							else if ( response.getStatus() == HttpURLConnection.HTTP_NO_CONTENT )
-							{
-								showTextOverlayAnimator( "cancelled", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
-							}
-							else
-							{
-								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getLogger().severe( sb.toString() );
-							}
 							try
 							{
-								Files.deleteIfExists( Paths.get( zipAbsolutePath ) );
+								final ZipFile zipFile = new ZipFile( zipAbsolutePath );
+								final List< FileHeader > fileHeaders = zipFile.getFileHeaders();
+								final long currentTime = System.currentTimeMillis();
+								fileHeaders.forEach( header -> header.setLastModifiedTime( Zip4jUtil.epochToExtendedDosTime( currentTime ) ) );
+								zipFile.extractAll( dir.getAbsolutePath() );
 							}
-							catch ( final IOException e )
+							catch ( final ZipException e )
 							{
 								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
 							}
+							showTextOverlayAnimator( "completed", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 						}
-
-						@Override
-						public void cancelled()
+						else if ( response.getStatus() == HttpURLConnection.HTTP_NO_CONTENT )
 						{
-							getLogger().info( "The request has been cancelled" );
+							showTextOverlayAnimator( "cancelled", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 						}
-
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getLogger().severe( sb.toString() );
+						}
+						try
+						{
+							Files.deleteIfExists( Paths.get( zipAbsolutePath ) );
+						}
+						catch ( final IOException e )
+						{
+							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+						}
 					} );
 		}
 

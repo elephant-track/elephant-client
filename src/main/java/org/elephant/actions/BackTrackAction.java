@@ -28,14 +28,14 @@ package org.elephant.actions;
 
 import java.net.HttpURLConnection;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.elephant.actions.mixins.UnirestMixin;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
@@ -50,10 +50,6 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
@@ -62,8 +58,8 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class BackTrackAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, TimepointActionMixin, UIActionMixin, URLMixin
+public class BackTrackAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -107,7 +103,7 @@ public class BackTrackAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final int timepoint = getCurrentTimepoint( 0 );
 		if ( timepoint < 1 )
@@ -160,95 +156,74 @@ public class BackTrackAction extends AbstractElephantAction
 			{
 				getGraph().getLock().readLock().unlock();
 			}
-			Unirest.post( getEndpointURL( ENDPOINT_PREDICT_FLOW ) )
-					.body( jsonRootObject.toString() )
-					.asStringAsync( new Callback< String >()
-					{
-
-						@Override
-						public void failed( final UnirestException e )
+			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-							getLogger().severe( "The request has failed" );
-						}
-
-						@Override
-						public void completed( final HttpResponse< String > response )
-						{
-							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+							final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
+							final JsonObject jsonSpot = jsonSpots.get( 0 ).asObject();
+							final int spotId = jsonSpot.get( "id" ).asInt();
+							final Spot orgSpotRef = getGraph().vertexRef();
+							final Spot newSpotRef = getGraph().vertexRef();
+							final Link edgeRef = getGraph().edgeRef();
+							getGraph().getLock().writeLock().lock();
+							try
 							{
-								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-								final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
-								final JsonObject jsonSpot = jsonSpots.get( 0 ).asObject();
-								final int spotId = jsonSpot.get( "id" ).asInt();
-								final Spot spotRef = getGraph().vertexRef();
-								final Spot newSpotRef = getGraph().vertexRef();
-								final Link edgeRef = getGraph().edgeRef();
-								getGraph().getLock().writeLock().lock();
+								final Spot spot = getGraph().vertices().stream().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
+								if ( spot == null )
+								{
+									final String msg = "spot " + spot + " was not found";
+									getLogger().info( msg );
+									showTextOverlayAnimator( msg, 3000, TextPosition.CENTER );
+								}
+								else
+								{
+									orgSpotRef.refTo( spot );
+									final JsonArray jsonPositions = jsonSpot.get( "pos" ).asArray();
+									for ( int j = 0; j < 3; j++ )
+										pos[ j ] = jsonPositions.get( j ).asDouble();
+									final Spot newSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, pos, cov );
+									final Tag detectionFNTag = getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME );
+									final Tag trackingApprovedTag = getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME );
+									getVertexTagMap( getDetectionTagSet() ).set( newSpot, detectionFNTag );
+									final ObjTagMap< Spot, Tag > tagMapTrackingSpot = getVertexTagMap( getTrackingTagSet() );
+									tagMapTrackingSpot.set( newSpot, trackingApprovedTag );
+									final Link edge = getGraph().addEdge( newSpot, spot, edgeRef ).init();
+									final ObjTagMap< Link, Tag > tagMapTrackingLink = getEdgeTagMap( getTrackingTagSet() );
+									tagMapTrackingLink.set( edge, trackingApprovedTag );
+								}
+							}
+							finally
+							{
+								getModel().setUndoPoint();
+								getGraph().getLock().writeLock().unlock();
+								getGraph().getLock().readLock().lock();
 								try
 								{
-									final Spot spot = getGraph().vertices().stream().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
-									if ( spot == null )
-									{
-										final String msg = "spot " + spot + " was not found";
-										getLogger().info( msg );
-										showTextOverlayAnimator( msg, 3000, TextPosition.CENTER );
-									}
-									else
-									{
-										spotRef.refTo( spot );
-										final JsonArray jsonPositions = jsonSpot.get( "pos" ).asArray();
-										for ( int j = 0; j < 3; j++ )
-											pos[ j ] = jsonPositions.get( j ).asDouble();
-										final Spot newSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, pos, cov );
-										final Tag detectionFNTag = getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME );
-										final Tag trackingApprovedTag = getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME );
-										getVertexTagMap( getDetectionTagSet() ).set( newSpot, detectionFNTag );
-										final ObjTagMap< Spot, Tag > tagMapTrackingSpot = getVertexTagMap( getTrackingTagSet() );
-										tagMapTrackingSpot.set( newSpot, trackingApprovedTag );
-										final Link edge = getGraph().addEdge( newSpot, spot, edgeRef ).init();
-										final ObjTagMap< Link, Tag > tagMapTrackingLink = getEdgeTagMap( getTrackingTagSet() );
-										tagMapTrackingLink.set( edge, trackingApprovedTag );
-									}
+									getGroupHandle().getModel( getAppModel().NAVIGATION ).notifyNavigateToVertex( newSpotRef );
 								}
 								finally
 								{
-									getModel().setUndoPoint();
-									getGraph().getLock().writeLock().unlock();
-									getGraph().getLock().readLock().lock();
-									try
-									{
-										getGroupHandle().getModel( getAppModel().NAVIGATION ).notifyNavigateToVertex( newSpotRef );
-									}
-									finally
-									{
-										getGraph().getLock().readLock().unlock();
-									}
-									notifyGraphChanged();
-									getGraph().releaseRef( spotRef );
-									getGraph().releaseRef( newSpotRef );
-									getGraph().releaseRef( edgeRef );
+									getGraph().getLock().readLock().unlock();
 								}
-							}
-							else
-							{
-								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
-								{
-									sb.append( ": " );
-									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-								}
-								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getLogger().severe( sb.toString() );
+								notifyGraphChanged();
+								getGraph().releaseRef( orgSpotRef );
+								getGraph().releaseRef( newSpotRef );
+								getGraph().releaseRef( edgeRef );
 							}
 						}
-
-						@Override
-						public void cancelled()
+						else
 						{
-							getLogger().info( "The request has been cancelled" );
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							{
+								sb.append( ": " );
+								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							}
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getLogger().severe( sb.toString() );
 						}
-
 					} );
 		}
 		finally

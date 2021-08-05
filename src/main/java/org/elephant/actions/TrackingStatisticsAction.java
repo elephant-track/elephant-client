@@ -34,7 +34,7 @@ import javax.swing.SwingUtilities;
 
 import org.elephant.actions.mixins.ElephantTagActionMixin;
 import org.elephant.actions.mixins.GraphActionMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
@@ -52,7 +52,7 @@ import org.mastodon.model.tag.TagSetStructure.Tag;
  * @author Ko Sugawara
  */
 public class TrackingStatisticsAction extends AbstractElephantAction
-		implements GraphActionMixin, ElephantTagActionMixin, TimepointActionMixin
+		implements GraphActionMixin, ElephantTagActionMixin, TimepointMixin
 {
 
 	private static final long serialVersionUID = 1L;

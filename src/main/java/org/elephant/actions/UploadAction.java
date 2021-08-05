@@ -51,13 +51,13 @@ import kong.unirest.Unirest;
  * 
  * @author Ko Sugawara
  */
-public class UploadAction extends AbstractElephantAction
+public class UploadAction extends AbstractElephantDatasetAction
 		implements BdvDataMixin, ElephantConstantsMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] upload an image data (.h5) to the server";
+	public static final String NAME = "[elephant] upload an image data (.h5) to the server";
 
 	private static final String MENU_TEXT = "Upload an Image Data";
 
@@ -75,7 +75,7 @@ public class UploadAction extends AbstractElephantAction
 	}
 
 	@Override
-	void process()
+	void processDataset()
 	{
 		File hdf5File = getHdf5File();
 		if ( hdf5File == null || !hdf5File.exists() )
@@ -127,7 +127,7 @@ public class UploadAction extends AbstractElephantAction
 								fos.write( buff );
 							}
 							Unirest.post( getEndpointURL( ENDPOINT_UPLOAD ) )
-									.field( "dataset", getMainSettings().getDatasetName() )
+									.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 									.field( "filename", hdf5File.getName() )
 									.field( "action", bytesOffset == 0 ? "init" : "append" )
 									.field( "file", tempFile )
@@ -144,7 +144,7 @@ public class UploadAction extends AbstractElephantAction
 						}
 					}
 					Unirest.post( getEndpointURL( ENDPOINT_UPLOAD ) )
-							.field( "dataset", getMainSettings().getDatasetName() )
+							.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 							.field( "filename", hdf5File.getName() )
 							.field( "action", uploadDialog.isCancelled() ? "cancel" : "complete" )
 							.asEmpty();

@@ -42,7 +42,7 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.ElephantUtils;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
@@ -62,10 +62,6 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RealPoint;
@@ -76,9 +72,9 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  * 
  * @author Ko Sugawara
  */
-public class PredictSpotsAction extends AbstractElephantAction
+public class PredictSpotsAction extends AbstractElephantDatasetAction
 		implements BdvDataMixin, EllipsoidActionMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantStateManagerMixin, ElephantGraphTagActionMixin,
-		SpatioTemporalIndexActionMinxin, TimepointActionMixin, UIActionMixin, URLMixin, WindowManagerMixin
+		SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -182,7 +178,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
@@ -245,60 +241,38 @@ public class PredictSpotsAction extends AbstractElephantAction
 		if ( timepointEnd < timepoint )
 			return;
 		jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
-		Unirest.post( getEndpointURL( ENDPOINT_PREDICT_SEG ) )
-				.body( jsonRootObject.toString() )
-				.asStringAsync( new Callback< String >()
-				{
-
-					@Override
-					public void failed( final UnirestException e )
+		postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_SEG ), jsonRootObject.toString(),
+				response -> {
+					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-						getLogger().severe( "The request has failed" );
-						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-					}
-
-					@Override
-					public void completed( final HttpResponse< String > response )
-					{
-						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-						{
-							final String body = response.getBody();
-							final RefCollection< Spot > spots = getGraph().vertices();
-							Predicate< Spot > predicate = spot -> spot.getTimepoint() == timepoint;
-							if ( mode == PredictSpotsActionMode.AROUND_MOUSE )
-								predicate = predicate.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
-							refreshLabels( spots, predicate );
-							predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
-							predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) != getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
-							removeSpots( spots, predicate );
-							addSpotsFromJsonString( body );
-							summary( timepoint );
-							showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
-							if ( getActionStateManager().isAborted() )
-								showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
-							else
-								predictSpotsAt( timepoint + 1, timepointEnd );
-						}
+						final String body = response.getBody();
+						final RefCollection< Spot > spots = getGraph().vertices();
+						Predicate< Spot > predicate = spot -> spot.getTimepoint() == timepoint;
+						if ( mode == PredictSpotsActionMode.AROUND_MOUSE )
+							predicate = predicate.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
+						refreshLabels( spots, predicate );
+						predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
+						predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) != getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
+						removeSpots( spots, predicate );
+						addSpotsFromJsonString( body );
+						summary( timepoint );
+						showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
+						if ( getActionStateManager().isAborted() )
+							showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 						else
-						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
-							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
-						}
+							predictSpotsAt( timepoint + 1, timepointEnd );
 					}
-
-					@Override
-					public void cancelled()
+					else
 					{
-						getLogger().info( "The request has been cancelled" );
+						final StringBuilder sb = new StringBuilder( response.getStatusText() );
+						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+						{
+							sb.append( ": " );
+							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+						}
+						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+						getLogger().severe( sb.toString() );
 					}
-
 				} );
 	}
 
