@@ -132,8 +132,10 @@ public interface LoggerMixin
 
 		public void showMessage( final String msg, final Color color )
 		{
-			colorPane.append( color, msg );
-			SwingUtilities.invokeLater( () -> this.validate() );
+			SwingUtilities.invokeLater( () -> {
+				colorPane.append( color, msg );
+				this.validate();
+			} );
 		}
 	}
 
