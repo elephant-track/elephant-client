@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -68,6 +69,7 @@ import org.elephant.actions.NearestNeighborLinkingAction;
 import org.elephant.actions.NearestNeighborLinkingAction.NearestNeighborLinkingActionMode;
 import org.elephant.actions.PredictSpotsAction;
 import org.elephant.actions.PredictSpotsAction.PredictSpotsActionMode;
+import org.elephant.actions.RabbitMQDatasetListener;
 import org.elephant.actions.RabbitMQService;
 import org.elephant.actions.RabbitMQStatusListener;
 import org.elephant.actions.RecordSnapshotMovieAction;
@@ -395,6 +397,11 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		final RabbitMQService rabbitMQService = new RabbitMQService();
 		rabbitMQService.init( pluginAppModel );
 		rabbitMQService.rabbitMQStatusListeners().add( ( RabbitMQStatusListener ) showControlPanelAction );
+		rabbitMQService.rabbitMQDatasetListeners().addAll(
+				pluginActions.stream()
+						.filter( action -> action instanceof RabbitMQDatasetListener )
+						.map( action -> ( RabbitMQDatasetListener ) action )
+						.collect( Collectors.toList() ) );
 		rabbitMQService.start();
 		// UnirestService
 		new UnirestService();
