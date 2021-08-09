@@ -84,6 +84,7 @@ import org.elephant.actions.ResetFlowLabelsAction;
 import org.elephant.actions.ResetFlowModelAction;
 import org.elephant.actions.ResetSegLabelsAction;
 import org.elephant.actions.ResetSegModelAction;
+import org.elephant.actions.ResetTagSetColorsAction;
 import org.elephant.actions.RotateEllipsoidAction;
 import org.elephant.actions.RotateEllipsoidAction.RotateEllipsoidActionMode;
 import org.elephant.actions.SetControlAxisAction;
@@ -241,6 +242,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction ensureDatasetAction;
 
+	private final AbstractElephantAction resetTagSetColorsAction;
+
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
 	private final BdvViewMouseMotionService mouseMotionService;
@@ -361,6 +364,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( uploadAction );
 		ensureDatasetAction = new EnsureDatasetAction();
 		pluginActions.add( ensureDatasetAction );
+		resetTagSetColorsAction = new ResetTagSetColorsAction();
+		pluginActions.add( resetTagSetColorsAction );
 	}
 
 	/**
@@ -459,7 +464,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( importMastodonAction.name() ),
 										item( exportCTCAction.name() ),
 										item( uploadAction.name() ),
-										item( ensureDatasetAction.name() ) ),
+										item( ensureDatasetAction.name() ),
+										item( resetTagSetColorsAction.name() ) ),
 								menu( "Analysis",
 										item( tagProgenitorAction.name() ),
 										item( tagProliferatorAction.name() ),
