@@ -51,7 +51,7 @@ import kong.unirest.Unirest;
  * 
  * @author Ko Sugawara
  */
-public class UploadAction extends AbstractElephantDatasetAction
+public class UploadAction extends AbstractElephantAction
 		implements BdvDataMixin, ElephantConstantsMixin, UnirestMixin, URLMixin
 {
 
@@ -75,7 +75,7 @@ public class UploadAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	void processDataset()
+	void process()
 	{
 		File hdf5File = getHdf5File();
 		if ( hdf5File == null || !hdf5File.exists() )
