@@ -174,7 +174,7 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 								if ( spot == null )
 								{
 									final String msg = "spot " + spot + " was not found";
-									getLogger().info( msg );
+									getClientLogger().info( msg );
 									showTextOverlayAnimator( msg, 3000, TextPosition.CENTER );
 								}
 								else
@@ -222,7 +222,7 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 							}
 							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
+							getClientLogger().severe( sb.toString() );
 						}
 					} );
 		}

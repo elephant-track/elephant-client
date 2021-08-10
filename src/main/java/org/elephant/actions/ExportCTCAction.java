@@ -158,7 +158,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		final File dir = dirReference.get();
 		if ( dir != null )
@@ -206,7 +206,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 			}
 			catch ( final IOException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 
 			final VoxelDimensions voxelSize = getVoxelDimensions();
@@ -237,7 +237,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 							}
 							catch ( final ZipException e )
 							{
-								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+								getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 							}
 							showTextOverlayAnimator( "completed", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 						}
@@ -249,7 +249,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
 							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
+							getClientLogger().severe( sb.toString() );
 						}
 						try
 						{
@@ -257,7 +257,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 						}
 						catch ( final IOException e )
 						{
-							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+							getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 						}
 					} );
 		}

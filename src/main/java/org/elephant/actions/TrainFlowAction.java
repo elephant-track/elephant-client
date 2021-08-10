@@ -78,7 +78,7 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 	public void processDataset()
 	{
 		final int currentTimepoint = getCurrentTimepoint( 0 );
-		getLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
+		getClientLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 1, timepointEnd - timeRange + 1 );
@@ -142,7 +142,7 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 						}
 						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getLogger().severe( sb.toString() );
+						getClientLogger().severe( sb.toString() );
 					}
 				} );
 	}

@@ -46,33 +46,41 @@ public class LoggerService extends AbstractElephantService implements ElephantMa
 
 	private static final long serialVersionUID = 1L;
 
-	private static Logger logger; // to avoid GC
+	private static Logger clientLogger; // to avoid GC
+
+	private static Logger serverLogger; // to avoid GC
 
 	public void setup()
 	{
-		logger = getLogger();
+		clientLogger = getClientLogger();
+		serverLogger = getServerLogger();
 		try (final InputStream is = getClass().getClassLoader().getResourceAsStream( "logging.properties" ))
 		{
 			LogManager.getLogManager().readConfiguration( is );
 		}
 		catch ( SecurityException | IOException e )
 		{
-			logger.severe( ExceptionUtils.getStackTrace( e ) );
+			clientLogger.severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		Runtime.getRuntime().addShutdownHook( new Thread( () -> {
-			for ( final Handler handler : logger.getHandlers() )
+			for ( final Handler handler : clientLogger.getHandlers() )
+			{
+				if ( handler instanceof FileHandler )
+					( ( FileHandler ) handler ).close();
+			}
+			for ( final Handler handler : serverLogger.getHandlers() )
 			{
 				if ( handler instanceof FileHandler )
 					( ( FileHandler ) handler ).close();
 			}
 		} ) );
-		setupLogging();
+		setUpLogging();
 	}
 
 	@Override
 	public void mainSettingsUpdated()
 	{
-		setupLogging();
+		setUpLogging();
 	}
 
 }

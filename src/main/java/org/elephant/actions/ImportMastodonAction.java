@@ -103,7 +103,7 @@ public class ImportMastodonAction extends AbstractElephantAction implements Elep
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		final File file = fileReference.get();
 		if ( file != null )
@@ -184,7 +184,7 @@ public class ImportMastodonAction extends AbstractElephantAction implements Elep
 			}
 			catch ( final IOException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 			finally
 			{

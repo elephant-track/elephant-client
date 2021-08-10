@@ -96,7 +96,7 @@ public class UploadAction extends AbstractElephantAction
 			}
 			catch ( final InvocationTargetException | InterruptedException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 			hdf5File = file.get();
 		}
@@ -153,7 +153,7 @@ public class UploadAction extends AbstractElephantAction
 			}
 			catch ( final IOException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 				return;
 			}
 		}

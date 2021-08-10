@@ -60,7 +60,7 @@ public class GraphListenerService extends AbstractElephantService
 	@Override
 	public void graphRebuilt()
 	{
-		getLogger().info( "Graph rebuilt" );
+		getClientLogger().info( "Graph rebuilt" );
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class GraphListenerService extends AbstractElephantService
 		// ignore if modified programatically
 		if ( !getActionStateManager().isWriting() )
 		{
-			getLogger().info( vertex + " added" );
+			getClientLogger().info( vertex + " added" );
 			final ObjTagMap< Spot, Tag > tagMapDetection = getTagSetModel().getVertexTags().tags( getDetectionTagSet() );
 			final ObjTagMap< Spot, Tag > tagMapTracking = getTagSetModel().getVertexTags().tags( getTrackingTagSet() );
 			getGraph().getLock().writeLock().lock();
@@ -97,7 +97,7 @@ public class GraphListenerService extends AbstractElephantService
 		// ignore if modified programatically
 		if ( !getActionStateManager().isWriting() )
 		{
-			getLogger().info( vertex + " removed" );
+			getClientLogger().info( vertex + " removed" );
 		}
 	}
 
@@ -107,7 +107,7 @@ public class GraphListenerService extends AbstractElephantService
 		// ignore if modified programatically
 		if ( !getActionStateManager().isWriting() )
 		{
-			getLogger().info( edge + " added" );
+			getClientLogger().info( edge + " added" );
 			final TagSet tagSetTracking = getTrackingTagSet();
 			final ObjTagMap< Link, Tag > tagMapTracking = getTagSetModel().getEdgeTags().tags( tagSetTracking );
 			getGraph().getLock().writeLock().lock();
@@ -133,7 +133,7 @@ public class GraphListenerService extends AbstractElephantService
 		// ignore if modified programatically
 		if ( !getActionStateManager().isWriting() )
 		{
-			getLogger().info( edge + " removed" );
+			getClientLogger().info( edge + " removed" );
 		}
 	}
 

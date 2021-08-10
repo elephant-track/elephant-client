@@ -95,7 +95,7 @@ public class RandomSampleAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e1 )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
 		}
 		final int nSamples = nSamplesAtomic.get();
 		if ( nSamples == -1 )

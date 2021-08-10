@@ -83,7 +83,7 @@ public class ResetFlowModelAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		if ( option.get() == JOptionPane.OK_OPTION )
 		{
@@ -106,7 +106,7 @@ public class ResetFlowModelAction extends AbstractElephantAction
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 							}
 							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
+							getClientLogger().severe( sb.toString() );
 						}
 					} );
 		}

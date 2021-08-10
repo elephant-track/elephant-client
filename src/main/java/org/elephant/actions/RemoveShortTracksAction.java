@@ -94,7 +94,7 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e1 )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
 		}
 		final int minLinks = minLinksAtomic.get();
 		if ( minLinks == -1 )

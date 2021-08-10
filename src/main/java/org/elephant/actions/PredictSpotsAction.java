@@ -271,7 +271,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 						}
 						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getLogger().severe( sb.toString() );
+						getClientLogger().severe( sb.toString() );
 					}
 				} );
 	}
@@ -404,7 +404,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 					}
 					else
 					{
-						getLogger().info( nearestSpot + " does not have a valid tag" );
+						getClientLogger().info( nearestSpot + " does not have a valid tag" );
 						editMode = SpotEditMode.SKIP;
 					}
 				}
@@ -455,7 +455,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		}
 		catch ( final Exception e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		finally
 		{
@@ -470,7 +470,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		getGraph().getLock().readLock().lock();
 		try
 		{
-			getLogger().info( String.format( "FRAME: %d, TP: %d, FP: %d, TN: %d, FN: %d, TB: %d, FB: %d, unlabeled: %d",
+			getClientLogger().info( String.format( "FRAME: %d, TP: %d, FP: %d, TN: %d, FN: %d, TB: %d, FB: %d, unlabeled: %d",
 					timepoint,
 					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TP_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
 					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FP_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),

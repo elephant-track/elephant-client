@@ -54,7 +54,7 @@ public class StartMeasurementAction extends AbstractElephantAction
 	@Override
 	public void process()
 	{
-		getLogger().info( "********** START MEASUREMENT **********" );
+		getClientLogger().info( "********** START MEASUREMENT **********" );
 	}
 
 }

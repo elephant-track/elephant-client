@@ -205,7 +205,7 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 			getActionStateManager().setWriting( false );
 			getModel().setUndoPoint();
 			getGraph().getLock().writeLock().unlock();
-			getLogger().info( spot + " was tagged with " + tagMode.name() );
+			getClientLogger().info( spot + " was tagged with " + tagMode.name() );
 			notifyGraphChanged();
 		}
 	}

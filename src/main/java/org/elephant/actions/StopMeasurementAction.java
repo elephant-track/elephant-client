@@ -77,7 +77,7 @@ public class StopMeasurementAction extends AbstractElephantAction
 				sb.append( spot.getInternalPoolIndex() );
 			}
 		}
-		getLogger().info( sb.toString() );
-		getLogger().info( "********** STOP MEASUREMENT **********" );
+		getClientLogger().info( sb.toString() );
+		getClientLogger().info( "********** STOP MEASUREMENT **********" );
 	}
 }

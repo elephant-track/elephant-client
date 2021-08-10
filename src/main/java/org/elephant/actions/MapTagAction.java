@@ -155,7 +155,7 @@ public class MapTagAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e1 )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
 		}
 		if ( tagSetNameFrom.get() != null && tagSetNameTo.get() != null &&
 				tagNameFrom.get() != null && tagNameTo.get() != null )
@@ -226,7 +226,7 @@ public class MapTagAction extends AbstractElephantAction
 			}
 			catch ( final NoSuchElementException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 
 		}

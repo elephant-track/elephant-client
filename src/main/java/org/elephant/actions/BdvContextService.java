@@ -82,7 +82,7 @@ public class BdvContextService extends AbstractElephantService implements Contex
 			}
 			catch ( InvocationTargetException | InterruptedException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 			return false;
 		}
@@ -104,7 +104,7 @@ public class BdvContextService extends AbstractElephantService implements Contex
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		return !isCanceled.get();
 	}

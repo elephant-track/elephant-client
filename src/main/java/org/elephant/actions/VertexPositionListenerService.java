@@ -56,7 +56,7 @@ public class VertexPositionListenerService extends AbstractElephantService
 	public void vertexPositionChanged( Spot vertex )
 	{
 		if ( !getActionStateManager().isWriting() )
-			getLogger().info( vertex + " changed" );
+			getClientLogger().info( vertex + " changed" );
 	}
 
 }

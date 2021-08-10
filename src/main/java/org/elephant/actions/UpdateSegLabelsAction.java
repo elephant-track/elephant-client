@@ -192,7 +192,7 @@ public class UpdateSegLabelsAction extends AbstractElephantDatasetAction
 							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 						}
 						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getLogger().severe( sb.toString() );
+						getClientLogger().severe( sb.toString() );
 					}
 				} );
 	}

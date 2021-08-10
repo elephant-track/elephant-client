@@ -314,7 +314,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 								}
 								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getLogger().severe( sb.toString() );
+								getClientLogger().severe( sb.toString() );
 							}
 						} );
 			}
@@ -383,7 +383,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 					final Spot spot = spotSupplier.get().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
 					if ( spot == null )
 					{
-						getLogger().info( "spot " + spot + " was not found" );
+						getClientLogger().info( "spot " + spot + " was not found" );
 					}
 					else
 					{
@@ -513,7 +513,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 		}
 		catch ( final Exception e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		finally
 		{

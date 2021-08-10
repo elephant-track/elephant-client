@@ -52,26 +52,30 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 public interface LoggerMixin
 {
 
-	Logger getLogger();
+	Logger getClientLogger();
 
-	String getLogFileName();
+	Logger getServerLogger();
 
-	default void setupLogging()
+	String getClientLogFileName();
+
+	String getServerLogFileName();
+
+	default void setUpLogger( final Logger logger, final String logFileName, final JFrameHandler jFrameHandler )
 	{
 		try
 		{
-			final Handler[] handlers = getLogger().getHandlers();
+			final Handler[] handlers = logger.getHandlers();
 			for ( final Handler handler : handlers )
 			{
 				if ( handler instanceof FileHandler )
 				{
 					( ( FileHandler ) handler ).close();
-					getLogger().removeHandler( handler );
+					logger.removeHandler( handler );
 				}
 			}
-			final FileHandler fileHandler = new FileHandler( getLogFileName(), true );
+			final FileHandler fileHandler = new FileHandler( logFileName, true );
 			fileHandler.setFormatter( new SimpleFormatter() );
-			getLogger().addHandler( fileHandler );
+			logger.addHandler( fileHandler );
 			// Create a ConsoleHandler when it is not exists
 			boolean hasConsoleHandler = false;
 			for ( final Handler handler : handlers )
@@ -81,7 +85,7 @@ public interface LoggerMixin
 			}
 			if ( !hasConsoleHandler )
 			{
-				getLogger().addHandler( new ConsoleHandler() );
+				logger.addHandler( new ConsoleHandler() );
 			}
 			// Create a JFrameHandler when it is not exists
 			boolean hasJFrameHandler = false;
@@ -92,23 +96,34 @@ public interface LoggerMixin
 			}
 			if ( !hasJFrameHandler )
 			{
-				getLogger().addHandler( JFrameHandler.getInstance() );
+				logger.addHandler( jFrameHandler );
 			}
 		}
 		catch ( SecurityException | IOException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 	}
 
-	default void showLogWindow()
+	default void setUpLogging()
 	{
-		JFrameHandler.getInstance().showLogWindow();
+		setUpLogger( getClientLogger(), getClientLogFileName(), ClientHandler.getInstance() );
+		setUpLogger( getServerLogger(), getServerLogFileName(), ServerHandler.getInstance() );
+	}
+
+	default void showClientLogWindow()
+	{
+		ClientHandler.getInstance().showLogWindow();
+	}
+
+	default void showServerLogWindow()
+	{
+		ServerHandler.getInstance().showLogWindow();
 	}
 
 	default void handleError( Exception e )
 	{
-		getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+		getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 	}
 
 	/**
@@ -122,10 +137,11 @@ public interface LoggerMixin
 
 		private final ColorPane colorPane = new ColorPane();
 
-		public LogWindow()
+		public LogWindow( final String title )
 		{
-			super( "ELEPHANT Log Window" );
+			super( title );
 			setSize( 400, 600 );
+			colorPane.setEditable( false );
 			add( new JScrollPane( colorPane ) );
 			setVisible( true );
 		}
@@ -133,19 +149,64 @@ public interface LoggerMixin
 		public void showMessage( final String msg, final Color color )
 		{
 			SwingUtilities.invokeLater( () -> {
-				colorPane.append( color, msg );
-				this.validate();
+				colorPane.setEditable( true );
+				try
+				{
+					colorPane.append( color, msg );
+					this.validate();
+				}
+				finally
+				{
+					colorPane.setEditable( false );
+				}
 			} );
 		}
 	}
 
-	class JFrameHandler extends Handler
+	class ClientHandler extends JFrameHandler
 	{
 		private static JFrameHandler handler = null;
 
+		public ClientHandler()
+		{
+			super( "ELEPHANT Client Log Window" );
+		}
+
+		public static synchronized JFrameHandler getInstance()
+		{
+			if ( handler == null )
+			{
+				handler = new ClientHandler();
+			}
+			return handler;
+		}
+	}
+
+	class ServerHandler extends JFrameHandler
+	{
+		private static JFrameHandler handler = null;
+
+		public ServerHandler()
+		{
+			super( "ELEPHANT Server Log Window" );
+		}
+
+		public static synchronized JFrameHandler getInstance()
+		{
+			if ( handler == null )
+			{
+				handler = new ServerHandler();
+			}
+			return handler;
+		}
+	}
+
+	abstract class JFrameHandler extends Handler
+	{
+
 		private LogWindow window = null;
 
-		private JFrameHandler()
+		private JFrameHandler( final String title )
 		{
 			final LogManager manager = LogManager.getLogManager();
 			final String className = this.getClass().getName();
@@ -153,16 +214,7 @@ public interface LoggerMixin
 			setLevel( level != null ? Level.parse( level ) : Level.INFO );
 			setFormatter( new SimpleFormatter() );
 			if ( window == null )
-				window = new LogWindow();
-		}
-
-		public static synchronized JFrameHandler getInstance()
-		{
-			if ( handler == null )
-			{
-				handler = new JFrameHandler();
-			}
-			return handler;
+				window = new LogWindow( title );
 		}
 
 		public void showLogWindow()

@@ -94,7 +94,7 @@ public class HighlightListenerService extends AbstractElephantService
 					}
 					catch ( final IllegalAccessException e )
 					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );;
+						getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );;
 					}
 				} );
 				lastHightedVertexId = highlightedVertex.getInternalPoolIndex();

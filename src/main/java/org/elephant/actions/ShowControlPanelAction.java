@@ -51,7 +51,7 @@ public class ShowControlPanelAction extends AbstractElephantAction
 		}
 		catch ( final IOException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		final List< GPU > gpus = getServerStateManager().getGpus();
 		dialog.updateGpuTableModel( gpus );
@@ -69,7 +69,7 @@ public class ShowControlPanelAction extends AbstractElephantAction
 		}
 		catch ( final IOException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 	}
 

@@ -36,6 +36,8 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.scijava.listeners.Listeners;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
 import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -61,6 +63,8 @@ public class RabbitMQService extends AbstractElephantService
 	private static final String RABBITMQ_QUEUE_UPDATE = "update";
 
 	private static final String RABBITMQ_QUEUE_DATASET = "dataset";
+
+	private static final String RABBITMQ_QUEUE_LOG = "log";
 
 	private Connection connection;
 
@@ -114,7 +118,7 @@ public class RabbitMQService extends AbstractElephantService
 				}
 				catch ( final InterruptedException e )
 				{
-					getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+					getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 				}
 			}
 		} ).start();
@@ -130,17 +134,48 @@ public class RabbitMQService extends AbstractElephantService
 		factory.setRequestedHeartbeat( 0 );
 		connection = factory.newConnection();
 		channel = connection.createChannel();
+		// RABBITMQ_QUEUE_UPDATE
 		channel.queueDeclare( RABBITMQ_QUEUE_UPDATE, false, false, false, null );
 		final DeliverCallback callbackUpdate = ( consumerTag, delivery ) -> {
 			final String message = new String( delivery.getBody(), "UTF-8" );
 			addTextOverlayAnimator( message, 3000, TextPosition.CENTER );
 		};
 		channel.basicConsume( RABBITMQ_QUEUE_UPDATE, true, callbackUpdate, consumerTag -> {} );
+		// RABBITMQ_QUEUE_DATASET
 		channel.queueDeclare( RABBITMQ_QUEUE_DATASET, false, false, false, null );
 		final DeliverCallback callbackDataset = ( consumerTag, delivery ) -> {
 			rabbitMQDatasetListeners.list.forEach( l -> l.messageDelivered( consumerTag, delivery ) );
 		};
 		channel.basicConsume( RABBITMQ_QUEUE_DATASET, true, callbackDataset, consumerTag -> {} );
+		// RABBITMQ_QUEUE_LOG
+		channel.queueDeclare( RABBITMQ_QUEUE_LOG, false, false, false, null );
+		final DeliverCallback callbackLog = ( consumerTag, delivery ) -> {
+			final String body = new String( delivery.getBody(), "UTF-8" );
+			final JsonObject jsonObject = Json.parse( body ).asObject();
+			final String level = jsonObject.get( "level" ).asString();
+			final String message = jsonObject.get( "message" ).asString();
+			if ( level.equals( "DEBUG" ) )
+			{
+				getServerLogger().fine( message );
+			}
+			else if ( level.equals( "INFO" ) )
+			{
+				getServerLogger().info( message );
+			}
+			else if ( level.equals( "WARNING" ) )
+			{
+				getServerLogger().warning( message );
+			}
+			else if ( level.equals( "ERROR" ) )
+			{
+				getServerLogger().severe( message );
+			}
+			else if ( level.equals( "CRITICAL" ) )
+			{
+				getServerLogger().severe( message );
+			}
+		};
+		channel.basicConsume( RABBITMQ_QUEUE_LOG, true, callbackLog, consumerTag -> {} );
 	}
 
 	private synchronized void closeConnection()

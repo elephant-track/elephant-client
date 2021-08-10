@@ -129,7 +129,7 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 		if ( ElephantActionStateManager.INSTANCE.isLivemode() )
 			return;
 		final int currentTimepoint = getCurrentTimepoint( 0 );
-		getLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
+		getClientLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
 		final List< Integer > timepoints = new ArrayList<>( 0 );
 		final JsonArray jsonSpots = Json.array();
 		final List< Tag > tagsToProcess = new ArrayList< Tag >();
@@ -228,17 +228,17 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 						}
 						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getLogger().severe( sb.toString() );
+						getClientLogger().severe( sb.toString() );
 					}
 				},
 				e -> {
 					handleError( e );
-					getLogger().severe( "The request has failed" );
+					getClientLogger().severe( "The request has failed" );
 					ElephantActionStateManager.INSTANCE.setLivemode( false );
 					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
 				},
 				() -> {
-					getLogger().info( "The request has been cancelled" );
+					getClientLogger().info( "The request has been cancelled" );
 					ElephantActionStateManager.INSTANCE.setLivemode( false );
 				} );
 	}

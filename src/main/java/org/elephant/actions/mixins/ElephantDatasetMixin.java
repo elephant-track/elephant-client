@@ -127,7 +127,7 @@ public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerM
 					sb.append( ": " );
 					sb.append( Json.parse( resCheck.getBody() ).asObject().get( "error" ).asString() );
 				}
-				getLogger().severe( sb.toString() );
+				getClientLogger().severe( sb.toString() );
 			}
 		}
 		finally

@@ -83,7 +83,7 @@ public class ElephantStatusService extends AbstractElephantService
 									{
 										sb.append( ": " );
 										sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-										getLogger().severe( sb.toString() ); // Do not log other errors
+										getClientLogger().severe( sb.toString() ); // Do not log other errors
 									}
 									getServerStateManager().setElephantServerErrorMessage( sb.toString() );
 								}
@@ -112,7 +112,7 @@ public class ElephantStatusService extends AbstractElephantService
 				}
 				catch ( final InterruptedException e )
 				{
-					getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+					getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 				}
 			}
 		} ).start();

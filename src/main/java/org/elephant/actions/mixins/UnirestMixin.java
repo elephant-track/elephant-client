@@ -57,10 +57,10 @@ public interface UnirestMixin extends ElephantActionMixin, LoggerMixin, UIAction
 		return postAsStringAsync( endpointUrl, body, completed,
 				e -> {
 					handleError( e );
-					getLogger().severe( "The request has failed" );
+					getClientLogger().severe( "The request has failed" );
 					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
 				},
-				() -> getLogger().info( "The request has been cancelled" ) );
+				() -> getClientLogger().info( "The request has been cancelled" ) );
 	}
 
 	default CompletableFuture< HttpResponse< String > > postAsStringAsync( final String endpointUrl, final String body,
@@ -101,10 +101,10 @@ public interface UnirestMixin extends ElephantActionMixin, LoggerMixin, UIAction
 		return postAsFileAsync( endpointUrl, body, path, completed,
 				e -> {
 					handleError( e );
-					getLogger().severe( "The request has failed" );
+					getClientLogger().severe( "The request has failed" );
 					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
 				},
-				() -> getLogger().info( "The request has been cancelled" ) );
+				() -> getClientLogger().info( "The request has been cancelled" ) );
 	}
 
 	default CompletableFuture< HttpResponse< File > > postAsFileAsync( final String endpointUrl, final String body, final String path,

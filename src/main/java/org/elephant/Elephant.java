@@ -92,6 +92,7 @@ import org.elephant.actions.SetControlAxisAction.ControlAxis;
 import org.elephant.actions.SetUpTagSetsService;
 import org.elephant.actions.ShowControlPanelAction;
 import org.elephant.actions.ShowLogWindowAction;
+import org.elephant.actions.ShowLogWindowAction.LogTarget;
 import org.elephant.actions.ShowPreferencesAction;
 import org.elephant.actions.TagDividingCellAction;
 import org.elephant.actions.TagHighlightedVertexAction;
@@ -236,7 +237,9 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction exportCTCAction;
 
-	private final AbstractElephantAction showLogWindowAction;
+	private final AbstractElephantAction showClientLogWindowAction;
+
+	private final AbstractElephantAction showServerLogWindowAction;
 
 	private final AbstractElephantAction uploadAction;
 
@@ -289,8 +292,10 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( trainFlowAction );
 		abortProcessingAction = new AbortProcessingAction();
 		pluginActions.add( abortProcessingAction );
-		showLogWindowAction = new ShowLogWindowAction();
-		pluginActions.add( showLogWindowAction );
+		showClientLogWindowAction = new ShowLogWindowAction( LogTarget.CLIENT );
+		pluginActions.add( showClientLogWindowAction );
+		showServerLogWindowAction = new ShowLogWindowAction( LogTarget.SERVER );
+		pluginActions.add( showServerLogWindowAction );
 		showControlPanelAction = new ShowControlPanelAction();
 		pluginActions.add( showControlPanelAction );
 		showPreferencesAction = new ShowPreferencesAction();
@@ -472,9 +477,11 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( tagDividingCellsAction.name() ),
 										item( countDivisionsEntireAction.name() ),
 										item( countDivisionsTrackwiseAction.name() ) ),
+								menu( "Window",
+										item( showClientLogWindowAction.name() ),
+										item( showServerLogWindowAction.name() ),
+										item( showControlPanelAction.name() ) ),
 								item( abortProcessingAction.name() ),
-								item( showLogWindowAction.name() ),
-								item( showControlPanelAction.name() ),
 								item( showPreferencesAction.name() ) ) ) );
 	}
 

@@ -133,7 +133,7 @@ public class TakeSnapshotAction extends AbstractElephantAction
 			}
 			catch ( InvocationTargetException | InterruptedException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 			if ( selectedWindowName.get() != null && saveFilePath.get() != null )
 			{
@@ -150,7 +150,7 @@ public class TakeSnapshotAction extends AbstractElephantAction
 						}
 						catch ( final IOException e )
 						{
-							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+							getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 						}
 					}
 				}
