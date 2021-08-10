@@ -189,6 +189,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<classifier></classifier>
+					<excludes>
+						<exclude>/org/elephant/ElephantExtra.class</exclude>
+					</excludes>
+				</configuration>
 				<executions>
 					<execution>
 						<id>desktop</id>
