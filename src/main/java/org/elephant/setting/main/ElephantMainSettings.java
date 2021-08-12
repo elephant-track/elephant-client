@@ -56,21 +56,21 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_PATCH_SIZE_Z = 16;
 
-	public static final int DEFAULT_TRAINING_CROP_SIZE_X = 128;
+	public static final int DEFAULT_TRAINING_CROP_SIZE_X = 256;
 
-	public static final int DEFAULT_TRAINING_CROP_SIZE_Y = 128;
+	public static final int DEFAULT_TRAINING_CROP_SIZE_Y = 256;
 
 	public static final int DEFAULT_TRAINING_CROP_SIZE_Z = 16;
 
-	public static final int DEFAULT_NUM_CROPS = 3;
+	public static final int DEFAULT_NUM_CROPS = 10;
 
-	public static final int DEFAULT_NUM_EPOCHS = 3;
+	public static final int DEFAULT_NUM_EPOCHS = 10;
 
 	public static final int DEFAULT_TIME_RANGE = 10;
 
 	public static final double DEFAULT_AUTO_BG_THRESHOLD = 0.0;
 
-	public static final double DEFAULT_LEARNING_RATE = 0.00005;
+	public static final double DEFAULT_LEARNING_RATE = 0.0001;
 
 	public static final double DEFAULT_SEG_WEIGHT_BG = 1.0;
 
@@ -84,17 +84,17 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_FLOW_WEIGHT_Z = 1.0;
 
-	public static final double DEFAULT_FALSE_WEIGHT = 3.0;
+	public static final double DEFAULT_FALSE_WEIGHT = 10.0;
 
-	public static final double DEFAULT_CENTER_RATIO = 0.3;
+	public static final double DEFAULT_CENTER_RATIO = 0.4;
 
 	public static final double DEFAULT_PROB_THRESHOLD = 0.3;
 
-	public static final double DEFAULT_SUPPRESSION_DISTANCE = 5.0;
+	public static final double DEFAULT_SUPPRESSION_DISTANCE = 3.0;
 
 	public static final double DEFAULT_MIN_RADIUS = 1.0;
 
-	public static final double DEFAULT_MAX_RADIUS = 5.0;
+	public static final double DEFAULT_MAX_RADIUS = 3.0;
 
 	public static final double DEFAULT_MAX_DISPLACEMENT = 80.0;
 
