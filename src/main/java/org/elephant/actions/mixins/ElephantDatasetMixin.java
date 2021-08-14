@@ -153,7 +153,10 @@ public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerM
 			{
 				progressDialog.setProgressBarValue( 100 * tCurrent / tMax );
 				progressDialog.setLabelText( String.format( "%d / %d", tCurrent, tMax ) );
-				progressDialog.setVisible( true );
+				if ( !progressDialog.isVisible() )
+				{
+					progressDialog.setVisible( true );
+				}
 			}
 		}
 		catch ( final UnsupportedEncodingException e )
@@ -172,7 +175,7 @@ public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerM
 
 		public ProgressDialog()
 		{
-			setDefaultCloseOperation( JDialog.HIDE_ON_CLOSE );
+			setDefaultCloseOperation( JDialog.DO_NOTHING_ON_CLOSE );
 			setTitle( "Gnerate Dataset" );
 
 			progressBar.setValue( 0 );
