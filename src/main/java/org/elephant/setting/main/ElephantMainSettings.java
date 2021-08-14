@@ -48,13 +48,13 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final boolean DEFAULT_IS_PAD = true;
 
-	public static final boolean DEFAULT_USE_PATCH = false;
+	public static final boolean DEFAULT_USE_PATCH = true;
 
-	public static final int DEFAULT_PATCH_SIZE_X = 256;
+	public static final int DEFAULT_PATCH_SIZE_X = 384;
 
-	public static final int DEFAULT_PATCH_SIZE_Y = 256;
+	public static final int DEFAULT_PATCH_SIZE_Y = 384;
 
-	public static final int DEFAULT_PATCH_SIZE_Z = 16;
+	public static final int DEFAULT_PATCH_SIZE_Z = 24;
 
 	public static final int DEFAULT_TRAINING_CROP_SIZE_X = 256;
 
@@ -90,11 +90,11 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_PROB_THRESHOLD = 0.3;
 
-	public static final double DEFAULT_SUPPRESSION_DISTANCE = 3.0;
+	public static final double DEFAULT_SUPPRESSION_DISTANCE = 5.0;
 
 	public static final double DEFAULT_MIN_RADIUS = 1.0;
 
-	public static final double DEFAULT_MAX_RADIUS = 3.0;
+	public static final double DEFAULT_MAX_RADIUS = 5.0;
 
 	public static final double DEFAULT_MAX_DISPLACEMENT = 80.0;
 
