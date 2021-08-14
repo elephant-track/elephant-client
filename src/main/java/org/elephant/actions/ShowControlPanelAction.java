@@ -19,7 +19,7 @@ public class ShowControlPanelAction extends AbstractElephantAction
 
 	private static final String MENU_TEXT = "Control Panel";
 
-	private static final ControlPanelDialog dialog = new ControlPanelDialog();
+	private static final ControlPanelWindow dialog = new ControlPanelWindow();
 
 	@Override
 	public String getMenuText()

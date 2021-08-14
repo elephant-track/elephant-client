@@ -23,7 +23,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -54,7 +54,7 @@ import com.jcraft.jsch.UserInfo;
 import au.id.mcc.adapted.swing.SVGIcon;
 import bdv.util.BoundedValue;
 
-public class ControlPanelDialog extends JDialog implements AWTMixin
+public class ControlPanelWindow extends JFrame implements AWTMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -131,7 +131,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 		final ImageIcon imageIcon = new ImageIcon();
 		try
 		{
-			final Image image = ImageIO.read( ControlPanelDialog.class.getResource( iconPath ) );
+			final Image image = ImageIO.read( ControlPanelWindow.class.getResource( iconPath ) );
 			imageIcon.setImage( image );
 		}
 		catch ( final IOException e )
@@ -202,7 +202,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 
 	private final static int[] MIN_COLUMN_WIDTHS_PORT_FORWARD = { 200, 100, 50 };
 
-	public ControlPanelDialog()
+	public ControlPanelWindow()
 	{
 		textFieldRemoteHost.setColumns( 10 );
 		setTitle( "ELEPHANT Control Panel" );
@@ -885,7 +885,7 @@ public class ControlPanelDialog extends JDialog implements AWTMixin
 	private void handleError( final Exception e )
 	{
 		SwingUtilities.invokeLater( () -> JOptionPane.showMessageDialog(
-				ControlPanelDialog.this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE ) );
+				ControlPanelWindow.this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE ) );
 	}
 
 	private static class JschUserInfo implements UserInfo, UIKeyboardInteractive
