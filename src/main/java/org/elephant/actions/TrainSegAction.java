@@ -194,7 +194,7 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_TRAIN_CROP_SIZE, cropSize )
 				.add( JSON_KEY_SPOTS, jsonSpots )
-				.add( JSON_KEY_SEG_MODEL_NAME, getMainSettings().getSegModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getSegModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
@@ -209,7 +209,8 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_FALSE_WEIGHT, getMainSettings().getFalseWeight() )
 				.add( JSON_KEY_AUTO_BG_THRESH, getMainSettings().getAutoBgThreshold() )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
-				.add( JSON_KEY_SEG_LOG_DIR, getMainSettings().getSegLogName() )
+				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
+				.add( JSON_KEY_LOG_DIR, getMainSettings().getSegLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
 		postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_SEG ), jsonRootObject.toString(),
 				response -> {

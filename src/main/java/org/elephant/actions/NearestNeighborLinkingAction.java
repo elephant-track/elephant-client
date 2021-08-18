@@ -216,7 +216,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 2 ) );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-				.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_OUTPUT_PREDICTION, getMainSettings().getOutputPrediction() )
 				.add( JSON_KEY_SCALES, scales )

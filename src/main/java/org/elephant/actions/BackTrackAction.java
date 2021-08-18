@@ -115,7 +115,7 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 2 ) );
 		final JsonObject jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-				.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() );

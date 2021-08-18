@@ -130,13 +130,11 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_DATASET_NAME = "dataset_name";
 
-	public static final String JSON_KEY_SEG_MODEL_NAME = "model_name";
+	public static final String JSON_KEY_MODEL_NAME = "model_name";
 
-	public static final String JSON_KEY_FLOW_MODEL_NAME = "model_name";
+	public static final String JSON_KEY_LOG_DIR = "log_dir";
 
-	public static final String JSON_KEY_SEG_LOG_DIR = "log_dir";
-
-	public static final String JSON_KEY_FLOW_LOG_DIR = "log_dir";
+	public static final String JSON_KEY_LOG_INTERVAL = "log_interval";
 
 	public static final String JSON_KEY_DEBUG = "debug";
 

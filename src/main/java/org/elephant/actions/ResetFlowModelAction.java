@@ -88,7 +88,7 @@ public class ResetFlowModelAction extends AbstractElephantAction
 		if ( option.get() == JOptionPane.OK_OPTION )
 		{
 			final JsonObject jsonRootObject = Json.object()
-					.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
+					.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 					.add( JSON_KEY_IS_3D, !is2D() );
 			postAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), jsonRootObject.toString(),

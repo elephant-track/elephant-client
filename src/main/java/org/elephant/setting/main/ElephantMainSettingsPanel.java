@@ -157,6 +157,7 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				doubleElementEx( "augmentation contrast", 0.0, 1.0, 0.01, style::getAugContrast, style::setAugContrast ),
 				intElement( "NN search depth", 0, 100, style::getNNSearchDepth, style::setNNSearchDepth ),
 				intElement( "NN search neighbors", 0, 100, style::getNNSearchNeighbors, style::setNNSearchNeighbors ),
+				intElement( "Training log interval", 0, 1000, style::getLogInterval, style::setLogInterval ),
 				booleanElement( "use interpolation for linking", style::getUseInterpolation, style::setUseInterpolation ),
 				booleanElement( "use 2d model", style::getUse2dModel, style::setUse2dModel ),
 

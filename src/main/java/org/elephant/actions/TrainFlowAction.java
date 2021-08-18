@@ -111,7 +111,7 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 		final JsonObject jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_SPOTS, jsonSpots )
-				.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
 				.add( JSON_KEY_N_EPOCHS, getMainSettings().getNumEpochs() )
@@ -123,7 +123,8 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_AUG_SCALE_FACTOR_BASE, getMainSettings().getAugScaleFactorBase() )
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
-				.add( JSON_KEY_FLOW_LOG_DIR, getMainSettings().getFlowLogName() )
+				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
+				.add( JSON_KEY_LOG_DIR, getMainSettings().getFlowLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
 		postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_FLOW ), jsonRootObject.toString(),
 				response -> {

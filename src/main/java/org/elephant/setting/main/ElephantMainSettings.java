@@ -112,6 +112,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_NN_MAX_EDGES = 2;
 
+	public static final int DEFAULT_LOG_INTERVAL = 1;
+
 	public static final boolean DEFAULT_USE_OPTICALFLOW = false;
 
 	public static final boolean DEFAULT_USE_INTERPOLATION = false;
@@ -181,6 +183,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		nnSearchDepth = settings.nnSearchDepth;
 		nnSearchNeighbors = settings.nnSearchNeighbors;
 		nnMaxEdges = settings.nnMaxEdges;
+		logInterval = settings.logInterval;
 		useOpticalflow = settings.useOpticalflow;
 		useInterpolation = settings.useInterpolation;
 		use2dModel = settings.use2dModel;
@@ -264,6 +267,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 	private int nnSearchNeighbors = DEFAULT_NN_SEARCH_NEIGHBORS;
 
 	private int nnMaxEdges = DEFAULT_NN_MAX_EDGES;
+
+	private int logInterval = DEFAULT_LOG_INTERVAL;
 
 	private boolean useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 
@@ -783,6 +788,20 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		if ( this.nnMaxEdges != nnMaxEdges )
 		{
 			this.nnMaxEdges = nnMaxEdges;
+			notifyListeners();
+		}
+	}
+
+	public int getLogInterval()
+	{
+		return logInterval;
+	}
+
+	public synchronized void setLogInterval( final int logInterval )
+	{
+		if ( this.logInterval != logInterval )
+		{
+			this.logInterval = logInterval;
 			notifyListeners();
 		}
 	}
