@@ -102,6 +102,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_AUG_ROTATION_ANGLE = 0.0;
 
+	public static final double DEFAULT_AUG_CONTRAST = 0.0;
+
 	public static final double DEFAULT_NN_LINKING_THRESHOLD = 5.0;
 
 	public static final int DEFAULT_NN_SEARCH_DEPTH = 1;
@@ -174,6 +176,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		maxDisplacement = settings.maxDisplacement;
 		augScaleFactorBase = settings.augScaleFactorBase;
 		augRotationAngle = settings.augRotationAngle;
+		augContrast = settings.augContrast;
 		nnLinkingThreshold = settings.nnLinkingThreshold;
 		nnSearchDepth = settings.nnSearchDepth;
 		nnSearchNeighbors = settings.nnSearchNeighbors;
@@ -251,6 +254,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 	private double augScaleFactorBase = DEFAULT_AUG_SCALE_FACTOR_BASE;
 
 	private double augRotationAngle = DEFAULT_AUG_ROTATION_ANGLE;
+
+	private double augContrast = DEFAULT_AUG_CONTRAST;
 
 	private double nnLinkingThreshold = DEFAULT_NN_LINKING_THRESHOLD;
 
@@ -708,6 +713,20 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		if ( this.augRotationAngle != augRotationAngle )
 		{
 			this.augRotationAngle = augRotationAngle;
+			notifyListeners();
+		}
+	}
+
+	public double getAugContrast()
+	{
+		return augContrast;
+	}
+
+	public synchronized void setAugContrast( final double augContrast )
+	{
+		if ( this.augContrast != augContrast )
+		{
+			this.augContrast = augContrast;
 			notifyListeners();
 		}
 	}

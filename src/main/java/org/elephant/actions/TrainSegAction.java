@@ -203,6 +203,7 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_AUG_SCALE_FACTOR_BASE, getMainSettings().getAugScaleFactorBase() )
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
+				.add( JSON_KEY_AUG_CONTRAST, getMainSettings().getAugContrast() )
 				.add( JSON_KEY_TIMEPOINT, currentTimepoint )
 				.add( JSON_KEY_SEG_CLASS_WEIGHTS, classWeights )
 				.add( JSON_KEY_FALSE_WEIGHT, getMainSettings().getFalseWeight() )
