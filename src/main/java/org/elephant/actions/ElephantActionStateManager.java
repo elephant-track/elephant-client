@@ -43,6 +43,8 @@ public enum ElephantActionStateManager
 
 	private boolean isAutoFocus = false;
 
+	private boolean isMeasuring = false;
+
 	private boolean isWriting = false;
 
 	private ControlAxis axis = ControlAxis.X;
@@ -78,6 +80,16 @@ public enum ElephantActionStateManager
 	public synchronized void setAutoFocus( boolean isAutoFocus )
 	{
 		this.isAutoFocus = isAutoFocus;
+	}
+
+	public synchronized boolean isMeasuring()
+	{
+		return isMeasuring;
+	}
+
+	public synchronized void setMeasuring( boolean isMeasuring )
+	{
+		this.isMeasuring = isMeasuring;
 	}
 
 	public synchronized boolean isWriting()

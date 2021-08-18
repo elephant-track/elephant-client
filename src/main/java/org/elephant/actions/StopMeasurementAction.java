@@ -79,5 +79,6 @@ public class StopMeasurementAction extends AbstractElephantAction
 		}
 		getClientLogger().info( sb.toString() );
 		getClientLogger().info( "********** STOP MEASUREMENT **********" );
+		getActionStateManager().setMeasuring( false );
 	}
 }

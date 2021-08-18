@@ -26,12 +26,14 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
+
 /**
  * Log a start time of the measurement.
  * 
  * @author Ko Sugawara
  */
-public class StartMeasurementAction extends AbstractElephantAction
+public class StartMeasurementAction extends AbstractElephantAction implements ElephantStateManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -55,6 +57,7 @@ public class StartMeasurementAction extends AbstractElephantAction
 	public void process()
 	{
 		getClientLogger().info( "********** START MEASUREMENT **********" );
+		getActionStateManager().setMeasuring( true );
 	}
 
 }
