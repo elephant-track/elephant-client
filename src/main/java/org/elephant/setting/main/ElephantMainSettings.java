@@ -62,7 +62,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_TRAINING_CROP_SIZE_Z = 16;
 
-	public static final int DEFAULT_NUM_CROPS = 10;
+	public static final int DEFAULT_NUM_CROPS = 5;
 
 	public static final int DEFAULT_NUM_EPOCHS = 10;
 
@@ -90,7 +90,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_PROB_THRESHOLD = 0.3;
 
-	public static final double DEFAULT_SUPPRESSION_DISTANCE = 5.0;
+	public static final double DEFAULT_SUPPRESSION_DISTANCE = 3.0;
 
 	public static final double DEFAULT_MIN_RADIUS = 1.0;
 
