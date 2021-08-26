@@ -46,6 +46,7 @@ import javax.swing.WindowConstants;
 import org.elephant.actions.AbortProcessingAction;
 import org.elephant.actions.AbstractElephantAction;
 import org.elephant.actions.BackTrackAction;
+import org.elephant.actions.BdvColoringService;
 import org.elephant.actions.BdvContextService;
 import org.elephant.actions.BdvViewMouseMotionService;
 import org.elephant.actions.ChangeEllipsoidSizeAction;
@@ -395,6 +396,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		// Initialize MastodonPluginAppModel-dependent services
 		// BdvViewMouseMotionService
 		mouseMotionService.init( pluginAppModel );
+		// BdvColoringService
+		new BdvColoringService().init( pluginAppModel );
 		// BdvContextService
 		bdvContextService.init( pluginAppModel );
 		// ElephantStatusService
