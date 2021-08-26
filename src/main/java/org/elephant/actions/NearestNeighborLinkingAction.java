@@ -46,6 +46,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
@@ -292,31 +293,41 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 			{
 				jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
 				jsonRootObject.set( JSON_KEY_SPOTS, jsonSpots );
-				postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
-						response -> {
-							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-							{
-								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-								final JsonArray jsonSpotsRes = rootObject.get( "spots" ).asArray();
-								linkSpots( jsonSpotsRes, timepoint, tagsToProcess, timepointIterator, pos, cov );
-								showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
-								if ( getActionStateManager().isAborted() )
-									showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
-								else
-									processNext( timepointIterator, pos, cov );
-							}
-							else
-							{
-								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+				try
+				{
+					postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
+							response -> {
+								if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 								{
-									sb.append( ": " );
-									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+									final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+									if ( rootObject.get( "completed" ).asBoolean() )
+									{
+										final JsonArray jsonSpotsRes = rootObject.get( "spots" ).asArray();
+										linkSpots( jsonSpotsRes, timepoint, tagsToProcess, timepointIterator, pos, cov );
+										showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
+									}
+									if ( getActionStateManager().isAborted() )
+										showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
+									else
+										processNext( timepointIterator, pos, cov );
 								}
-								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getClientLogger().severe( sb.toString() );
-							}
-						} );
+								else
+								{
+									final StringBuilder sb = new StringBuilder( response.getStatusText() );
+									if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+									{
+										sb.append( ": " );
+										sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+									}
+									showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+									getClientLogger().severe( sb.toString() );
+								}
+							} );
+				}
+				catch ( final ElephantConnectException e )
+				{
+					// already handled by UnirestMixin
+				}
 			}
 			else
 			{

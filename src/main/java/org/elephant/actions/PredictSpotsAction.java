@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
@@ -241,39 +242,52 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		if ( timepointEnd < timepoint )
 			return;
 		jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
-		postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_SEG ), jsonRootObject.toString(),
-				response -> {
-					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-					{
-						final String body = response.getBody();
-						final RefCollection< Spot > spots = getGraph().vertices();
-						Predicate< Spot > predicate = spot -> spot.getTimepoint() == timepoint;
-						if ( mode == PredictSpotsActionMode.AROUND_MOUSE )
-							predicate = predicate.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
-						refreshLabels( spots, predicate );
-						predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
-						predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) != getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
-						removeSpots( spots, predicate );
-						addSpotsFromJsonString( body );
-						summary( timepoint );
-						showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
-						if ( getActionStateManager().isAborted() )
-							showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
-						else
-							predictSpotsAt( timepoint + 1, timepointEnd );
-					}
-					else
-					{
-						final StringBuilder sb = new StringBuilder( response.getStatusText() );
-						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_SEG ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							sb.append( ": " );
-							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							final String body = response.getBody();
+							final JsonObject jsonRootObject = Json.parse( body ).asObject();
+							if ( Json.parse( body ).asObject().get( "completed" ).asBoolean() )
+							{
+								final RefCollection< Spot > spots = getGraph().vertices();
+								Predicate< Spot > predicate = spot -> spot.getTimepoint() == timepoint;
+								if ( mode == PredictSpotsActionMode.AROUND_MOUSE )
+									predicate = predicate.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
+								refreshLabels( spots, predicate );
+								predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
+								predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) != getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
+								removeSpots( spots, predicate );
+								final JsonArray jsonSpots = jsonRootObject.get( "spots" ).asArray();
+								addSpotsFromJson( jsonSpots );
+								summary( timepoint );
+								showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
+							}
+
+							if ( getActionStateManager().isAborted() )
+								showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
+							else
+								predictSpotsAt( timepoint + 1, timepointEnd );
 						}
-						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getClientLogger().severe( sb.toString() );
-					}
-				} );
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							{
+								sb.append( ": " );
+								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							}
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getClientLogger().severe( sb.toString() );
+						}
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 	private static enum SpotEditMode
@@ -341,7 +355,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		}
 	}
 
-	private void addSpotsFromJsonString( final String jsonString )
+	private void addSpotsFromJson( final JsonArray jsonSpots )
 	{
 		getGraph().getLock().readLock().lock();
 		try
@@ -354,9 +368,6 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 			final double[] pos = new double[ 3 ];
 			final double[][] covariance = new double[ 3 ][ 3 ];
 			final SpotStruct jsonRef = new SpotStruct( pos, covariance );
-
-			final JsonObject jsonRootObject = Json.parse( jsonString ).asObject();
-			final JsonArray jsonSpots = jsonRootObject.get( "spots" ).asArray();
 
 			final Tag tpTag = getTag( getDetectionTagSet(), DETECTION_TP_TAG_NAME );
 			final Tag fpTag = getTag( getDetectionTagSet(), DETECTION_FP_TAG_NAME );

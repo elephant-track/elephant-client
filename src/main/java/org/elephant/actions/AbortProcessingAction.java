@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
@@ -104,11 +105,18 @@ public class AbortProcessingAction extends AbstractElephantAction
 		getActionStateManager().setAborted( true );
 		// Send an abort signal to the server
 		final JsonObject jsonRootObject = Json.object().add( JSON_KEY_STATE, 0 );
-		postAsStringAsync( getEndpointURL( ENDPOINT_STATE ), jsonRootObject.toString(),
-				response -> {
-					showTextOverlayAnimator( "Sent abort signal", 3000, TextOverlayAnimator.TextPosition.CENTER );
-					getActionStateManager().setLivemode( false );
-				} );
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_STATE ), jsonRootObject.toString(),
+					response -> {
+						showTextOverlayAnimator( "Sent abort signal", 3000, TextOverlayAnimator.TextPosition.CENTER );
+						getActionStateManager().setLivemode( false );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

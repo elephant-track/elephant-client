@@ -29,6 +29,7 @@ package org.elephant.actions;
 import java.net.HttpURLConnection;
 
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
@@ -226,9 +227,9 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 						}
 					} );
 		}
-		finally
+		catch ( final ElephantConnectException e )
 		{
-			getGraph().releaseRef( spotRef );
+			// already handled by UnirestMixin
 		}
 	}
 

@@ -43,6 +43,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
@@ -261,7 +262,10 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 						}
 					} );
 		}
-
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 	private class CTCTrackEntity

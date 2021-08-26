@@ -35,6 +35,7 @@ import java.util.stream.IntStream;
 
 import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
@@ -212,43 +213,50 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
 				.add( JSON_KEY_LOG_DIR, getMainSettings().getSegLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
-		postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_SEG ), jsonRootObject.toString(),
-				response -> {
-					try
-					{
-						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_SEG ), jsonRootObject.toString(),
+					response -> {
+						try
 						{
-							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
-							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
-						}
-						else
-						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+								final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
+								showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getClientLogger().severe( sb.toString() );
+							else
+							{
+								final StringBuilder sb = new StringBuilder( response.getStatusText() );
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+								{
+									sb.append( ": " );
+									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								}
+								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+								getClientLogger().severe( sb.toString() );
+							}
 						}
-					}
-					finally
-					{
+						finally
+						{
+							ElephantActionStateManager.INSTANCE.setLivemode( false );
+						}
+					},
+					e -> {
+						handleError( e );
+						getClientLogger().severe( "The request has failed" );
 						ElephantActionStateManager.INSTANCE.setLivemode( false );
-					}
-				},
-				e -> {
-					handleError( e );
-					getClientLogger().severe( "The request has failed" );
-					ElephantActionStateManager.INSTANCE.setLivemode( false );
-					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-				},
-				() -> {
-					getClientLogger().info( "The request has been cancelled" );
-					ElephantActionStateManager.INSTANCE.setLivemode( false );
-				} );
+						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
+					},
+					() -> {
+						getClientLogger().info( "The request has been cancelled" );
+						ElephantActionStateManager.INSTANCE.setLivemode( false );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

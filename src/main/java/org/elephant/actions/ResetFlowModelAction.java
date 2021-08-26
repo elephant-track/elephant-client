@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.UIActionMixin;
@@ -52,15 +53,15 @@ import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
  * 
  * @author Ko Sugawara
  */
-public class ResetFlowModelAction extends AbstractElephantAction
+public class ResetFlowModelAction extends AbstractElephantDatasetAction
 		implements BdvDataMixin, ElephantConstantsMixin, ElephantSettingsMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] reset a flow model";
+	private static final String NAME = "[elephant] reset flow model";
 
-	private static final String MENU_TEXT = "Reset a Flow Model";
+	private static final String MENU_TEXT = "Reset Flow Model";
 
 	@Override
 	public String getMenuText()
@@ -74,7 +75,7 @@ public class ResetFlowModelAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final AtomicInteger option = new AtomicInteger();
 		try
@@ -91,24 +92,31 @@ public class ResetFlowModelAction extends AbstractElephantAction
 					.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 					.add( JSON_KEY_IS_3D, !is2D() );
-			postAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), jsonRootObject.toString(),
-					response -> {
-						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-						{
-							showTextOverlayAnimator( "Flow model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
-						}
-						else
-						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+			try
+			{
+				postAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), jsonRootObject.toString(),
+						response -> {
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								showTextOverlayAnimator( "Flow model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getClientLogger().severe( sb.toString() );
-						}
-					} );
+							else
+							{
+								final StringBuilder sb = new StringBuilder( response.getStatusText() );
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+								{
+									sb.append( ": " );
+									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								}
+								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+								getClientLogger().severe( sb.toString() );
+							}
+						} );
+			}
+			catch ( final ElephantConnectException e )
+			{
+				// already handled by UnirestMixin
+			}
 		}
 	}
 

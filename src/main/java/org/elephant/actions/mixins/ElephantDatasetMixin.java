@@ -130,6 +130,10 @@ public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerM
 				getClientLogger().severe( sb.toString() );
 			}
 		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 		finally
 		{
 			progressDialog.setProgressBarValue( 0 );

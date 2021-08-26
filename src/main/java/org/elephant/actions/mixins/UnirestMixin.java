@@ -30,6 +30,10 @@ import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import javax.swing.JOptionPane;
+
+import org.elephant.actions.ElephantStatusService.ElephantStatus;
+
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 import kong.unirest.Callback;
 import kong.unirest.HttpResponse;
@@ -42,17 +46,23 @@ import kong.unirest.UnirestException;
  * 
  * @author Ko Sugawara
  */
-public interface UnirestMixin extends ElephantActionMixin, LoggerMixin, UIActionMixin
+public interface UnirestMixin extends ElephantActionMixin, ElephantStateManagerMixin, LoggerMixin, UIActionMixin
 {
-	default RequestBodyEntity postBaseJson( final String endpointUrl, final String body )
+	default RequestBodyEntity postBaseJson( final String endpointUrl, final String body ) throws ElephantConnectException
 	{
+		if ( getServerStateManager().getElephantServerStatus() == ElephantStatus.UNAVAILABLE )
+		{
+			getClientLogger().severe( "The ELEPHANT server is unavailable" );
+			JOptionPane.showMessageDialog( null, "The ELEPHANT server is unavailable. Please set it up first.", "ELEPHANT server is unavailable", JOptionPane.ERROR_MESSAGE );
+			throw new ElephantConnectException( "ELEPHANT server is unavailable" );
+		}
 		return Unirest.post( endpointUrl )
 				.header( "Content-Type", "application/json" )
 				.body( body );
 	}
 
 	default CompletableFuture< HttpResponse< String > > postAsStringAsync( final String endpointUrl, final String body,
-			final Consumer< HttpResponse< String > > completed )
+			final Consumer< HttpResponse< String > > completed ) throws ElephantConnectException
 	{
 		return postAsStringAsync( endpointUrl, body, completed,
 				e -> {
@@ -64,7 +74,7 @@ public interface UnirestMixin extends ElephantActionMixin, LoggerMixin, UIAction
 	}
 
 	default CompletableFuture< HttpResponse< String > > postAsStringAsync( final String endpointUrl, final String body,
-			final Consumer< HttpResponse< String > > completed, final Consumer< UnirestException > failed, final Runnable cancelled )
+			final Consumer< HttpResponse< String > > completed, final Consumer< UnirestException > failed, final Runnable cancelled ) throws ElephantConnectException
 	{
 		return postBaseJson( endpointUrl, body ).asStringAsync( new Callback< String >()
 		{
@@ -90,13 +100,13 @@ public interface UnirestMixin extends ElephantActionMixin, LoggerMixin, UIAction
 		} );
 	}
 
-	default HttpResponse< String > postAsString( final String endpointUrl, final String body )
+	default HttpResponse< String > postAsString( final String endpointUrl, final String body ) throws ElephantConnectException
 	{
 		return postBaseJson( endpointUrl, body ).asString();
 	}
 
 	default CompletableFuture< HttpResponse< File > > postAsFileAsync( final String endpointUrl, final String body,
-			final String path, final Consumer< HttpResponse< File > > completed )
+			final String path, final Consumer< HttpResponse< File > > completed ) throws ElephantConnectException
 	{
 		return postAsFileAsync( endpointUrl, body, path, completed,
 				e -> {
@@ -108,7 +118,7 @@ public interface UnirestMixin extends ElephantActionMixin, LoggerMixin, UIAction
 	}
 
 	default CompletableFuture< HttpResponse< File > > postAsFileAsync( final String endpointUrl, final String body, final String path,
-			final Consumer< HttpResponse< File > > completed, final Consumer< UnirestException > failed, final Runnable cancelled )
+			final Consumer< HttpResponse< File > > completed, final Consumer< UnirestException > failed, final Runnable cancelled ) throws ElephantConnectException
 	{
 		return postBaseJson( endpointUrl, body ).asFileAsync( path, new Callback< File >()
 		{

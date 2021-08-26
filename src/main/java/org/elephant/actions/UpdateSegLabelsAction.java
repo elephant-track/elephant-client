@@ -35,6 +35,7 @@ import java.util.stream.IntStream;
 
 import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
@@ -175,26 +176,33 @@ public class UpdateSegLabelsAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_SPOTS, jsonSpots )
 				.add( JSON_KEY_IS_3D, !is2D() );
-		postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_SEG ), jsonRootObject.toString(),
-				response -> {
-					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-					{
-						final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-						final String message = rootObject.get( "completed" ).asBoolean() ? "Segmentation labels are updated" : "Update aborted";
-						showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.CENTER );
-					}
-					else
-					{
-						final StringBuilder sb = new StringBuilder( response.getStatusText() );
-						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_SEG ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							sb.append( ": " );
-							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+							final String message = rootObject.get( "completed" ).asBoolean() ? "Segmentation labels are updated" : "Update aborted";
+							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.CENTER );
 						}
-						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getClientLogger().severe( sb.toString() );
-					}
-				} );
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							{
+								sb.append( ": " );
+								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							}
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getClientLogger().severe( sb.toString() );
+						}
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

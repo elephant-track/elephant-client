@@ -126,26 +126,33 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
 				.add( JSON_KEY_LOG_DIR, getMainSettings().getFlowLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
-		postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_FLOW ), jsonRootObject.toString(),
-				response -> {
-					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-					{
-						final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-						final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
-						showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
-					}
-					else
-					{
-						final StringBuilder sb = new StringBuilder( response.getStatusText() );
-						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_FLOW ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							sb.append( ": " );
-							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+							final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
+							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 						}
-						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-						getClientLogger().severe( sb.toString() );
-					}
-				} );
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							{
+								sb.append( ": " );
+								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							}
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getClientLogger().severe( sb.toString() );
+						}
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

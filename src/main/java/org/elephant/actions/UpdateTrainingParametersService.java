@@ -27,6 +27,7 @@
 package org.elephant.actions;
 
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
@@ -66,10 +67,17 @@ public class UpdateTrainingParametersService extends AbstractElephantService
 		final JsonObject jsonRootObject = Json.object()
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() );
-		postAsStringAsync( getEndpointURL( ENDPOINT_PARAMS ), jsonRootObject.toString(),
-				response -> {
-					showTextOverlayAnimator( "Params updated", 3000, TextOverlayAnimator.TextPosition.CENTER );
-				} );
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_PARAMS ), jsonRootObject.toString(),
+					response -> {
+						showTextOverlayAnimator( "Params updated", 3000, TextOverlayAnimator.TextPosition.CENTER );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

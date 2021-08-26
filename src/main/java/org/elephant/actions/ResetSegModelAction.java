@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
@@ -58,9 +59,9 @@ public class ResetSegModelAction extends AbstractElephantDatasetAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] reset a seg model";
+	private static final String NAME = "[elephant] reset seg model";
 
-	private static final String MENU_TEXT = "Reset a Seg Model";
+	private static final String MENU_TEXT = "Reset Seg Model";
 
 	@Override
 	public String getMenuText()
@@ -104,24 +105,31 @@ public class ResetSegModelAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_MODEL_NAME, getMainSettings().getSegModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 					.add( JSON_KEY_IS_3D, !is2D() );
-			postAsStringAsync( getEndpointURL( ENDPOINT_RESET_SEG_MODEL ), jsonRootObject.toString(),
-					response -> {
-						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-						{
-							showTextOverlayAnimator( "Segmentation model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
-						}
-						else
-						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+			try
+			{
+				postAsStringAsync( getEndpointURL( ENDPOINT_RESET_SEG_MODEL ), jsonRootObject.toString(),
+						response -> {
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								showTextOverlayAnimator( "Segmentation model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getClientLogger().severe( sb.toString() );
-						}
-					} );
+							else
+							{
+								final StringBuilder sb = new StringBuilder( response.getStatusText() );
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+								{
+									sb.append( ": " );
+									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								}
+								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+								getClientLogger().severe( sb.toString() );
+							}
+						} );
+			}
+			catch ( final ElephantConnectException e )
+			{
+				// already handled by UnirestMixin
+			}
 		}
 	}
 
