@@ -65,6 +65,8 @@ public class UpdateFlowLabelsAction extends AbstractElephantDatasetAction
 
 	private static final String MENU_TEXT = "Update Flow Labels";
 
+	private JsonObject jsonRootObject;
+
 	@Override
 	public String getMenuText()
 	{
@@ -77,7 +79,7 @@ public class UpdateFlowLabelsAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	public void processDataset()
+	boolean prepare()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getMainSettings().getTimeRange();
@@ -100,13 +102,19 @@ public class UpdateFlowLabelsAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
-		final JsonObject jsonRootObject = Json.object()
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_RESET, false )
 				.add( JSON_KEY_MAX_DISPLACEMENT, getMainSettings().getMaxDisplacement() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_SPOTS, jsonSpots )
 				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
 		try
 		{
 			postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_FLOW ), jsonRootObject.toString(),

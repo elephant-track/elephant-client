@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.TimepointMixin;
@@ -63,6 +64,8 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 
 	private static final String MENU_TEXT = "Train a Flow Model (Selected Timepoints)";
 
+	private JsonObject jsonRootObject;
+
 	@Override
 	public String getMenuText()
 	{
@@ -75,7 +78,7 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	public void processDataset()
+	boolean prepare()
 	{
 		final int currentTimepoint = getCurrentTimepoint( 0 );
 		getClientLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
@@ -108,7 +111,7 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( getMainSettings().getFlowWeightX() )
 				.add( getMainSettings().getFlowWeightY() )
 				.add( getMainSettings().getFlowWeightZ() );
-		final JsonObject jsonRootObject = Json.object()
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_SPOTS, jsonSpots )
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
@@ -126,6 +129,12 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
 				.add( JSON_KEY_LOG_DIR, getMainSettings().getFlowLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
 		try
 		{
 			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_FLOW ), jsonRootObject.toString(),

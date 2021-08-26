@@ -71,6 +71,16 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 
 	private static final String DESCRIPTION = "Track the highlighted vertex backward in time.";
 
+	private int timepoint;
+
+	private JsonObject jsonRootObject;
+
+	private final double[] pos = new double[ 3 ];
+
+	private final double[][] cov = new double[ 3 ][ 3 ];
+
+	private final double[] cov1d = new double[ 9 ];
+
 	/*
 	 * Command description.
 	 */
@@ -104,17 +114,17 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	public void processDataset()
+	boolean prepare()
 	{
-		final int timepoint = getCurrentTimepoint( 0 );
+		timepoint = getCurrentTimepoint( 0 );
 		if ( timepoint < 1 )
-			return;
+			return false;
 		final VoxelDimensions voxelSize = getVoxelDimensions();
 		final JsonArray scales = new JsonArray()
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
-		final JsonObject jsonRootObject = Json.object()
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
@@ -128,35 +138,39 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 					.add( getMainSettings().getPatchSizeZ() ) );
 		}
 		final Spot spotRef = getGraph().vertexRef();
+		getGraph().getLock().readLock().lock();
 		try
 		{
-			final double[] pos = new double[ 3 ];
-			final double[][] cov = new double[ 3 ][ 3 ];
-			final double[] cov1d = new double[ 9 ];
-			getGraph().getLock().readLock().lock();
-			try
-			{
-				final Spot spot = getAppModel().getHighlightModel().getHighlightedVertex( spotRef );
-				if ( spot == null )
-					return;
-				spot.localize( pos );
-				spot.getCovariance( cov );
-				for ( int i = 0; i < 3; i++ )
-					for ( int j = 0; j < 3; j++ )
-						cov1d[ i * 3 + j ] = cov[ i ][ j ];
-				final int id = spot.getInternalPoolIndex();
-				final JsonObject jsonSpot = Json.object()
-						.add( "pos", Json.array( pos ) )
-						.add( "covariance", Json.array( cov1d ) )
-						.add( "id", id );
-				final JsonArray jsonSpots = Json.array().add( jsonSpot );
-				jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
-				jsonRootObject.set( "spots", jsonSpots );
-			}
-			finally
-			{
-				getGraph().getLock().readLock().unlock();
-			}
+			final Spot spot = getAppModel().getHighlightModel().getHighlightedVertex( spotRef );
+			if ( spot == null )
+				return false;
+			spot.localize( pos );
+			spot.getCovariance( cov );
+			for ( int i = 0; i < 3; i++ )
+				for ( int j = 0; j < 3; j++ )
+					cov1d[ i * 3 + j ] = cov[ i ][ j ];
+			final int id = spot.getInternalPoolIndex();
+			final JsonObject jsonSpot = Json.object()
+					.add( "pos", Json.array( pos ) )
+					.add( "covariance", Json.array( cov1d ) )
+					.add( "id", id );
+			final JsonArray jsonSpots = Json.array().add( jsonSpot );
+			jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
+			jsonRootObject.set( "spots", jsonSpots );
+		}
+		finally
+		{
+			getGraph().getLock().readLock().unlock();
+			getGraph().releaseRef( spotRef );
+		}
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
+		try
+		{
 			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )

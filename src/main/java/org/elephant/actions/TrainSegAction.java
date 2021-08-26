@@ -78,6 +78,8 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 
 	private final BdvContextService bdvContextService;
 
+	private JsonObject jsonRootObject;
+
 	public static enum TrainingMode
 	{
 		LIVE( "[elephant] start live training", "Start Live Training" ),
@@ -125,10 +127,10 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	public void processDataset()
+	boolean prepare()
 	{
 		if ( ElephantActionStateManager.INSTANCE.isLivemode() )
-			return;
+			return false;
 		final int currentTimepoint = getCurrentTimepoint( 0 );
 		getClientLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
 		final List< Integer > timepoints = new ArrayList<>( 0 );
@@ -190,7 +192,7 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( getMainSettings().getSegWeightBG() )
 				.add( getMainSettings().getSegWeightBorder() )
 				.add( getMainSettings().getSegWeightCenter() );
-		final JsonObject jsonRootObject = Json.object()
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_TRAIN_CROP_SIZE, cropSize )
@@ -213,6 +215,12 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
 				.add( JSON_KEY_LOG_DIR, getMainSettings().getSegLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
 		try
 		{
 			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_SEG ), jsonRootObject.toString(),

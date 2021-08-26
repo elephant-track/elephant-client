@@ -48,23 +48,31 @@ public abstract class AbstractElephantDatasetAction extends AbstractElephantActi
 
 	private static final long serialVersionUID = 1L;
 
+	boolean prepare()
+	{
+		return true;
+	}
+
 	@Override
 	void process()
 	{
-		final boolean isReady = ensureDataset();
-		if ( !isReady )
+		if ( prepare() )
 		{
-			try
+			final boolean isReady = ensureDataset();
+			if ( !isReady )
 			{
-				SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Dataset is not ready." ) );
+				try
+				{
+					SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Dataset is not ready." ) );
+				}
+				catch ( InvocationTargetException | InterruptedException e )
+				{
+					handleError( e );
+				}
+				return;
 			}
-			catch ( InvocationTargetException | InterruptedException e )
-			{
-				handleError( e );
-			}
-			return;
+			processDataset();
 		}
-		processDataset();
 	}
 
 	abstract void processDataset();

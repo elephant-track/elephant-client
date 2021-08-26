@@ -153,6 +153,12 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 
 	private int maxEdges;
 
+	private final double[] pos = new double[ 3 ];
+
+	private final double[][] cov = new double[ 3 ][ 3 ];
+
+	private Iterator< Integer > timepointIterator;
+
 	/*
 	 * Command description.
 	 */
@@ -198,16 +204,14 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	public void processDataset()
+	boolean prepare()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 1, timepointEnd - timeRange + 1 );
-		final Iterator< Integer > timepointIterator = IntStream.rangeClosed( timepointStart, timepointEnd )
+		timepointIterator = IntStream.rangeClosed( timepointStart, timepointEnd )
 				.boxed().sorted( Collections.reverseOrder() ).iterator();
 
-		final double[] pos = new double[ 3 ];
-		final double[][] cov = new double[ 3 ][ 3 ];
 		getActionStateManager().setAborted( false );
 
 		final VoxelDimensions voxelSize = getVoxelDimensions();
@@ -255,6 +259,12 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 		distanceThreshold = getMainSettings().getNNLinkingThreshold();
 		squaredDistanceThreshold = distanceThreshold * distanceThreshold;
 		maxEdges = getMainSettings().getNNMaxEdges();
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
 		processNext( timepointIterator, pos, cov );
 	}
 

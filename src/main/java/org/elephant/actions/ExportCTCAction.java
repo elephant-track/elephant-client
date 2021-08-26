@@ -104,6 +104,10 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 
 	private final double[] cov1d = new double[ 9 ];
 
+	private File dir;
+
+	private JsonObject jsonRootObject;
+
 	@Override
 	public String getMenuText()
 	{
@@ -132,7 +136,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	public void processDataset()
+	boolean prepare()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getMainSettings().getTimeRange();
@@ -161,69 +165,76 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 		{
 			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
-		final File dir = dirReference.get();
-		if ( dir != null )
+		dir = dirReference.get();
+		if ( dir == null )
+			return false;
+		final ObjTagMap< Spot, Tag > tagMapStatus = getVertexTagMap( getStatusTagSet() );
+		final Tag statusCompletedTag = getTag( getStatusTagSet(), STATUS_COMPLETED_TAG_NAME );
+		final List< CTCTrackEntity > trackList = new ArrayList<>();
+		final JsonArray jsonSpots = Json.array();
+		getGraph().getLock().readLock().lock();
+		try
 		{
-			final ObjTagMap< Spot, Tag > tagMapStatus = getVertexTagMap( getStatusTagSet() );
-			final Tag statusCompletedTag = getTag( getStatusTagSet(), STATUS_COMPLETED_TAG_NAME );
-			final List< CTCTrackEntity > trackList = new ArrayList<>();
-			final JsonArray jsonSpots = Json.array();
-			getGraph().getLock().readLock().lock();
+			final PoolCollectionWrapper< Spot > spots = getGraph().vertices();
+			final RefList< Spot > rootSpots = RefCollections.createRefList( spots );
+			for ( final Spot spot : spots )
+			{
+				if ( tagMapStatus.get( spot ) == statusCompletedTag && spot.incomingEdges().isEmpty() )
+					rootSpots.add( spot );
+			}
+			final Spot ref = getGraph().vertexRef();
+			for ( int i = 0; i < rootSpots.size(); i++ )
+			{
+				rootSpots.get( i, ref );
+				buildResult( ref, trackList, UNSET, 0, jsonSpots );
+			}
+			getGraph().releaseRef( ref );
+		}
+		finally
+		{
+			getGraph().getLock().readLock().unlock();
+		}
+
+		final File file = Paths.get( dir.getAbsolutePath(), RES_FILENAME ).toFile();
+		try (final FileWriter fileWriter = new FileWriter( file ))
+		{
+			final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
 			try
 			{
-				final PoolCollectionWrapper< Spot > spots = getGraph().vertices();
-				final RefList< Spot > rootSpots = RefCollections.createRefList( spots );
-				for ( final Spot spot : spots )
-				{
-					if ( tagMapStatus.get( spot ) == statusCompletedTag && spot.incomingEdges().isEmpty() )
-						rootSpots.add( spot );
-				}
-				final Spot ref = getGraph().vertexRef();
-				for ( int i = 0; i < rootSpots.size(); i++ )
-				{
-					rootSpots.get( i, ref );
-					buildResult( ref, trackList, UNSET, 0, jsonSpots );
-				}
-				getGraph().releaseRef( ref );
+				for ( int i = 0; i < trackList.size(); i++ )
+					writer.writeNext( trackList.get( i ).toCsvEntry() );
 			}
 			finally
 			{
-				getGraph().getLock().readLock().unlock();
+				writer.close();
 			}
+		}
+		catch ( final IOException e )
+		{
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+		}
 
-			final File file = Paths.get( dir.getAbsolutePath(), RES_FILENAME ).toFile();
-			try (final FileWriter fileWriter = new FileWriter( file ))
-			{
-				final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
-				try
-				{
-					for ( int i = 0; i < trackList.size(); i++ )
-						writer.writeNext( trackList.get( i ).toCsvEntry() );
-				}
-				finally
-				{
-					writer.close();
-				}
-			}
-			catch ( final IOException e )
-			{
-				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
-			}
+		final VoxelDimensions voxelSize = getVoxelDimensions();
+		final JsonArray scales = new JsonArray()
+				.add( voxelSize.dimension( 0 ) )
+				.add( voxelSize.dimension( 1 ) )
+				.add( voxelSize.dimension( 2 ) );
+		jsonRootObject = Json.object()
+				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
+				.add( JSON_KEY_SCALES, scales )
+				.add( JSON_KEY_SPOTS, jsonSpots )
+				.add( JSON_KEY_T_START, timepointStart )
+				.add( JSON_KEY_T_END, timepointEnd )
+				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
 
-			final VoxelDimensions voxelSize = getVoxelDimensions();
-			final JsonArray scales = new JsonArray()
-					.add( voxelSize.dimension( 0 ) )
-					.add( voxelSize.dimension( 1 ) )
-					.add( voxelSize.dimension( 2 ) );
-			final JsonObject jsonRootObject = Json.object()
-					.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-					.add( JSON_KEY_SCALES, scales )
-					.add( JSON_KEY_SPOTS, jsonSpots )
-					.add( JSON_KEY_T_START, timepointStart )
-					.add( JSON_KEY_T_END, timepointEnd )
-					.add( JSON_KEY_IS_3D, !is2D() );
-
-			final String zipAbsolutePath = Paths.get( dir.getAbsolutePath(), RES_ZIPNAME ).toString();
+	@Override
+	public void processDataset()
+	{
+		final String zipAbsolutePath = Paths.get( dir.getAbsolutePath(), RES_ZIPNAME ).toString();
+		try
+		{
 			postAsFileAsync( getEndpointURL( ENDPOINT_EXPORT_CTC ), jsonRootObject.toString(), zipAbsolutePath,
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )

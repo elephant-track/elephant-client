@@ -134,6 +134,10 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 
 	private JsonObject jsonRootObject;
 
+	private int timepointStart;
+
+	private int timepointEnd;
+
 	/*
 	 * Command description.
 	 */
@@ -179,11 +183,11 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 	}
 
 	@Override
-	public void processDataset()
+	boolean prepare()
 	{
-		final int timepointEnd = getCurrentTimepoint( 0 );
+		timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
-		final int timepointStart = Math.max( 0, timepointEnd - ( timeRange - 1 ) );
+		timepointStart = Math.max( 0, timepointEnd - ( timeRange - 1 ) );
 		ElephantActionStateManager.INSTANCE.setAborted( false );
 		final VoxelDimensions voxelSize = getVoxelDimensions();
 		final JsonArray scales = new JsonArray()
@@ -234,6 +238,12 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 					cropSize[ 1 ] * voxelSize.dimension( 1 ),
 					cropSize[ 2 ] * voxelSize.dimension( 2 ) );
 		}
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
 		predictSpotsAt( timepointStart, timepointEnd );
 	}
 
