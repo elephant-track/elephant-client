@@ -55,9 +55,9 @@ public class IntegerInputDialog extends JDialog
 
 	private final JSpinner spinner;
 
-	private static int initialValue = 50;
+	private static int defaultValue = 50;
 
-	public IntegerInputDialog( final int maxLinks )
+	public IntegerInputDialog( final int value, final String title )
 	{
 		setTitle( "Select a value" );
 		setModal( true );
@@ -72,7 +72,7 @@ public class IntegerInputDialog extends JDialog
 		gbl_contentPanel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		contentPanel.setLayout( gbl_contentPanel );
 
-		final JLabel lblMinLinks = new JLabel( "Minimum number of links" );
+		final JLabel lblMinLinks = new JLabel( title );
 		final GridBagConstraints gbc_lblMinLinks = new GridBagConstraints();
 		gbc_lblMinLinks.weighty = 1.0;
 		gbc_lblMinLinks.weightx = 0.5;
@@ -82,7 +82,7 @@ public class IntegerInputDialog extends JDialog
 		contentPanel.add( lblMinLinks, gbc_lblMinLinks );
 
 		spinner = new JSpinner();
-		spinner.setModel( new SpinnerNumberModel( new Integer( initialValue ), new Integer( 0 ), new Integer( maxLinks ), new Integer( 1 ) ) );
+		spinner.setModel( new SpinnerNumberModel( new Integer( Math.min( defaultValue, value ) ), new Integer( 0 ), new Integer( value ), new Integer( 1 ) ) );
 		final GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.insets = new Insets( 5, 5, 5, 5 );
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
@@ -103,7 +103,7 @@ public class IntegerInputDialog extends JDialog
 			@Override
 			public void actionPerformed( ActionEvent e )
 			{
-				initialValue = getMinimumNumberOfLinks();
+				defaultValue = getMinimumNumberOfLinks();
 				isCanceled = false;
 				setVisible( false );
 			}

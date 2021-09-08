@@ -77,7 +77,7 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 		try
 		{
 			SwingUtilities.invokeAndWait( () -> {
-				final IntegerInputDialog dialog = new IntegerInputDialog( getAppModel().getMaxTimepoint() );
+				final IntegerInputDialog dialog = new IntegerInputDialog( getAppModel().getMaxTimepoint(), "Minimum number of links" );
 				dialog.setVisible( true );
 				try
 				{

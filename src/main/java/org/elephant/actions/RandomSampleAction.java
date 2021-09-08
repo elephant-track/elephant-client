@@ -78,7 +78,7 @@ public class RandomSampleAction extends AbstractElephantAction
 		try
 		{
 			SwingUtilities.invokeAndWait( () -> {
-				final IntegerInputDialog dialog = new IntegerInputDialog( size );
+				final IntegerInputDialog dialog = new IntegerInputDialog( size, "Number of samples" );
 				dialog.setVisible( true );
 				try
 				{
