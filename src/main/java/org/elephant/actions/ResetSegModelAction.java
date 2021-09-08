@@ -28,9 +28,9 @@ package org.elephant.actions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -77,16 +77,29 @@ public class ResetSegModelAction extends AbstractElephantDatasetAction
 	@Override
 	public void processDataset()
 	{
-		final AtomicInteger option = new AtomicInteger();
+		final AtomicBoolean isCanceled = new AtomicBoolean(); // false by default
+		final AtomicReference< String > atomoicUrl = new AtomicReference<>();
 		try
 		{
-			SwingUtilities.invokeAndWait( () -> option.set( JOptionPane.showConfirmDialog( null, "Segmentation model will be reset", "Select an option", JOptionPane.OK_CANCEL_OPTION ) ) );
+			SwingUtilities.invokeAndWait( () -> {
+				final ModelResetDialog dialog = new ModelResetDialog();
+				dialog.setVisible( true );
+				try
+				{
+					isCanceled.set( dialog.isCanceled() );
+					atomoicUrl.set( dialog.getUrl() );
+				}
+				finally
+				{
+					dialog.dispose();
+				}
+			} );
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
 			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
-		if ( option.get() == JOptionPane.OK_OPTION )
+		if ( !isCanceled.get() )
 		{
 			final VoxelDimensions voxelSize = getVoxelDimensions();
 			final JsonArray scales = new JsonArray()
@@ -104,7 +117,8 @@ public class ResetSegModelAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_TRAIN_CROP_SIZE, cropSize )
 					.add( JSON_KEY_MODEL_NAME, getMainSettings().getSegModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
-					.add( JSON_KEY_IS_3D, !is2D() );
+					.add( JSON_KEY_IS_3D, !is2D() )
+					.add( JSON_KEY_MODEL_URL, atomoicUrl.get() );
 			try
 			{
 				postAsStringAsync( getEndpointURL( ENDPOINT_RESET_SEG_MODEL ), jsonRootObject.toString(),

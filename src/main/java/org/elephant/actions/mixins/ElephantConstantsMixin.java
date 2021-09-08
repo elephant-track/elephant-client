@@ -204,4 +204,6 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_SHAPE = "shape";
 
+	public static final String JSON_KEY_MODEL_URL = "url";
+
 }
