@@ -256,9 +256,10 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final ElephantStatusService elephantStatusService;
 
+	final LoggerService loggerService = new LoggerService();
+
 	public Elephant()
 	{
-		final LoggerService loggerService = new LoggerService();
 		loggerService.setup();
 		mouseMotionService = new BdvViewMouseMotionService();
 		bdvContextService = new BdvContextService();
@@ -300,7 +301,6 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		showControlPanelAction = new ShowControlPanelAction();
 		pluginActions.add( showControlPanelAction );
 		showPreferencesAction = new ShowPreferencesAction();
-		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( loggerService );
 		pluginActions.add( showPreferencesAction );
 		mapSpotTagAction = new MapTagAction( ChangeTagActionMode.SPOT );
 		pluginActions.add( mapSpotTagAction );
@@ -421,6 +421,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		// UpdateTrainingParameters
 		final UpdateTrainingParametersService updateTrainingParametersService = new UpdateTrainingParametersService( pluginAppModel );
 		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( updateTrainingParametersService );
+		// LoggerService
+		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( loggerService );
 		// HighlightListener
 		final HighlightListenerService highlightListenerService = new HighlightListenerService( pluginAppModel );
 		pluginAppModel.getAppModel().getHighlightModel().listeners().add( highlightListenerService );
