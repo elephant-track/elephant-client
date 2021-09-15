@@ -132,7 +132,7 @@ public class UploadAction extends AbstractElephantAction
 									.field( "action", bytesOffset == 0 ? "init" : "append" )
 									.field( "file", tempFile )
 									.uploadMonitor( ( field, fileName, bytesWritten, totalBytes ) -> {
-										uploadDialog.setLabelText( String.format( "%.2f MB / %.2f MB", toMB( bytesOffsetL + bytesWritten ), toMB( fileSize ) ) );
+										uploadDialog.setLabelText( String.format( "%.2f MB / %.2f MB", toMB( Math.min( fileSize, bytesOffsetL + bytesWritten ) ), toMB( fileSize ) ) );
 										uploadDialog.setProgressBarValue( ( int ) ( 100 * ( bytesOffsetL + bytesWritten ) / fileSize ) );
 									} )
 									.asEmpty();
