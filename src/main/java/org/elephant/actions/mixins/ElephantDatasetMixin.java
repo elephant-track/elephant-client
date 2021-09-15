@@ -64,11 +64,12 @@ public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerM
 	{
 		final AtomicBoolean isDatasetReadyAtomic = new AtomicBoolean();
 		final Dimensions dimensions = getDimensions();
-		final JsonArray shape = new JsonArray()
-				.add( getMaxTimepoint() + 1 )
-				.add( dimensions.dimension( 2 ) )
-				.add( dimensions.dimension( 1 ) )
-				.add( dimensions.dimension( 0 ) );
+		final JsonArray shape = new JsonArray().add( getMaxTimepoint() + 1 );
+		if ( !is2D() )
+		{
+			shape.add( dimensions.dimension( 2 ) );
+		}
+		shape.add( dimensions.dimension( 1 ) ).add( dimensions.dimension( 0 ) );
 		final JsonObject jsonDatasetCheck = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_SHAPE, shape );
