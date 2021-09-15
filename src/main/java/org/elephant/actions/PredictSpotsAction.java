@@ -196,7 +196,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 2 ) );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-				.add( JSON_KEY_MODEL_NAME, getMainSettings().getSegModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
@@ -254,7 +254,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_SEG ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_DETECTION ), jsonRootObject.toString(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{

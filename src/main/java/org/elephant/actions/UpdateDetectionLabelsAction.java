@@ -64,14 +64,14 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class UpdateSegLabelsAction extends AbstractElephantDatasetAction
+public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
 		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] update seg labels";
+	private static final String NAME = "[elephant] update detection labels";
 
-	private static final String MENU_TEXT = "Update Seg Labels";
+	private static final String MENU_TEXT = "Update Detection Labels";
 
 	private static final String[] MENU_KEYS = new String[] { "U" };
 
@@ -114,7 +114,7 @@ public class UpdateSegLabelsAction extends AbstractElephantDatasetAction
 		return MENU_KEYS;
 	}
 
-	public UpdateSegLabelsAction( final BdvContextService bdvContextService )
+	public UpdateDetectionLabelsAction( final BdvContextService bdvContextService )
 	{
 		super( NAME );
 		this.bdvContextService = bdvContextService;
@@ -186,12 +186,12 @@ public class UpdateSegLabelsAction extends AbstractElephantDatasetAction
 	{
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_SEG ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_DETECTION ), jsonRootObject.toString(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
 							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final String message = rootObject.get( "completed" ).asBoolean() ? "Segmentation labels are updated" : "Update aborted";
+							final String message = rootObject.get( "completed" ).asBoolean() ? "Detection labels are updated" : "Update aborted";
 							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.CENTER );
 						}
 						else

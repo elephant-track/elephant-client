@@ -51,15 +51,15 @@ import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
  * 
  * @author Ko Sugawara
  */
-public class ResetSegLabelsAction extends AbstractElephantDatasetAction
+public class ResetDetectionLabelsAction extends AbstractElephantDatasetAction
 		implements ElephantConstantsMixin, ElephantSettingsMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] reset seg labels";
+	private static final String NAME = "[elephant] reset detection labels";
 
-	private static final String MENU_TEXT = "Reset Seg Labels";
+	private static final String MENU_TEXT = "Reset Detection Labels";
 
 	@Override
 	public String getMenuText()
@@ -67,7 +67,7 @@ public class ResetSegLabelsAction extends AbstractElephantDatasetAction
 		return MENU_TEXT;
 	}
 
-	public ResetSegLabelsAction()
+	public ResetDetectionLabelsAction()
 	{
 		super( NAME );
 	}
@@ -78,7 +78,7 @@ public class ResetSegLabelsAction extends AbstractElephantDatasetAction
 		final AtomicInteger option = new AtomicInteger();
 		try
 		{
-			SwingUtilities.invokeAndWait( () -> option.set( JOptionPane.showConfirmDialog( null, "Segmentation labels will be reset", "Select an option", JOptionPane.OK_CANCEL_OPTION ) ) );
+			SwingUtilities.invokeAndWait( () -> option.set( JOptionPane.showConfirmDialog( null, "Detection labels will be reset", "Select an option", JOptionPane.OK_CANCEL_OPTION ) ) );
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
@@ -91,11 +91,11 @@ public class ResetSegLabelsAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_RESET, true );
 			try
 			{
-				postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_SEG ), jsonRootObject.toString(),
+				postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_DETECTION ), jsonRootObject.toString(),
 						response -> {
 							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
-								showTextOverlayAnimator( "Segmentation labels are reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
+								showTextOverlayAnimator( "Detection labels are reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 							}
 							else
 							{

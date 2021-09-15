@@ -122,9 +122,9 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 
 				label( "file/dir on the server" ),
 				stringElement( "dataset dir (relative path from /workspace/datasets/)", style::getDatasetName, style::setDatasetName ),
-				stringElement( "seg model file (relative path from /workspace/models/)", style::getSegModelName, style::setSegModelName ),
+				stringElement( "detection model file (relative path from /workspace/models/)", style::getDetectionModelName, style::setDetectionModelName ),
 				stringElement( "flow model file (relative path from /workspace/models/)", style::getFlowModelName, style::setFlowModelName ),
-				stringElement( "seg Tensorboard log dir (relative path from /workspace/logs/)", style::getSegLogName, style::setSegLogName ),
+				stringElement( "detection Tensorboard log dir (relative path from /workspace/logs/)", style::getDetectionLogName, style::setDetectionLogName ),
 				stringElement( "flow Tensorboard  log dir (relative path from /workspace/logs/)", style::getFlowLogName, style::setFlowLogName ) );
 	}
 
@@ -141,9 +141,9 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				intElement( "training crop size y", 1, 9999, style::getTrainingCropSizeY, style::setTrainingCropSizeY ),
 				intElement( "training crop size z", 1, 9999, style::getTrainingCropSizeZ, style::setTrainingCropSizeZ ),
 
-				doubleElementEx( "seg class weight background", 0.0, 100, 0.1, style::getSegWeightBG, style::setSegWeightBG ),
-				doubleElementEx( "seg class weight border", 0.0, 100, 0.1, style::getSegWeightBorder, style::setSegWeightBorder ),
-				doubleElementEx( "seg class weight center", 0.0, 100, 0.1, style::getSegWeightCenter, style::setSegWeightCenter ),
+				doubleElementEx( "class weight background", 0.0, 100, 0.1, style::getClassWeightBG, style::setClassWeightBG ),
+				doubleElementEx( "class weight border", 0.0, 100, 0.1, style::getClassWeightBorder, style::setClassWeightBorder ),
+				doubleElementEx( "class weight center", 0.0, 100, 0.1, style::getClassWeightCenter, style::setClassWeightCenter ),
 
 				doubleElementEx( "flow dim weight x", 0.0, 100, 0.1, style::getFlowWeightX, style::setFlowWeightX ),
 				doubleElementEx( "flow dim weight y", 0.0, 100, 0.1, style::getFlowWeightY, style::setFlowWeightY ),

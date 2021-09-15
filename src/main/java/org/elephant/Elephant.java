@@ -83,8 +83,8 @@ import org.elephant.actions.RemoveVisibleSpotsAction;
 import org.elephant.actions.ResetEllipsoidRotation;
 import org.elephant.actions.ResetFlowLabelsAction;
 import org.elephant.actions.ResetFlowModelAction;
-import org.elephant.actions.ResetSegLabelsAction;
-import org.elephant.actions.ResetSegModelAction;
+import org.elephant.actions.ResetDetectionLabelsAction;
+import org.elephant.actions.ResetDetectionModelAction;
 import org.elephant.actions.ResetTagSetColorsAction;
 import org.elephant.actions.RotateEllipsoidAction;
 import org.elephant.actions.RotateEllipsoidAction.RotateEllipsoidActionMode;
@@ -102,11 +102,11 @@ import org.elephant.actions.TagProgenitorAction;
 import org.elephant.actions.TagProliferatorAction;
 import org.elephant.actions.TakeSnapshotAction;
 import org.elephant.actions.TrainFlowAction;
-import org.elephant.actions.TrainSegAction;
-import org.elephant.actions.TrainSegAction.TrainingMode;
+import org.elephant.actions.TrainDetectionAction;
+import org.elephant.actions.TrainDetectionAction.TrainingMode;
 import org.elephant.actions.UnirestService;
 import org.elephant.actions.UpdateFlowLabelsAction;
-import org.elephant.actions.UpdateSegLabelsAction;
+import org.elephant.actions.UpdateDetectionLabelsAction;
 import org.elephant.actions.UpdateTrainingParametersService;
 import org.elephant.actions.UploadAction;
 import org.elephant.actions.VertexPositionListenerService;
@@ -146,7 +146,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction predictSpotsAction;
 
-	private final AbstractElephantAction updateSegLabelsAction;
+	private final AbstractElephantAction updateDetectionLabelsAction;
 
 	private final AbstractElephantAction updateFlowLabelsAction;
 
@@ -166,11 +166,11 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction showPreferencesAction;
 
-	private final AbstractElephantAction resetSegModelAction;
+	private final AbstractElephantAction resetDetectionModelAction;
 
 	private final AbstractElephantAction resetFlowModelAction;
 
-	private final AbstractElephantAction resetSegLabelsAction;
+	private final AbstractElephantAction resetDetectionLabelsAction;
 
 	private final AbstractElephantAction resetFlowLabelsAction;
 
@@ -269,22 +269,22 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		predictSpotsAction = new PredictSpotsAction( PredictSpotsActionMode.ENTIRE, mouseMotionService );
 		pluginActions.add( predictSpotsAction );
 		pluginActions.add( new PredictSpotsAction( PredictSpotsActionMode.AROUND_MOUSE, mouseMotionService ) );
-		updateSegLabelsAction = new UpdateSegLabelsAction( bdvContextService );
-		pluginActions.add( updateSegLabelsAction );
+		updateDetectionLabelsAction = new UpdateDetectionLabelsAction( bdvContextService );
+		pluginActions.add( updateDetectionLabelsAction );
 		updateFlowLabelsAction = new UpdateFlowLabelsAction();
 		pluginActions.add( updateFlowLabelsAction );
-		liveTrainingAction = new TrainSegAction( TrainingMode.LIVE, bdvContextService );
+		liveTrainingAction = new TrainDetectionAction( TrainingMode.LIVE, bdvContextService );
 		pluginActions.add( liveTrainingAction );
-		trainSelectedAction = new TrainSegAction( TrainingMode.SELECTED, bdvContextService );
+		trainSelectedAction = new TrainDetectionAction( TrainingMode.SELECTED, bdvContextService );
 		pluginActions.add( trainSelectedAction );
-		trainAllAction = new TrainSegAction( TrainingMode.ALL, bdvContextService );
+		trainAllAction = new TrainDetectionAction( TrainingMode.ALL, bdvContextService );
 		pluginActions.add( trainAllAction );
-		resetSegModelAction = new ResetSegModelAction();
-		pluginActions.add( resetSegModelAction );
+		resetDetectionModelAction = new ResetDetectionModelAction();
+		pluginActions.add( resetDetectionModelAction );
 		resetFlowModelAction = new ResetFlowModelAction();
 		pluginActions.add( resetFlowModelAction );
-		resetSegLabelsAction = new ResetSegLabelsAction();
-		pluginActions.add( resetSegLabelsAction );
+		resetDetectionLabelsAction = new ResetDetectionLabelsAction();
+		pluginActions.add( resetDetectionLabelsAction );
 		resetFlowLabelsAction = new ResetFlowLabelsAction();
 		pluginActions.add( resetFlowLabelsAction );
 		nnLinkingAction = new NearestNeighborLinkingAction( NearestNeighborLinkingActionMode.ENTIRE, mouseMotionService );
@@ -448,12 +448,12 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 						menu( "ELEPHANT",
 								menu( "Detection",
 										item( predictSpotsAction.name() ),
-										item( updateSegLabelsAction.name() ),
-										item( resetSegLabelsAction.name() ),
+										item( updateDetectionLabelsAction.name() ),
+										item( resetDetectionLabelsAction.name() ),
 										item( liveTrainingAction.name() ),
 										item( trainSelectedAction.name() ),
 										item( trainAllAction.name() ),
-										item( resetSegModelAction.name() ) ),
+										item( resetDetectionModelAction.name() ) ),
 								menu( "Linking",
 										item( nnLinkingAction.name() ),
 										item( updateFlowLabelsAction.name() ),

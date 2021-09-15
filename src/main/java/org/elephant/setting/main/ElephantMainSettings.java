@@ -72,11 +72,11 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_LEARNING_RATE = 0.0001;
 
-	public static final double DEFAULT_SEG_WEIGHT_BG = 1.0;
+	public static final double DEFAULT_CLASS_WEIGHT_BG = 1.0;
 
-	public static final double DEFAULT_SEG_WEIGHT_BORDER = 10.0;
+	public static final double DEFAULT_CLASS_WEIGHT_BORDER = 10.0;
 
-	public static final double DEFAULT_SEG_WEIGHT_CENTER = 10.0;
+	public static final double DEFAULT_CLASS_WEIGHT_CENTER = 10.0;
 
 	public static final double DEFAULT_FLOW_WEIGHT_X = 1.0;
 
@@ -120,11 +120,11 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final boolean DEFAULT_USE_2D_MODEL = false;
 
-	public static final String DEFAULT_SEG_MODEL_NAME = "seg.pth";
+	public static final String DEFAULT_DETECTION_MODEL_NAME = "detection.pth";
 
 	public static final String DEFAULT_FLOW_MODEL_NAME = "flow.pth";
 
-	public static final String DEFAULT_SEG_LOG_NAME = "seg_log";
+	public static final String DEFAULT_DETECTION_LOG_NAME = "detection_log";
 
 	public static final String DEFAULT_FLOW_LOG_NAME = "flow_log";
 
@@ -163,9 +163,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		timeRange = settings.timeRange;
 		autoBgThreshold = settings.autoBgThreshold;
 		learningRate = settings.learningRate;
-		segWeightBG = settings.segWeightBG;
-		segWeightBorder = settings.segWeightBorder;
-		segWeightCenter = settings.segWeightCenter;
+		classWeightBG = settings.classWeightBG;
+		classWeightBorder = settings.classWeightBorder;
+		classWeightCenter = settings.classWeightCenter;
 		flowWeightX = settings.flowWeightX;
 		flowWeightY = settings.flowWeightY;
 		flowWeightZ = settings.flowWeightZ;
@@ -187,9 +187,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		useOpticalflow = settings.useOpticalflow;
 		useInterpolation = settings.useInterpolation;
 		use2dModel = settings.use2dModel;
-		segModelName = settings.segModelName;
+		detectionModelName = settings.detectionModelName;
 		flowModelName = settings.flowModelName;
-		segLogName = settings.segLogName;
+		detectionLogName = settings.detectionLogName;
 		flowLogName = settings.flowLogName;
 		datasetName = settings.datasetName;
 		logFileName = settings.logFileName;
@@ -228,11 +228,11 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	private double learningRate = DEFAULT_LEARNING_RATE;
 
-	private double segWeightBG = DEFAULT_SEG_WEIGHT_BG;
+	private double classWeightBG = DEFAULT_CLASS_WEIGHT_BG;
 
-	private double segWeightBorder = DEFAULT_SEG_WEIGHT_BORDER;
+	private double classWeightBorder = DEFAULT_CLASS_WEIGHT_BORDER;
 
-	private double segWeightCenter = DEFAULT_SEG_WEIGHT_CENTER;
+	private double classWeightCenter = DEFAULT_CLASS_WEIGHT_CENTER;
 
 	private double flowWeightX = DEFAULT_FLOW_WEIGHT_X;
 
@@ -276,11 +276,11 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	private boolean use2dModel = DEFAULT_USE_2D_MODEL;
 
-	private String segModelName = DEFAULT_SEG_MODEL_NAME;
+	private String detectionModelName = DEFAULT_DETECTION_MODEL_NAME;
 
 	private String flowModelName = DEFAULT_FLOW_MODEL_NAME;
 
-	private String segLogName = DEFAULT_SEG_LOG_NAME;
+	private String detectionLogName = DEFAULT_DETECTION_LOG_NAME;
 
 	private String flowLogName = DEFAULT_FLOW_LOG_NAME;
 
@@ -512,44 +512,44 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
-	public double getSegWeightBG()
+	public double getClassWeightBG()
 	{
-		return segWeightBG;
+		return classWeightBG;
 	}
 
-	public synchronized void setSegWeightBG( final double classWeightBG )
+	public synchronized void setClassWeightBG( final double classWeightBG )
 	{
-		if ( this.segWeightBG != classWeightBG )
+		if ( this.classWeightBG != classWeightBG )
 		{
-			this.segWeightBG = classWeightBG;
+			this.classWeightBG = classWeightBG;
 			notifyListeners();
 		}
 	}
 
-	public double getSegWeightBorder()
+	public double getClassWeightBorder()
 	{
-		return segWeightBorder;
+		return classWeightBorder;
 	}
 
-	public synchronized void setSegWeightBorder( final double classWeightBorder )
+	public synchronized void setClassWeightBorder( final double classWeightBorder )
 	{
-		if ( this.segWeightBorder != classWeightBorder )
+		if ( this.classWeightBorder != classWeightBorder )
 		{
-			this.segWeightBorder = classWeightBorder;
+			this.classWeightBorder = classWeightBorder;
 			notifyListeners();
 		}
 	}
 
-	public double getSegWeightCenter()
+	public double getClassWeightCenter()
 	{
-		return segWeightCenter;
+		return classWeightCenter;
 	}
 
-	public synchronized void setSegWeightCenter( final double classWeightCenter )
+	public synchronized void setClassWeightCenter( final double classWeightCenter )
 	{
-		if ( this.segWeightCenter != classWeightCenter )
+		if ( this.classWeightCenter != classWeightCenter )
 		{
-			this.segWeightCenter = classWeightCenter;
+			this.classWeightCenter = classWeightCenter;
 			notifyListeners();
 		}
 	}
@@ -848,16 +848,16 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
-	public String getSegModelName()
+	public String getDetectionModelName()
 	{
-		return segModelName != null ? segModelName : DEFAULT_SEG_MODEL_NAME;
+		return detectionModelName != null ? detectionModelName : DEFAULT_DETECTION_MODEL_NAME;
 	}
 
-	public synchronized void setSegModelName( final String segModelName )
+	public synchronized void setDetectionModelName( final String detectionModelName )
 	{
-		if ( !Objects.equals( this.segModelName, segModelName ) )
+		if ( !Objects.equals( this.detectionModelName, detectionModelName ) )
 		{
-			this.segModelName = segModelName;
+			this.detectionModelName = detectionModelName;
 			notifyListeners();
 		}
 	}
@@ -876,16 +876,16 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
-	public String getSegLogName()
+	public String getDetectionLogName()
 	{
-		return segLogName != null ? segLogName : DEFAULT_SEG_LOG_NAME;
+		return detectionLogName != null ? detectionLogName : DEFAULT_DETECTION_LOG_NAME;
 	}
 
-	public synchronized void setSegLogName( final String segLogName )
+	public synchronized void setDetectionLogName( final String detectionLogName )
 	{
-		if ( !Objects.equals( this.segLogName, segLogName ) )
+		if ( !Objects.equals( this.detectionLogName, detectionLogName ) )
 		{
-			this.segLogName = segLogName;
+			this.detectionLogName = detectionLogName;
 			notifyListeners();
 		}
 	}
@@ -952,9 +952,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.timeRange = DEFAULT_TIME_RANGE;
 		df.autoBgThreshold = DEFAULT_AUTO_BG_THRESHOLD;
 		df.learningRate = DEFAULT_LEARNING_RATE;
-		df.segWeightBG = DEFAULT_SEG_WEIGHT_BG;
-		df.segWeightBorder = DEFAULT_SEG_WEIGHT_BORDER;
-		df.segWeightCenter = DEFAULT_SEG_WEIGHT_CENTER;
+		df.classWeightBG = DEFAULT_CLASS_WEIGHT_BG;
+		df.classWeightBorder = DEFAULT_CLASS_WEIGHT_BORDER;
+		df.classWeightCenter = DEFAULT_CLASS_WEIGHT_CENTER;
 		df.flowWeightX = DEFAULT_FLOW_WEIGHT_X;
 		df.flowWeightY = DEFAULT_FLOW_WEIGHT_Y;
 		df.flowWeightZ = DEFAULT_FLOW_WEIGHT_Z;
@@ -974,9 +974,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 		df.useInterpolation = DEFAULT_USE_INTERPOLATION;
 		df.use2dModel = DEFAULT_USE_2D_MODEL;
-		df.segModelName = DEFAULT_SEG_MODEL_NAME;
+		df.detectionModelName = DEFAULT_DETECTION_MODEL_NAME;
 		df.flowModelName = DEFAULT_FLOW_MODEL_NAME;
-		df.segLogName = DEFAULT_SEG_LOG_NAME;
+		df.detectionLogName = DEFAULT_DETECTION_LOG_NAME;
 		df.flowLogName = DEFAULT_FLOW_LOG_NAME;
 		df.datasetName = DEFAULT_DATASET_NAME;
 		df.logFileName = DEFAULT_LOG_FILE_NAME;

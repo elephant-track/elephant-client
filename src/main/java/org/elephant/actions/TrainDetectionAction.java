@@ -56,7 +56,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 /**
  * Send a request for training a voxel-classification model.
  * 
- * There are three modes in the {@link TrainSegAction}.
+ * There are three modes in the {@link TrainDetectionAction}.
  * 
  * <ol>
  * <li>LIVE: start live training</li>
@@ -67,7 +67,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class TrainSegAction extends AbstractElephantDatasetAction
+public class TrainDetectionAction extends AbstractElephantDatasetAction
 		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
 		TimepointMixin, UIActionMixin, URLMixin
 {
@@ -83,8 +83,8 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 	public static enum TrainingMode
 	{
 		LIVE( "[elephant] start live training", "Start Live Training" ),
-		SELECTED( "[elephant] train a seg model (selected timepoints)", "Train a Seg Model (Selected Timepoints)" ),
-		ALL( "[elephant] train a seg model (all timepoints)", "Train a Seg Model (All Timepoints)" );
+		SELECTED( "[elephant] train detection model (selected timepoints)", "Train Detection Model (Selected Timepoints)" ),
+		ALL( "[elephant] train detection model (all timepoints)", "Train Detection Model (All Timepoints)" );
 
 		private String name;
 
@@ -113,7 +113,7 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 		return trainingMode.getMenuText();
 	}
 
-	public TrainSegAction( final TrainingMode trainingMode, final BdvContextService bdvContextService )
+	public TrainDetectionAction( final TrainingMode trainingMode, final BdvContextService bdvContextService )
 	{
 		super( trainingMode.getName() );
 		this.trainingMode = trainingMode;
@@ -189,15 +189,15 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( getMainSettings().getTrainingCropSizeY() )
 				.add( getMainSettings().getTrainingCropSizeZ() );
 		final JsonArray classWeights = new JsonArray()
-				.add( getMainSettings().getSegWeightBG() )
-				.add( getMainSettings().getSegWeightBorder() )
-				.add( getMainSettings().getSegWeightCenter() );
+				.add( getMainSettings().getClassWeightBG() )
+				.add( getMainSettings().getClassWeightBorder() )
+				.add( getMainSettings().getClassWeightCenter() );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_TRAIN_CROP_SIZE, cropSize )
 				.add( JSON_KEY_SPOTS, jsonSpots )
-				.add( JSON_KEY_MODEL_NAME, getMainSettings().getSegModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
@@ -208,12 +208,12 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
 				.add( JSON_KEY_AUG_CONTRAST, getMainSettings().getAugContrast() )
 				.add( JSON_KEY_TIMEPOINT, currentTimepoint )
-				.add( JSON_KEY_SEG_CLASS_WEIGHTS, classWeights )
+				.add( JSON_KEY_CLASS_WEIGHTS, classWeights )
 				.add( JSON_KEY_FALSE_WEIGHT, getMainSettings().getFalseWeight() )
 				.add( JSON_KEY_AUTO_BG_THRESH, getMainSettings().getAutoBgThreshold() )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
-				.add( JSON_KEY_LOG_DIR, getMainSettings().getSegLogName() )
+				.add( JSON_KEY_LOG_DIR, getMainSettings().getDetectionLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
 		return true;
 	}
@@ -223,7 +223,7 @@ public class TrainSegAction extends AbstractElephantDatasetAction
 	{
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_SEG ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_DETECTION ), jsonRootObject.toString(),
 					response -> {
 						try
 						{

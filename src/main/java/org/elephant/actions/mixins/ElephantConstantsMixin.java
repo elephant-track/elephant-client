@@ -96,19 +96,19 @@ public interface ElephantConstantsMixin
 
 	public static final String ENDPOINT_PARAMS = "params";
 
-	public static final String ENDPOINT_PREDICT_SEG = "predict/seg";
+	public static final String ENDPOINT_PREDICT_DETECTION = "predict/seg";
 
 	public static final String ENDPOINT_PREDICT_FLOW = "predict/flow";
 
-	public static final String ENDPOINT_TRAIN_SEG = "train/seg";
+	public static final String ENDPOINT_TRAIN_DETECTION = "train/seg";
 
 	public static final String ENDPOINT_TRAIN_FLOW = "train/flow";
 
-	public static final String ENDPOINT_UPDATE_SEG = "update/seg";
+	public static final String ENDPOINT_UPDATE_DETECTION = "update/seg";
 
 	public static final String ENDPOINT_UPDATE_FLOW = "update/flow";
 
-	public static final String ENDPOINT_RESET_SEG_MODEL = "reset/seg";
+	public static final String ENDPOINT_RESET_DETECTION_MODEL = "reset/seg";
 
 	public static final String ENDPOINT_RESET_FLOW_MODEL = "reset/flow";
 
@@ -190,7 +190,7 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_IS_LIVEMODE = "is_livemode";
 
-	public static final String JSON_KEY_SEG_CLASS_WEIGHTS = "class_weights";
+	public static final String JSON_KEY_CLASS_WEIGHTS = "class_weights";
 
 	public static final String JSON_KEY_FLOW_DIM_WEIGHTS = "dim_weights";
 

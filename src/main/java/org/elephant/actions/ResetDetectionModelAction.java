@@ -53,15 +53,15 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class ResetSegModelAction extends AbstractElephantDatasetAction
+public class ResetDetectionModelAction extends AbstractElephantDatasetAction
 		implements BdvDataMixin, ElephantConstantsMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] reset seg model";
+	private static final String NAME = "[elephant] reset detection model";
 
-	private static final String MENU_TEXT = "Reset Seg Model";
+	private static final String MENU_TEXT = "Reset Detection Model";
 
 	@Override
 	public String getMenuText()
@@ -69,7 +69,7 @@ public class ResetSegModelAction extends AbstractElephantDatasetAction
 		return MENU_TEXT;
 	}
 
-	public ResetSegModelAction()
+	public ResetDetectionModelAction()
 	{
 		super( NAME );
 	}
@@ -115,17 +115,17 @@ public class ResetSegModelAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_SCALES, scales )
 					.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
 					.add( JSON_KEY_TRAIN_CROP_SIZE, cropSize )
-					.add( JSON_KEY_MODEL_NAME, getMainSettings().getSegModelName() )
+					.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 					.add( JSON_KEY_IS_3D, !is2D() )
 					.add( JSON_KEY_MODEL_URL, atomoicUrl.get() );
 			try
 			{
-				postAsStringAsync( getEndpointURL( ENDPOINT_RESET_SEG_MODEL ), jsonRootObject.toString(),
+				postAsStringAsync( getEndpointURL( ENDPOINT_RESET_DETECTION_MODEL ), jsonRootObject.toString(),
 						response -> {
 							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
-								showTextOverlayAnimator( "Segmentation model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
+								showTextOverlayAnimator( "Detection model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 							}
 							else
 							{
