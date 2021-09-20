@@ -108,7 +108,7 @@ public class UploadAction extends AbstractElephantAction
 			{
 				final byte[] buff = new byte[ CHUNK_SIZE ];
 				final long fileSize = hdf5File.length();
-				int bytesOffset = 0;
+				long bytesOffset = 0;
 				try (final InputStream fis = new FileInputStream( hdf5File ))
 				{
 					while ( !uploadDialog.isCancelled() )
@@ -118,7 +118,7 @@ public class UploadAction extends AbstractElephantAction
 						{
 							break;
 						}
-						final long bytesOffsetL = bytesOffset;
+						final long bytesOffsetFinal = bytesOffset;
 						final File tempFile = File.createTempFile( "elephant", ".h5", null );
 						try
 						{
@@ -132,8 +132,8 @@ public class UploadAction extends AbstractElephantAction
 									.field( "action", bytesOffset == 0 ? "init" : "append" )
 									.field( "file", tempFile )
 									.uploadMonitor( ( field, fileName, bytesWritten, totalBytes ) -> {
-										uploadDialog.setLabelText( String.format( "%.2f MB / %.2f MB", toMB( Math.min( fileSize, bytesOffsetL + bytesWritten ) ), toMB( fileSize ) ) );
-										uploadDialog.setProgressBarValue( ( int ) ( 100 * ( bytesOffsetL + bytesWritten ) / fileSize ) );
+										uploadDialog.setLabelText( String.format( "%.2f MB / %.2f MB", toMB( Math.min( fileSize, bytesOffsetFinal + bytesWritten ) ), toMB( fileSize ) ) );
+										uploadDialog.setProgressBarValue( ( int ) ( 100 * ( bytesOffsetFinal + bytesWritten ) / fileSize ) );
 									} )
 									.asEmpty();
 							bytesOffset += readBytes;

@@ -159,11 +159,11 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				intElement( "NN search neighbors", 0, 100, style::getNNSearchNeighbors, style::setNNSearchNeighbors ),
 				intElement( "Training log interval", 0, 1000, style::getLogInterval, style::setLogInterval ),
 				booleanElement( "use interpolation for linking", style::getUseInterpolation, style::setUseInterpolation ),
-				booleanElement( "use 2d model", style::getUse2dModel, style::setUse2dModel ),
+				// booleanElement( "use 2d model", style::getUse2dModel, style::setUse2dModel ),
 
 				separator(),
 
 				label( "file on the client" ),
-				stringElement( "client log file (relative path from ~/.mastodon/logs/)", style::getLogFileName, style::setLogFileName ) );
+				stringElement( "log file basename (~/.mastodon/logs/client_BASENAME.log, ~/.mastodon/logs/server_BASENAME.log)", style::getLogFileName, style::setLogFileName ) );
 	}
 }

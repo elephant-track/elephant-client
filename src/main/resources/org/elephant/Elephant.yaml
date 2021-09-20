@@ -98,7 +98,7 @@
 - !mapping
   action: add linked spot backward
   contexts: [bdv]
-  triggers: [C]
+  triggers: [shift A]
 - !mapping
   action: add spot
   contexts: [bdv]

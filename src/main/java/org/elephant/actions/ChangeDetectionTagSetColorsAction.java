@@ -45,14 +45,14 @@ import org.mastodon.model.tag.TagSetStructure.TagSet;
  * 
  * @author Ko Sugawara
  */
-public class ResetTagSetColorsAction extends AbstractElephantAction implements ElephantTagActionMixin
+public class ChangeDetectionTagSetColorsAction extends AbstractElephantAction implements ElephantTagActionMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] reset tag set colors";
+	private static final String NAME = "[elephant] change detection tag set colors";
 
-	private static final String MENU_TEXT = "Reset Tag Set Colors";
+	private static final String MENU_TEXT = "Change Detection Tag Set Colors";
 
 	private static final String[] CHOICES = { "Basic", "Advanced" };
 
@@ -98,7 +98,7 @@ public class ResetTagSetColorsAction extends AbstractElephantAction implements E
 		return MENU_TEXT;
 	}
 
-	public ResetTagSetColorsAction()
+	public ChangeDetectionTagSetColorsAction()
 	{
 		super( NAME );
 	}

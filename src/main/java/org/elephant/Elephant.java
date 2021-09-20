@@ -58,7 +58,6 @@ import org.elephant.actions.ElephantOverlayService;
 import org.elephant.actions.ElephantServerStatusListener;
 import org.elephant.actions.ElephantStatusService;
 import org.elephant.actions.ElephantUndoActions;
-import org.elephant.actions.EnsureDatasetAction;
 import org.elephant.actions.ExportCTCAction;
 import org.elephant.actions.GraphListenerService;
 import org.elephant.actions.HighlightListenerService;
@@ -80,12 +79,12 @@ import org.elephant.actions.RemoveSelfLinksAction;
 import org.elephant.actions.RemoveShortTracksAction;
 import org.elephant.actions.RemoveSpotsByTagAction;
 import org.elephant.actions.RemoveVisibleSpotsAction;
+import org.elephant.actions.ResetDetectionLabelsAction;
+import org.elephant.actions.ResetDetectionModelAction;
 import org.elephant.actions.ResetEllipsoidRotation;
 import org.elephant.actions.ResetFlowLabelsAction;
 import org.elephant.actions.ResetFlowModelAction;
-import org.elephant.actions.ResetDetectionLabelsAction;
-import org.elephant.actions.ResetDetectionModelAction;
-import org.elephant.actions.ResetTagSetColorsAction;
+import org.elephant.actions.ChangeDetectionTagSetColorsAction;
 import org.elephant.actions.RotateEllipsoidAction;
 import org.elephant.actions.RotateEllipsoidAction.RotateEllipsoidActionMode;
 import org.elephant.actions.SetControlAxisAction;
@@ -101,14 +100,13 @@ import org.elephant.actions.TagHighlightedVertexAction.TagMode;
 import org.elephant.actions.TagProgenitorAction;
 import org.elephant.actions.TagProliferatorAction;
 import org.elephant.actions.TakeSnapshotAction;
-import org.elephant.actions.TrainFlowAction;
 import org.elephant.actions.TrainDetectionAction;
 import org.elephant.actions.TrainDetectionAction.TrainingMode;
+import org.elephant.actions.TrainFlowAction;
 import org.elephant.actions.UnirestService;
-import org.elephant.actions.UpdateFlowLabelsAction;
 import org.elephant.actions.UpdateDetectionLabelsAction;
+import org.elephant.actions.UpdateFlowLabelsAction;
 import org.elephant.actions.UpdateTrainingParametersService;
-import org.elephant.actions.UploadAction;
 import org.elephant.actions.VertexPositionListenerService;
 import org.mastodon.app.plugin.MastodonPlugin;
 import org.mastodon.app.ui.ViewMenuBuilder.MenuItem;
@@ -242,11 +240,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction showServerLogWindowAction;
 
-	private final AbstractElephantAction uploadAction;
-
-	private final AbstractElephantAction ensureDatasetAction;
-
-	private final AbstractElephantAction resetTagSetColorsAction;
+	private final AbstractElephantAction changeDetectionTagSetColorsAction;
 
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
@@ -366,12 +360,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( importMastodonAction );
 		exportCTCAction = new ExportCTCAction();
 		pluginActions.add( exportCTCAction );
-		uploadAction = new UploadAction();
-		pluginActions.add( uploadAction );
-		ensureDatasetAction = new EnsureDatasetAction();
-		pluginActions.add( ensureDatasetAction );
-		resetTagSetColorsAction = new ResetTagSetColorsAction();
-		pluginActions.add( resetTagSetColorsAction );
+		changeDetectionTagSetColorsAction = new ChangeDetectionTagSetColorsAction();
+		pluginActions.add( changeDetectionTagSetColorsAction );
 	}
 
 	/**
@@ -473,9 +463,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( recordSnapshotMovieAction.name() ),
 										item( importMastodonAction.name() ),
 										item( exportCTCAction.name() ),
-										item( uploadAction.name() ),
-										item( ensureDatasetAction.name() ),
-										item( resetTagSetColorsAction.name() ) ),
+										item( changeDetectionTagSetColorsAction.name() ) ),
 								menu( "Analysis",
 										item( tagProgenitorAction.name() ),
 										item( tagProliferatorAction.name() ),

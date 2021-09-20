@@ -60,9 +60,9 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] train a flow model (selected timepoints)";
+	private static final String NAME = "[elephant] train flow model (selected timepoints)";
 
-	private static final String MENU_TEXT = "Train a Flow Model (Selected Timepoints)";
+	private static final String MENU_TEXT = "Train Flow Model (Selected Timepoints)";
 
 	private JsonObject jsonRootObject;
 
