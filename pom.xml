@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.scijava</groupId>
@@ -8,7 +7,7 @@
 	</parent>
 	<groupId>org.elephant</groupId>
 	<artifactId>elephant</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.2.0</version>
 	<name>ELEPHANT: Tracking cell lineages in 3D by incremental deep learning</name>
 	<description>ELEPHANT client application implemented as a Mastodon plugin</description>
 	<url>https://github.com/elephant-track/elephant-client</url>
@@ -141,7 +140,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/elephant-track/elephant-client</connection>
 		<developerConnection>scm:git:git@github.com:elephant-track/elephant-client</developerConnection>
-		<tag>HEAD</tag>
+		<tag>v0.2.0</tag>
 		<url>https://github.com/elephant-track/elephant-client</url>
 	</scm>
 	<issueManagement>
@@ -190,7 +189,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-					<classifier></classifier>
+					<classifier />
 					<excludes>
 						<exclude>/org/elephant/ElephantExtra.class</exclude>
 					</excludes>
