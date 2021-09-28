@@ -70,7 +70,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_AUTO_BG_THRESHOLD = 0.0;
 
-	public static final double DEFAULT_LEARNING_RATE = 0.0001;
+	public static final double DEFAULT_LEARNING_RATE = 0.001;
 
 	public static final double DEFAULT_CLASS_WEIGHT_BG = 1.0;
 
@@ -88,7 +88,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_CENTER_RATIO = 0.4;
 
-	public static final double DEFAULT_PROB_THRESHOLD = 0.3;
+	public static final double DEFAULT_PROB_THRESHOLD = 0.5;
 
 	public static final double DEFAULT_SUPPRESSION_DISTANCE = 3.0;
 
