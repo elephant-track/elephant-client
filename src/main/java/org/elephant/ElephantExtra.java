@@ -77,8 +77,6 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 
 	private final AbstractElephantAction trackingStatisticsAction;
 
-	private final AbstractElephantAction uploadAction;
-
 	private final AbstractElephantAction ensureDatasetAction;
 
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
@@ -95,8 +93,6 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 		pluginActions.add( randomSampleAction );
 		trackingStatisticsAction = new TrackingStatisticsAction();
 		pluginActions.add( trackingStatisticsAction );
-		uploadAction = new UploadAction();
-		pluginActions.add( uploadAction );
 		ensureDatasetAction = new EnsureDatasetAction();
 		pluginActions.add( ensureDatasetAction );
 	}
@@ -128,7 +124,7 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 										separator(),
 										// item( toggleAutoFocusAction.name() ),
 										item( randomSampleAction.name() ),
-										item( uploadAction.name() ),
+										item( UploadAction.NAME ),
 										item( ensureDatasetAction.name() ) ),
 								menu( "Analysis",
 										separator(),

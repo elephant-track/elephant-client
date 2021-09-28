@@ -49,6 +49,7 @@ import org.elephant.actions.BackTrackAction;
 import org.elephant.actions.BdvColoringService;
 import org.elephant.actions.BdvContextService;
 import org.elephant.actions.BdvViewMouseMotionService;
+import org.elephant.actions.ChangeDetectionTagSetColorsAction;
 import org.elephant.actions.ChangeEllipsoidSizeAction;
 import org.elephant.actions.ChangeEllipsoidSizeAction.ChangeEllipsoidSizeActionMode;
 import org.elephant.actions.CountDivisionsAction;
@@ -84,7 +85,6 @@ import org.elephant.actions.ResetDetectionModelAction;
 import org.elephant.actions.ResetEllipsoidRotation;
 import org.elephant.actions.ResetFlowLabelsAction;
 import org.elephant.actions.ResetFlowModelAction;
-import org.elephant.actions.ChangeDetectionTagSetColorsAction;
 import org.elephant.actions.RotateEllipsoidAction;
 import org.elephant.actions.RotateEllipsoidAction.RotateEllipsoidActionMode;
 import org.elephant.actions.SetControlAxisAction;
@@ -107,6 +107,7 @@ import org.elephant.actions.UnirestService;
 import org.elephant.actions.UpdateDetectionLabelsAction;
 import org.elephant.actions.UpdateFlowLabelsAction;
 import org.elephant.actions.UpdateTrainingParametersService;
+import org.elephant.actions.UploadAction;
 import org.elephant.actions.VertexPositionListenerService;
 import org.mastodon.app.plugin.MastodonPlugin;
 import org.mastodon.app.ui.ViewMenuBuilder.MenuItem;
@@ -242,6 +243,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction changeDetectionTagSetColorsAction;
 
+	private final AbstractElephantAction uploadAction;
+
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
 	private final BdvViewMouseMotionService mouseMotionService;
@@ -362,6 +365,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( exportCTCAction );
 		changeDetectionTagSetColorsAction = new ChangeDetectionTagSetColorsAction();
 		pluginActions.add( changeDetectionTagSetColorsAction );
+		uploadAction = new UploadAction();
+		pluginActions.add( uploadAction );
 	}
 
 	/**
