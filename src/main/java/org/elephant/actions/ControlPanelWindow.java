@@ -76,7 +76,7 @@ public class ControlPanelWindow extends JFrame implements AWTMixin
 
 	private final static String COLAB_SVG_URL = "https://colab.research.google.com/assets/colab-badge.svg";
 
-	private final static String COLAB_NOTEBOOK_URL = "https://colab.research.google.com/github/elephant-track/elephant-server/blob/dev/elephant_server.ipynb";
+	private final static String COLAB_NOTEBOOK_URL = "https://colab.research.google.com/github/elephant-track/elephant-server/blob/main/elephant_server.ipynb";
 
 	private final static String ELEPHANT_DOCS_URL = "https://elephant-track.github.io/#/v0.2/?id=setting-up-the-elephant-server";
 
