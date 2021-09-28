@@ -141,7 +141,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/elephant-track/elephant-client</connection>
 		<developerConnection>scm:git:git@github.com:elephant-track/elephant-client</developerConnection>
-		<tag>v0.1.1</tag>
+		<tag>HEAD</tag>
 		<url>https://github.com/elephant-track/elephant-client</url>
 	</scm>
 	<issueManagement>
