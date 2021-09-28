@@ -96,23 +96,31 @@ public interface ElephantConstantsMixin
 
 	public static final String ENDPOINT_PARAMS = "params";
 
-	public static final String ENDPOINT_PREDICT_SEG = "predict/seg";
+	public static final String ENDPOINT_PREDICT_DETECTION = "predict/seg";
 
 	public static final String ENDPOINT_PREDICT_FLOW = "predict/flow";
 
-	public static final String ENDPOINT_TRAIN_SEG = "train/seg";
+	public static final String ENDPOINT_TRAIN_DETECTION = "train/seg";
 
 	public static final String ENDPOINT_TRAIN_FLOW = "train/flow";
 
-	public static final String ENDPOINT_UPDATE_SEG = "update/seg";
+	public static final String ENDPOINT_UPDATE_DETECTION = "update/seg";
 
 	public static final String ENDPOINT_UPDATE_FLOW = "update/flow";
 
-	public static final String ENDPOINT_RESET_SEG_MODEL = "reset/seg";
+	public static final String ENDPOINT_RESET_DETECTION_MODEL = "reset/seg";
 
 	public static final String ENDPOINT_RESET_FLOW_MODEL = "reset/flow";
 
 	public static final String ENDPOINT_EXPORT_CTC = "export/ctc";
+
+	public static final String ENDPOINT_GPUS = "gpus";
+
+	public static final String ENDPOINT_UPLOAD = "upload";
+
+	public static final String ENDPOINT_DATASET_CHECK = "dataset/check";
+
+	public static final String ENDPOINT_DATASET_GENERATE = "dataset/generate";
 
 	/**
 	 * REST API JSON keys
@@ -122,13 +130,11 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_DATASET_NAME = "dataset_name";
 
-	public static final String JSON_KEY_SEG_MODEL_NAME = "model_name";
+	public static final String JSON_KEY_MODEL_NAME = "model_name";
 
-	public static final String JSON_KEY_FLOW_MODEL_NAME = "model_name";
+	public static final String JSON_KEY_LOG_DIR = "log_dir";
 
-	public static final String JSON_KEY_SEG_LOG_DIR = "log_dir";
-
-	public static final String JSON_KEY_FLOW_LOG_DIR = "log_dir";
+	public static final String JSON_KEY_LOG_INTERVAL = "log_interval";
 
 	public static final String JSON_KEY_DEBUG = "debug";
 
@@ -137,6 +143,8 @@ public interface ElephantConstantsMixin
 	public static final String JSON_KEY_TRAIN_CROP_SIZE = "crop_size";
 
 	public static final String JSON_KEY_N_KEEP_AXIALS = "n_keep_axials";
+
+	public static final String JSON_KEY_IS_2D = "is_2d";
 
 	public static final String JSON_KEY_IS_3D = "is_3d";
 
@@ -176,11 +184,13 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_AUG_ROTATION_ANGLE = "aug_rotation_angle";
 
+	public static final String JSON_KEY_AUG_CONTRAST = "aug_contrast";
+
 	public static final String JSON_KEY_USE_2D_MODEL = "use_2d";
 
 	public static final String JSON_KEY_IS_LIVEMODE = "is_livemode";
 
-	public static final String JSON_KEY_SEG_CLASS_WEIGHTS = "class_weights";
+	public static final String JSON_KEY_CLASS_WEIGHTS = "class_weights";
 
 	public static final String JSON_KEY_FLOW_DIM_WEIGHTS = "dim_weights";
 
@@ -191,5 +201,9 @@ public interface ElephantConstantsMixin
 	public static final String JSON_KEY_USE_MEDIAN = "use_median";
 
 	public static final String JSON_KEY_IS_PAD = "is_pad";
+
+	public static final String JSON_KEY_SHAPE = "shape";
+
+	public static final String JSON_KEY_MODEL_URL = "url";
 
 }

@@ -76,12 +76,12 @@ public class RemoveAllAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		if ( option.get() == JOptionPane.OK_OPTION )
 		{
 			getGraph().getLock().writeLock().lock();
-			getStateManager().setWriting( true );
+			getActionStateManager().setWriting( true );
 			try
 			{
 				final RefList< Link > linksToRemove = RefCollections.createRefList( getGraph().edges() );
@@ -99,7 +99,7 @@ public class RemoveAllAction extends AbstractElephantAction
 			}
 			finally
 			{
-				getStateManager().setWriting( false );
+				getActionStateManager().setWriting( false );
 				getModel().setUndoPoint();
 				getGraph().getLock().writeLock().unlock();
 				notifyGraphChanged();

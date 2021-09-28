@@ -26,16 +26,17 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.mamut.model.Link;
@@ -46,10 +47,6 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
@@ -57,15 +54,17 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class TrainFlowAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, TimepointActionMixin, UIActionMixin, URLMixin
+public class TrainFlowAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, TimepointMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] train a flow model (selected timepoints)";
+	private static final String NAME = "[elephant] train flow model (selected timepoints)";
 
-	private static final String MENU_TEXT = "Train a Flow Model (Selected Timepoints)";
+	private static final String MENU_TEXT = "Train Flow Model (Selected Timepoints)";
+
+	private JsonObject jsonRootObject;
 
 	@Override
 	public String getMenuText()
@@ -79,10 +78,10 @@ public class TrainFlowAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	boolean prepare()
 	{
 		final int currentTimepoint = getCurrentTimepoint( 0 );
-		getLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
+		getClientLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 1, timepointEnd - timeRange + 1 );
@@ -112,10 +111,10 @@ public class TrainFlowAction extends AbstractElephantAction
 				.add( getMainSettings().getFlowWeightX() )
 				.add( getMainSettings().getFlowWeightY() )
 				.add( getMainSettings().getFlowWeightZ() );
-		final JsonObject jsonRootObject = Json.object()
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_SPOTS, jsonSpots )
-				.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
 				.add( JSON_KEY_N_EPOCHS, getMainSettings().getNumEpochs() )
@@ -127,26 +126,20 @@ public class TrainFlowAction extends AbstractElephantAction
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_AUG_SCALE_FACTOR_BASE, getMainSettings().getAugScaleFactorBase() )
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
-				.add( JSON_KEY_FLOW_LOG_DIR, getMainSettings().getFlowLogName() )
+				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
+				.add( JSON_KEY_LOG_DIR, getMainSettings().getFlowLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
 
-		Unirest.post( getEndpointURL( ENDPOINT_TRAIN_FLOW ) )
-				.body( jsonRootObject.toString() )
-				.asStringAsync( new Callback< String >()
-				{
-
-					@Override
-					public void failed( final UnirestException e )
-					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-						getLogger().severe( "The request has failed" );
-						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-					}
-
-					@Override
-					public void completed( final HttpResponse< String > response )
-					{
-						if ( response.getStatus() == 200 )
+	@Override
+	public void processDataset()
+	{
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_FLOW ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
 							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
 							final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
@@ -155,23 +148,20 @@ public class TrainFlowAction extends AbstractElephantAction
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == 500 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 							}
 							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
+							getClientLogger().severe( sb.toString() );
 						}
-					}
-
-					@Override
-					public void cancelled()
-					{
-						getLogger().info( "The request has been cancelled" );
-					}
-
-				} );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

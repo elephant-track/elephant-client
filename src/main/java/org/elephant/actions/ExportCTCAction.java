@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -42,10 +43,12 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.elephant.actions.mixins.UnirestMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.mamut.model.Link;
@@ -61,10 +64,6 @@ import com.opencsv.CSVWriter;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -80,8 +79,8 @@ import net.lingala.zip4j.util.Zip4jUtil;
  *
  * @author Ko Sugawara
  */
-public class ExportCTCAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantGraphTagActionMixin, TimepointActionMixin, UIActionMixin, URLMixin
+public class ExportCTCAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantGraphTagActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -104,6 +103,10 @@ public class ExportCTCAction extends AbstractElephantAction
 	private final double[][] cov = new double[ 3 ][ 3 ];
 
 	private final double[] cov1d = new double[ 9 ];
+
+	private File dir;
+
+	private JsonObject jsonRootObject;
 
 	@Override
 	public String getMenuText()
@@ -133,7 +136,7 @@ public class ExportCTCAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	boolean prepare()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
 		final int timeRange = getMainSettings().getTimeRange();
@@ -160,132 +163,120 @@ public class ExportCTCAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
-		final File dir = dirReference.get();
-		if ( dir != null )
+		dir = dirReference.get();
+		if ( dir == null )
+			return false;
+		final ObjTagMap< Spot, Tag > tagMapStatus = getVertexTagMap( getStatusTagSet() );
+		final Tag statusCompletedTag = getTag( getStatusTagSet(), STATUS_COMPLETED_TAG_NAME );
+		final List< CTCTrackEntity > trackList = new ArrayList<>();
+		final JsonArray jsonSpots = Json.array();
+		getGraph().getLock().readLock().lock();
+		try
 		{
-			final ObjTagMap< Spot, Tag > tagMapStatus = getVertexTagMap( getStatusTagSet() );
-			final Tag statusCompletedTag = getTag( getStatusTagSet(), STATUS_COMPLETED_TAG_NAME );
-			final List< CTCTrackEntity > trackList = new ArrayList<>();
-			final JsonArray jsonSpots = Json.array();
-			getGraph().getLock().readLock().lock();
+			final PoolCollectionWrapper< Spot > spots = getGraph().vertices();
+			final RefList< Spot > rootSpots = RefCollections.createRefList( spots );
+			for ( final Spot spot : spots )
+			{
+				if ( tagMapStatus.get( spot ) == statusCompletedTag && spot.incomingEdges().isEmpty() )
+					rootSpots.add( spot );
+			}
+			final Spot ref = getGraph().vertexRef();
+			for ( int i = 0; i < rootSpots.size(); i++ )
+			{
+				rootSpots.get( i, ref );
+				buildResult( ref, trackList, UNSET, 0, jsonSpots );
+			}
+			getGraph().releaseRef( ref );
+		}
+		finally
+		{
+			getGraph().getLock().readLock().unlock();
+		}
+
+		final File file = Paths.get( dir.getAbsolutePath(), RES_FILENAME ).toFile();
+		try (final FileWriter fileWriter = new FileWriter( file ))
+		{
+			final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
 			try
 			{
-				final PoolCollectionWrapper< Spot > spots = getGraph().vertices();
-				final RefList< Spot > rootSpots = RefCollections.createRefList( spots );
-				for ( final Spot spot : spots )
-				{
-					if ( tagMapStatus.get( spot ) == statusCompletedTag && spot.incomingEdges().isEmpty() )
-						rootSpots.add( spot );
-				}
-				final Spot ref = getGraph().vertexRef();
-				for ( int i = 0; i < rootSpots.size(); i++ )
-				{
-					rootSpots.get( i, ref );
-					buildResult( ref, trackList, UNSET, 0, jsonSpots );
-				}
-				getGraph().releaseRef( ref );
+				for ( int i = 0; i < trackList.size(); i++ )
+					writer.writeNext( trackList.get( i ).toCsvEntry() );
 			}
 			finally
 			{
-				getGraph().getLock().readLock().unlock();
+				writer.close();
 			}
-
-			final File file = Paths.get( dir.getAbsolutePath(), RES_FILENAME ).toFile();
-			try (final FileWriter fileWriter = new FileWriter( file ))
-			{
-				final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
-				try
-				{
-					for ( int i = 0; i < trackList.size(); i++ )
-						writer.writeNext( trackList.get( i ).toCsvEntry() );
-				}
-				finally
-				{
-					writer.close();
-				}
-			}
-			catch ( final IOException e )
-			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-			}
-
-			final VoxelDimensions voxelSize = getVoxelDimensions();
-			final JsonArray scales = new JsonArray()
-					.add( voxelSize.dimension( 0 ) )
-					.add( voxelSize.dimension( 1 ) )
-					.add( voxelSize.dimension( 2 ) );
-			final JsonObject jsonRootObject = Json.object()
-					.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-					.add( JSON_KEY_SCALES, scales )
-					.add( JSON_KEY_SPOTS, jsonSpots )
-					.add( JSON_KEY_T_START, timepointStart )
-					.add( JSON_KEY_T_END, timepointEnd )
-					.add( JSON_KEY_IS_3D, !is2D() );
-
-			final String zipAbsolutePath = Paths.get( dir.getAbsolutePath(), RES_ZIPNAME ).toString();
-			Unirest.post( getEndpointURL( "export/ctc" ) )
-					.body( jsonRootObject.toString() )
-					.asFileAsync( zipAbsolutePath, new Callback< File >()
-					{
-
-						@Override
-						public void failed( final UnirestException e )
-						{
-							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-							getLogger().severe( "The request has failed" );
-							showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-						}
-
-						@Override
-						public void completed( final HttpResponse< File > response )
-						{
-							if ( response.getStatus() == 200 )
-							{
-								try
-								{
-									final ZipFile zipFile = new ZipFile( zipAbsolutePath );
-									final List< FileHeader > fileHeaders = zipFile.getFileHeaders();
-									final long currentTime = System.currentTimeMillis();
-									fileHeaders.forEach( header -> header.setLastModifiedTime( Zip4jUtil.epochToExtendedDosTime( currentTime ) ) );
-									zipFile.extractAll( dir.getAbsolutePath() );
-								}
-								catch ( final ZipException e )
-								{
-									getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-								}
-								showTextOverlayAnimator( "completed", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
-							}
-							else if ( response.getStatus() == 204 )
-							{
-								showTextOverlayAnimator( "cancelled", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
-							}
-							else
-							{
-								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getLogger().severe( sb.toString() );
-							}
-							try
-							{
-								Files.deleteIfExists( Paths.get( zipAbsolutePath ) );
-							}
-							catch ( final IOException e )
-							{
-								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-							}
-						}
-
-						@Override
-						public void cancelled()
-						{
-							getLogger().info( "The request has been cancelled" );
-						}
-
-					} );
+		}
+		catch ( final IOException e )
+		{
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 
+		final VoxelDimensions voxelSize = getVoxelDimensions();
+		final JsonArray scales = new JsonArray()
+				.add( voxelSize.dimension( 0 ) )
+				.add( voxelSize.dimension( 1 ) )
+				.add( voxelSize.dimension( 2 ) );
+		jsonRootObject = Json.object()
+				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
+				.add( JSON_KEY_SCALES, scales )
+				.add( JSON_KEY_SPOTS, jsonSpots )
+				.add( JSON_KEY_T_START, timepointStart )
+				.add( JSON_KEY_T_END, timepointEnd )
+				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
+		final String zipAbsolutePath = Paths.get( dir.getAbsolutePath(), RES_ZIPNAME ).toString();
+		try
+		{
+			postAsFileAsync( getEndpointURL( ENDPOINT_EXPORT_CTC ), jsonRootObject.toString(), zipAbsolutePath,
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+						{
+							try
+							{
+								final ZipFile zipFile = new ZipFile( zipAbsolutePath );
+								final List< FileHeader > fileHeaders = zipFile.getFileHeaders();
+								final long currentTime = System.currentTimeMillis();
+								fileHeaders.forEach( header -> header.setLastModifiedTime( Zip4jUtil.epochToExtendedDosTime( currentTime ) ) );
+								zipFile.extractAll( dir.getAbsolutePath() );
+							}
+							catch ( final ZipException e )
+							{
+								getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+							}
+							showTextOverlayAnimator( "completed", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+						}
+						else if ( response.getStatus() == HttpURLConnection.HTTP_NO_CONTENT )
+						{
+							showTextOverlayAnimator( "cancelled", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+						}
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getClientLogger().severe( sb.toString() );
+						}
+						try
+						{
+							Files.deleteIfExists( Paths.get( zipAbsolutePath ) );
+						}
+						catch ( final IOException e )
+						{
+							getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+						}
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 	private class CTCTrackEntity

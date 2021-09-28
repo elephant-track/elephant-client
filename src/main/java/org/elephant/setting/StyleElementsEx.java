@@ -29,8 +29,10 @@ package org.elephant.setting;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
+import org.mastodon.app.ui.settings.StyleElements.IntElement;
 import org.mastodon.app.ui.settings.StyleElements.StyleElement;
 import org.mastodon.app.ui.settings.StyleElements.StyleElementVisitor;
 
@@ -133,6 +135,48 @@ public class StyleElementsEx
 		}
 	}
 
+	public static IntElementEx intElementEx( final String label, final int rangeMin, final int rangeMax, final String decimalFormatPattern, final IntSupplier get, final Consumer< Integer > set )
+	{
+		return new IntElementEx( label, rangeMin, rangeMax, decimalFormatPattern )
+		{
+			@Override
+			public int get()
+			{
+				return get.getAsInt();
+			}
+
+			@Override
+			public void set( final int v )
+			{
+				set.accept( v );
+			}
+		};
+	}
+
+	public static abstract class IntElementEx extends IntElement
+	{
+
+		private final String decimalFormatPattern;
+
+		public IntElementEx( final String label, final int rangeMin, final int rangeMax, final String decimalFormatPattern )
+		{
+			super( label, rangeMin, rangeMax );
+			this.decimalFormatPattern = decimalFormatPattern;
+		}
+
+		public String getDecimalFormatPatterne()
+		{
+			return decimalFormatPattern;
+		}
+
+		@Override
+		public void accept( final StyleElementVisitor visitor )
+		{
+			( ( StyleElementVisitorEx ) visitor ).visit( this );
+		}
+
+	}
+
 	public static DoubleElementEx doubleElementEx( final String label, final double rangeMin, final double rangeMax, final double stepSize, final DoubleSupplier get, final Consumer< Double > set )
 	{
 		return new DoubleElementEx( label, rangeMin, rangeMax, stepSize )
@@ -227,6 +271,11 @@ public class StyleElementsEx
 		}
 
 		public default void visit( final PasswordElement element )
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		public default void visit( final IntElementEx element )
 		{
 			throw new UnsupportedOperationException();
 		}

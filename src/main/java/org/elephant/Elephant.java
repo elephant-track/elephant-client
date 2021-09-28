@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -45,13 +46,18 @@ import javax.swing.WindowConstants;
 import org.elephant.actions.AbortProcessingAction;
 import org.elephant.actions.AbstractElephantAction;
 import org.elephant.actions.BackTrackAction;
+import org.elephant.actions.BdvColoringService;
+import org.elephant.actions.BdvContextService;
 import org.elephant.actions.BdvViewMouseMotionService;
+import org.elephant.actions.ChangeDetectionTagSetColorsAction;
 import org.elephant.actions.ChangeEllipsoidSizeAction;
 import org.elephant.actions.ChangeEllipsoidSizeAction.ChangeEllipsoidSizeActionMode;
 import org.elephant.actions.CountDivisionsAction;
 import org.elephant.actions.CountDivisionsAction.CountDivisionsActionMode;
 import org.elephant.actions.ElephantActionStateManager;
 import org.elephant.actions.ElephantOverlayService;
+import org.elephant.actions.ElephantServerStatusListener;
+import org.elephant.actions.ElephantStatusService;
 import org.elephant.actions.ElephantUndoActions;
 import org.elephant.actions.ExportCTCAction;
 import org.elephant.actions.GraphListenerService;
@@ -64,7 +70,9 @@ import org.elephant.actions.NearestNeighborLinkingAction;
 import org.elephant.actions.NearestNeighborLinkingAction.NearestNeighborLinkingActionMode;
 import org.elephant.actions.PredictSpotsAction;
 import org.elephant.actions.PredictSpotsAction.PredictSpotsActionMode;
+import org.elephant.actions.RabbitMQDatasetListener;
 import org.elephant.actions.RabbitMQService;
+import org.elephant.actions.RabbitMQStatusListener;
 import org.elephant.actions.RecordSnapshotMovieAction;
 import org.elephant.actions.RemoveAllAction;
 import org.elephant.actions.RemoveLinksByTagAction;
@@ -72,17 +80,19 @@ import org.elephant.actions.RemoveSelfLinksAction;
 import org.elephant.actions.RemoveShortTracksAction;
 import org.elephant.actions.RemoveSpotsByTagAction;
 import org.elephant.actions.RemoveVisibleSpotsAction;
+import org.elephant.actions.ResetDetectionLabelsAction;
+import org.elephant.actions.ResetDetectionModelAction;
 import org.elephant.actions.ResetEllipsoidRotation;
 import org.elephant.actions.ResetFlowLabelsAction;
 import org.elephant.actions.ResetFlowModelAction;
-import org.elephant.actions.ResetSegLabelsAction;
-import org.elephant.actions.ResetSegModelAction;
 import org.elephant.actions.RotateEllipsoidAction;
 import org.elephant.actions.RotateEllipsoidAction.RotateEllipsoidActionMode;
 import org.elephant.actions.SetControlAxisAction;
 import org.elephant.actions.SetControlAxisAction.ControlAxis;
 import org.elephant.actions.SetUpTagSetsService;
+import org.elephant.actions.ShowControlPanelAction;
 import org.elephant.actions.ShowLogWindowAction;
+import org.elephant.actions.ShowLogWindowAction.LogTarget;
 import org.elephant.actions.ShowPreferencesAction;
 import org.elephant.actions.TagDividingCellAction;
 import org.elephant.actions.TagHighlightedVertexAction;
@@ -90,13 +100,14 @@ import org.elephant.actions.TagHighlightedVertexAction.TagMode;
 import org.elephant.actions.TagProgenitorAction;
 import org.elephant.actions.TagProliferatorAction;
 import org.elephant.actions.TakeSnapshotAction;
+import org.elephant.actions.TrainDetectionAction;
+import org.elephant.actions.TrainDetectionAction.TrainingMode;
 import org.elephant.actions.TrainFlowAction;
-import org.elephant.actions.TrainSegAction;
-import org.elephant.actions.TrainSegAction.TrainingMode;
 import org.elephant.actions.UnirestService;
+import org.elephant.actions.UpdateDetectionLabelsAction;
 import org.elephant.actions.UpdateFlowLabelsAction;
-import org.elephant.actions.UpdateSegLabelsAction;
 import org.elephant.actions.UpdateTrainingParametersService;
+import org.elephant.actions.UploadAction;
 import org.elephant.actions.VertexPositionListenerService;
 import org.mastodon.app.plugin.MastodonPlugin;
 import org.mastodon.app.ui.ViewMenuBuilder.MenuItem;
@@ -134,7 +145,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction predictSpotsAction;
 
-	private final AbstractElephantAction updateSegLabelsAction;
+	private final AbstractElephantAction updateDetectionLabelsAction;
 
 	private final AbstractElephantAction updateFlowLabelsAction;
 
@@ -150,13 +161,15 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction trainFlowAction;
 
+	private final AbstractElephantAction showControlPanelAction;
+
 	private final AbstractElephantAction showPreferencesAction;
 
-	private final AbstractElephantAction resetSegModelAction;
+	private final AbstractElephantAction resetDetectionModelAction;
 
 	private final AbstractElephantAction resetFlowModelAction;
 
-	private final AbstractElephantAction resetSegLabelsAction;
+	private final AbstractElephantAction resetDetectionLabelsAction;
 
 	private final AbstractElephantAction resetFlowLabelsAction;
 
@@ -224,51 +237,67 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction exportCTCAction;
 
-	private final AbstractElephantAction showLogWindowAction;
+	private final AbstractElephantAction showClientLogWindowAction;
+
+	private final AbstractElephantAction showServerLogWindowAction;
+
+	private final AbstractElephantAction changeDetectionTagSetColorsAction;
+
+	private final AbstractElephantAction uploadAction;
 
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
 	private final BdvViewMouseMotionService mouseMotionService;
 
+	private final BdvContextService bdvContextService;
+
+	private final ElephantStatusService elephantStatusService;
+
+	final LoggerService loggerService = new LoggerService();
+
 	public Elephant()
 	{
-		final LoggerService loggerService = new LoggerService();
 		loggerService.setup();
 		mouseMotionService = new BdvViewMouseMotionService();
+		bdvContextService = new BdvContextService();
+		elephantStatusService = new ElephantStatusService();
 		backTrackAction = new BackTrackAction();
 		pluginActions.add( backTrackAction );
 		predictSpotsAction = new PredictSpotsAction( PredictSpotsActionMode.ENTIRE, mouseMotionService );
 		pluginActions.add( predictSpotsAction );
 		pluginActions.add( new PredictSpotsAction( PredictSpotsActionMode.AROUND_MOUSE, mouseMotionService ) );
-		updateSegLabelsAction = new UpdateSegLabelsAction();
-		pluginActions.add( updateSegLabelsAction );
+		updateDetectionLabelsAction = new UpdateDetectionLabelsAction( bdvContextService );
+		pluginActions.add( updateDetectionLabelsAction );
 		updateFlowLabelsAction = new UpdateFlowLabelsAction();
 		pluginActions.add( updateFlowLabelsAction );
-		liveTrainingAction = new TrainSegAction( TrainingMode.LIVE );
+		liveTrainingAction = new TrainDetectionAction( TrainingMode.LIVE, bdvContextService );
 		pluginActions.add( liveTrainingAction );
-		trainSelectedAction = new TrainSegAction( TrainingMode.SELECTED );
+		trainSelectedAction = new TrainDetectionAction( TrainingMode.SELECTED, bdvContextService );
 		pluginActions.add( trainSelectedAction );
-		trainAllAction = new TrainSegAction( TrainingMode.ALL );
+		trainAllAction = new TrainDetectionAction( TrainingMode.ALL, bdvContextService );
 		pluginActions.add( trainAllAction );
-		resetSegModelAction = new ResetSegModelAction();
-		pluginActions.add( resetSegModelAction );
+		resetDetectionModelAction = new ResetDetectionModelAction();
+		pluginActions.add( resetDetectionModelAction );
 		resetFlowModelAction = new ResetFlowModelAction();
 		pluginActions.add( resetFlowModelAction );
-		resetSegLabelsAction = new ResetSegLabelsAction();
-		pluginActions.add( resetSegLabelsAction );
+		resetDetectionLabelsAction = new ResetDetectionLabelsAction();
+		pluginActions.add( resetDetectionLabelsAction );
 		resetFlowLabelsAction = new ResetFlowLabelsAction();
 		pluginActions.add( resetFlowLabelsAction );
 		nnLinkingAction = new NearestNeighborLinkingAction( NearestNeighborLinkingActionMode.ENTIRE, mouseMotionService );
 		pluginActions.add( nnLinkingAction );
-		pluginActions.add( new NearestNeighborLinkingAction( NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT, mouseMotionService ) );
+		pluginActions.add( new NearestNeighborLinkingAction( NearestNeighborLinkingActionMode.AROUND_MOUSE, mouseMotionService ) );
 		trainFlowAction = new TrainFlowAction();
 		pluginActions.add( trainFlowAction );
 		abortProcessingAction = new AbortProcessingAction();
 		pluginActions.add( abortProcessingAction );
-		showLogWindowAction = new ShowLogWindowAction();
-		pluginActions.add( showLogWindowAction );
+		showClientLogWindowAction = new ShowLogWindowAction( LogTarget.CLIENT );
+		pluginActions.add( showClientLogWindowAction );
+		showServerLogWindowAction = new ShowLogWindowAction( LogTarget.SERVER );
+		pluginActions.add( showServerLogWindowAction );
+		showControlPanelAction = new ShowControlPanelAction();
+		pluginActions.add( showControlPanelAction );
 		showPreferencesAction = new ShowPreferencesAction();
-		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( loggerService );
 		pluginActions.add( showPreferencesAction );
 		mapSpotTagAction = new MapTagAction( ChangeTagActionMode.SPOT );
 		pluginActions.add( mapSpotTagAction );
@@ -280,7 +309,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( removeSpotsByTagAction );
 		removeEdgesByTagAction = new RemoveLinksByTagAction();
 		pluginActions.add( removeEdgesByTagAction );
-		removeVisibleSpotsAction = new RemoveVisibleSpotsAction();
+		removeVisibleSpotsAction = new RemoveVisibleSpotsAction( bdvContextService );
 		pluginActions.add( removeVisibleSpotsAction );
 		removeSelfLinksAction = new RemoveSelfLinksAction();
 		pluginActions.add( removeSelfLinksAction );
@@ -334,6 +363,10 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( importMastodonAction );
 		exportCTCAction = new ExportCTCAction();
 		pluginActions.add( exportCTCAction );
+		changeDetectionTagSetColorsAction = new ChangeDetectionTagSetColorsAction();
+		pluginActions.add( changeDetectionTagSetColorsAction );
+		uploadAction = new UploadAction();
+		pluginActions.add( uploadAction );
 	}
 
 	/**
@@ -358,16 +391,33 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		// Initialize MastodonPluginAppModel-dependent services
 		// BdvViewMouseMotionService
 		mouseMotionService.init( pluginAppModel );
+		// BdvColoringService
+		new BdvColoringService().init( pluginAppModel );
+		// BdvContextService
+		bdvContextService.init( pluginAppModel );
+		// ElephantStatusService
+		elephantStatusService.elephantServerStatusListeners().add( ( ElephantServerStatusListener ) showControlPanelAction );
+		elephantStatusService.init( pluginAppModel );
+		elephantStatusService.start();
 		// ElephantOverlayService
 		new ElephantOverlayService( pluginAppModel );
 		// RabbitMQService
-		final RabbitMQService rabbitMQService = new RabbitMQService( pluginAppModel );
-		ElephantActionStateManager.INSTANCE.livemodeListeners().add( rabbitMQService );
+		final RabbitMQService rabbitMQService = new RabbitMQService();
+		rabbitMQService.init( pluginAppModel );
+		rabbitMQService.rabbitMQStatusListeners().add( ( RabbitMQStatusListener ) showControlPanelAction );
+		rabbitMQService.rabbitMQDatasetListeners().addAll(
+				pluginActions.stream()
+						.filter( action -> action instanceof RabbitMQDatasetListener )
+						.map( action -> ( RabbitMQDatasetListener ) action )
+						.collect( Collectors.toList() ) );
+		rabbitMQService.start();
 		// UnirestService
 		new UnirestService();
 		// UpdateTrainingParameters
 		final UpdateTrainingParametersService updateTrainingParametersService = new UpdateTrainingParametersService( pluginAppModel );
 		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( updateTrainingParametersService );
+		// LoggerService
+		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( loggerService );
 		// HighlightListener
 		final HighlightListenerService highlightListenerService = new HighlightListenerService( pluginAppModel );
 		pluginAppModel.getAppModel().getHighlightModel().listeners().add( highlightListenerService );
@@ -393,12 +443,12 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 						menu( "ELEPHANT",
 								menu( "Detection",
 										item( predictSpotsAction.name() ),
-										item( updateSegLabelsAction.name() ),
-										item( resetSegLabelsAction.name() ),
+										item( updateDetectionLabelsAction.name() ),
+										item( resetDetectionLabelsAction.name() ),
 										item( liveTrainingAction.name() ),
 										item( trainSelectedAction.name() ),
 										item( trainAllAction.name() ),
-										item( resetSegModelAction.name() ) ),
+										item( resetDetectionModelAction.name() ) ),
 								menu( "Linking",
 										item( nnLinkingAction.name() ),
 										item( updateFlowLabelsAction.name() ),
@@ -417,15 +467,19 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( takeSnapshotAction.name() ),
 										item( recordSnapshotMovieAction.name() ),
 										item( importMastodonAction.name() ),
-										item( exportCTCAction.name() ) ),
+										item( exportCTCAction.name() ),
+										item( changeDetectionTagSetColorsAction.name() ) ),
 								menu( "Analysis",
 										item( tagProgenitorAction.name() ),
 										item( tagProliferatorAction.name() ),
 										item( tagDividingCellsAction.name() ),
 										item( countDivisionsEntireAction.name() ),
 										item( countDivisionsTrackwiseAction.name() ) ),
+								menu( "Window",
+										item( showClientLogWindowAction.name() ),
+										item( showServerLogWindowAction.name() ),
+										item( showControlPanelAction.name() ) ),
 								item( abortProcessingAction.name() ),
-								item( showLogWindowAction.name() ),
 								item( showPreferencesAction.name() ) ) ) );
 	}
 
@@ -497,7 +551,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 		final Elephant elephant = new Elephant();
 		final Mastodon mastodon = elephant.new Mastodon();
-		try (final Context context = new Context())
+		final Context context = new Context();
+		try
 		{
 			context.inject( mastodon );
 			mastodon.run();
@@ -512,6 +567,10 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 			{
 				System.out.println( "Loading from resource failed. Start with empty project." );
 			}
+		}
+		finally
+		{
+			context.dispose();
 		}
 	}
 

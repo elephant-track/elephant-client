@@ -44,6 +44,8 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 
 	public static final String DEFAULT_RABBITMQ_HOST = "localhost";
 
+	public static final int DEFAULT_RABBITMQ_PORT = 5672;
+
 	public static final String DEFAULT_RABBITMQ_USERNAME = "user";
 
 	public static final String DEFAULT_RABBITMQ_PASSWORD = "user";
@@ -70,6 +72,7 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 		name = settings.name;
 		serverURL = settings.serverURL;
 		rabbitMQHost = settings.rabbitMQHost;
+		rabbitMQPort = settings.rabbitMQPort;
 		rabbitMQUsername = settings.rabbitMQUsername;
 		rabbitMQPassword = settings.rabbitMQPassword;
 		notifyListeners();
@@ -78,6 +81,8 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 	private String serverURL;
 
 	private String rabbitMQHost;
+
+	private int rabbitMQPort;
 
 	private String rabbitMQUsername;
 
@@ -107,6 +112,20 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 		if ( !Objects.equals( this.rabbitMQHost, rabbitMQHost ) )
 		{
 			this.rabbitMQHost = rabbitMQHost;
+			notifyListeners();
+		}
+	}
+
+	public int getRabbitMQPort()
+	{
+		return rabbitMQPort;
+	}
+
+	public synchronized void setRabbitMQPort( int rabbitMQPort )
+	{
+		if ( this.rabbitMQPort != rabbitMQPort )
+		{
+			this.rabbitMQPort = rabbitMQPort;
 			notifyListeners();
 		}
 	}
@@ -145,6 +164,7 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 		df = new ElephantServerSettings();
 		df.serverURL = DEFAULT_SERVER_URL;
 		df.rabbitMQHost = DEFAULT_RABBITMQ_HOST;
+		df.rabbitMQPort = DEFAULT_RABBITMQ_PORT;
 		df.rabbitMQUsername = DEFAULT_RABBITMQ_USERNAME;
 		df.rabbitMQPassword = DEFAULT_RABBITMQ_PASSWORD;
 		df.name = "Default";

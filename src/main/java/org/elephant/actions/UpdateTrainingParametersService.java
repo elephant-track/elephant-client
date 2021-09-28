@@ -26,11 +26,14 @@
  ******************************************************************************/
 package org.elephant.actions;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.ElephantStatusService.ElephantStatus;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.elephant.actions.mixins.UnirestMixin;
 import org.elephant.setting.main.ElephantMainSettingsListener;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
@@ -38,11 +41,6 @@ import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
-import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 
 /**
  * Send a request for updating the training parameters.
@@ -50,7 +48,7 @@ import kong.unirest.UnirestException;
  * @author Ko Sugawara
  */
 public class UpdateTrainingParametersService extends AbstractElephantService
-		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, UIActionMixin, URLMixin
+		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -64,33 +62,22 @@ public class UpdateTrainingParametersService extends AbstractElephantService
 	@Override
 	public void mainSettingsUpdated()
 	{
+		if ( getServerStateManager().getElephantServerStatus() == ElephantStatus.UNAVAILABLE ) { return; }
+
 		final JsonObject jsonRootObject = Json.object()
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() );
-		Unirest.post( getEndpointURL( ENDPOINT_PARAMS ) ).body( jsonRootObject.toString() ).asStringAsync( new Callback< String >()
+		try
 		{
-
-			@Override
-			public void failed( final UnirestException e )
-			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-				getLogger().severe( "The request has failed" );
-				showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-			}
-
-			@Override
-			public void completed( final HttpResponse< String > response )
-			{
-				showTextOverlayAnimator( "Params updated", 3000, TextOverlayAnimator.TextPosition.CENTER );
-			}
-
-			@Override
-			public void cancelled()
-			{
-				getLogger().info( "The request has been cancelled" );
-			}
-
-		} );
+			postAsStringAsync( getEndpointURL( ENDPOINT_PARAMS ), jsonRootObject.toString(),
+					response -> {
+						showTextOverlayAnimator( "Params updated", 3000, TextOverlayAnimator.TextPosition.CENTER );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

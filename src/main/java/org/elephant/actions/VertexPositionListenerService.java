@@ -55,8 +55,9 @@ public class VertexPositionListenerService extends AbstractElephantService
 	@Override
 	public void vertexPositionChanged( Spot vertex )
 	{
-		if ( !getStateManager().isWriting() )
-			getLogger().info( vertex + " changed" );
+		// ignore if not measuring or modified programatically during measurement
+		if ( getActionStateManager().isMeasuring() && !getActionStateManager().isWriting() )
+			getClientLogger().info( vertex + " changed" );
 	}
 
 }

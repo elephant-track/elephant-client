@@ -105,7 +105,7 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 			}
 			catch ( InvocationTargetException | InterruptedException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 			if ( selectedWindowName.get() != null && saveDirPath.get() != null )
 			{
@@ -123,7 +123,7 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 							}
 							catch ( final InterruptedException e )
 							{
-								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+								getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 							}
 							final JComponent displayComponent = viewerPanel.getDisplay();
 							final BufferedImage image = new BufferedImage( displayComponent.getWidth(), displayComponent.getHeight(), BufferedImage.TYPE_INT_ARGB );
@@ -134,7 +134,7 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 							}
 							catch ( final IOException e )
 							{
-								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+								getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 							}
 						}
 					}

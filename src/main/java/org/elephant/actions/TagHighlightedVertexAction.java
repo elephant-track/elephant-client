@@ -30,6 +30,10 @@ import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 /**
  * Tag the highlighted spot with the specified {@code Detection} tag.
@@ -42,17 +46,61 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME_BASE = "[elephant] tag with ";
+	private static final String NAME_BASE = "[elephant] tag with %s";
+
+	private static final String NAME_TP = String.format( NAME_BASE, "tp" );
+
+	private static final String NAME_FP = String.format( NAME_BASE, "fp" );
+
+	private static final String NAME_TN = String.format( NAME_BASE, "tn" );
+
+	private static final String NAME_FN = String.format( NAME_BASE, "fn" );
+
+	private static final String NAME_TB = String.format( NAME_BASE, "tb" );
+
+	private static final String NAME_FB = String.format( NAME_BASE, "fb" );
+
+	private static final String NAME_UNLABELED = String.format( NAME_BASE, "unlabeled" );
+
+	private static final String[] MENU_KEYS_TP = new String[] { "4" };
+
+	private static final String[] MENU_KEYS_FP = new String[] { "5" };
+
+	private static final String[] MENU_KEYS_TN = new String[] { "6" };
+
+	private static final String[] MENU_KEYS_FN = new String[] { "7" };
+
+	private static final String[] MENU_KEYS_TB = new String[] { "8" };
+
+	private static final String[] MENU_KEYS_FB = new String[] { "9" };
+
+	private static final String[] MENU_KEYS_UNLABELED = new String[] { "0" };
+
+	private static final String DESCRIPTION_BASE = "Tag the highlighted spot with %s.";
+
+	private static final String DESCRIPTION_TP = String.format( DESCRIPTION_BASE, "tp" );
+
+	private static final String DESCRIPTION_FP = String.format( DESCRIPTION_BASE, "fp" );
+
+	private static final String DESCRIPTION_TN = String.format( DESCRIPTION_BASE, "tn" );
+
+	private static final String DESCRIPTION_FN = String.format( DESCRIPTION_BASE, "fn" );
+
+	private static final String DESCRIPTION_TB = String.format( DESCRIPTION_BASE, "tb" );
+
+	private static final String DESCRIPTION_FB = String.format( DESCRIPTION_BASE, "fb" );
+
+	private static final String DESCRIPTION_UNLABELED = String.format( DESCRIPTION_BASE, "unlabeled" );
 
 	public enum TagMode
 	{
-		TP( "tp", new String[] { "4" } ),
-		FP( "fp", new String[] { "5" } ),
-		TN( "tn", new String[] { "6" } ),
-		FN( "fn", new String[] { "7" } ),
-		TB( "tb", new String[] { "8" } ),
-		FB( "fb", new String[] { "9" } ),
-		UNLABELED( "unlabeled", new String[] { "0" } );
+		TP( NAME_TP, MENU_KEYS_TP ),
+		FP( NAME_FP, MENU_KEYS_FP ),
+		TN( NAME_TN, MENU_KEYS_TN ),
+		FN( NAME_FN, MENU_KEYS_FN ),
+		TB( NAME_TB, MENU_KEYS_TB ),
+		FB( NAME_FB, MENU_KEYS_FB ),
+		UNLABELED( NAME_UNLABELED, MENU_KEYS_UNLABELED );
 
 		private final String name;
 
@@ -77,6 +125,51 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 
 	private final TagMode tagMode;
 
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_TP,
+					MENU_KEYS_TP,
+					DESCRIPTION_TP );
+			descriptions.add(
+					NAME_FP,
+					MENU_KEYS_FP,
+					DESCRIPTION_FP );
+			descriptions.add(
+					NAME_TN,
+					MENU_KEYS_TN,
+					DESCRIPTION_TN );
+			descriptions.add(
+					NAME_FN,
+					MENU_KEYS_FN,
+					DESCRIPTION_FN );
+			descriptions.add(
+					NAME_TB,
+					MENU_KEYS_TB,
+					DESCRIPTION_TB );
+			descriptions.add(
+					NAME_FB,
+					MENU_KEYS_FB,
+					DESCRIPTION_FB );
+			descriptions.add(
+					NAME_UNLABELED,
+					MENU_KEYS_UNLABELED,
+					DESCRIPTION_UNLABELED );
+		}
+	}
+
 	@Override
 	public String[] getMenuKeys()
 	{
@@ -85,7 +178,7 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 
 	public TagHighlightedVertexAction( final TagMode tagMode )
 	{
-		super( NAME_BASE + tagMode.getName() );
+		super( tagMode.getName() );
 		this.tagMode = tagMode;
 	}
 
@@ -93,25 +186,26 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 	public void process()
 	{
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
+		Spot spot = null;
 		try
 		{
 			final ObjTagMap< Spot, Tag > tagMapDetection = getVertexTagMap( getDetectionTagSet() );
 			final Spot ref = getGraph().vertexRef();
-			final Spot spot = getAppModel().getHighlightModel().getHighlightedVertex( ref );
+			spot = getAppModel().getHighlightModel().getHighlightedVertex( ref );
 
 			if ( spot != null )
 			{
-				tagMapDetection.set( spot, getTag( getDetectionTagSet(), tagMode.getName() ) );
-				getLogger().info( spot + " was tagged with " + tagMode.getName() );
+				tagMapDetection.set( spot, getTag( getDetectionTagSet(), tagMode.name().toLowerCase() ) );
 			}
 			getGraph().releaseRef( ref );
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getModel().setUndoPoint();
 			getGraph().getLock().writeLock().unlock();
+			getClientLogger().info( spot + " was tagged with " + tagMode.name() );
 			notifyGraphChanged();
 		}
 	}

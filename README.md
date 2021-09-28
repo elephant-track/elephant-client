@@ -36,60 +36,13 @@ It works on client-server architecture. The server is built as a web application
 This repository provides an implementation of the ELEPHANT client, which is implemented by extending [Mastodon](https://github.com/mastodon-sc/mastodon), providing a user interface for annotation, proofreading and visualization.
 The ELEPHANT server can be found [here](https://github.com/elephant-track/elephant-server).
 
-Please refer to [the documentation]() for details.
+Please refer to [the documentation](https://elephant-track.github.io) for details.
 
 ---
 
-### ELEPHANT Client Requirements
-
-|                  | Requirements                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Operating System | Linux, Mac or Windows OS                                                                                                  |
-| Java             | Java Runtime Environment 8 or higher                                                                                      |
-| Storage          | Sufficient size for your data (Please consider using [BigDataServer](https://imagej.net/BigDataServer) for the huge data) |
-
-
 ### Installing the ELEPHANT Client
 
-The ELEPHANT client works as a plugin for [Mastodon](https://github.com/mastodon-sc/mastodon).
-However, because ELEPHANT was built on a specific version of Mastodon, with minor customization,
-we ask users to download and use a self-contained executable instead of the official release available on [Fiji](https://imagej.net/Fiji).
-
-| Info <br> :information_source: | Mastodon user manual is available [here](https://github.com/mastodon-sc/mastodon-manual/blob/pdf/MastodonManual.pdf). |
-| :----------------------------: | :-------------------------------------------------------------------------------------------------------------------- |
-
-#### 1. Download an executable jar
-
-Please [download a zip file](https://github.com/elephant-track/elephant-client/releases/download/v0.1.0/elephant-0.1.0-client.zip) that contains the latest version of executable jar with dependencies in the `lib/` directory.
-
-#### 2. Launch an application
-
-Double click the executable jar with the name `elephant-0.1.0-client.jar`.\
-Alternatively, launch an application from CLI, which is better for debugging in case of problems.
-
-```bash
-java -jar elephant-0.1.0-client.jar
-```
-
-| Info <br> :information_source: | ELEPHANT is built with `openjdk version "1.8.0_275"`. It should work with Java Runtime Environment (JRE) version 8 or higher. <br> You can download a prebuilt OpdnJDK binary [here](https://adoptopenjdk.net/). |
-| :----------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-
-A main window will be shown as below.
-
-<img src="../assets/main-window.png"></img>
-
-## Development
-
-Currently, a customized version of [Mastodon](https://github.com/mastodon-sc/mastodon), which is one of the dependencies of this project, is not managed on the public maven repository.
-
-To build this project, please clone [this GitHub repository](https://github.com/elephant-track/mastodon/tree/trackmate-1.0.0-beta-13-elephant) and run `mvn install` after switching to the tag `trackmate-1.0.0-beta-13-elephant` on your system.
-
-```bash
-git clone git@github.com:elephant-track/mastodon.git
-cd mastodon
-git checkout tags/trackmate-1.0.0-beta-13-elephant
-mvn install
-```
+Please follow the instructions in [the documentation](https://elephant-track.github.io/#/?id=installation).
 
 ## Acknowledgements
 
@@ -100,7 +53,26 @@ mvn install
   
 ## Citation
 
-Please cite our paper.
+Please cite our paper on [bioRxiv](https://biorxiv.org/cgi/content/short/2021.02.26.432552v1).
+
+- Sugawara, K., Cevrim, C. & Averof, M. [*Tracking cell lineages in 3D by incremental deep learning.*](https://biorxiv.org/cgi/content/short/2021.02.26.432552v1) bioRxiv 2021. doi:10.1101/2021.02.26.432552
+
+```.bib
+@article {Sugawara2021.02.26.432552,
+	author = {Sugawara, Ko and Cevrim, Cagri and Averof, Michalis},
+	title = {Tracking cell lineages in 3D by incremental deep learning},
+	elocation-id = {2021.02.26.432552},
+	year = {2021},
+	doi = {10.1101/2021.02.26.432552},
+	publisher = {Cold Spring Harbor Laboratory},
+	abstract = {Deep learning is emerging as a powerful approach for bioimage analysis, but its wider use is limited by the scarcity of annotated data for training. We present ELEPHANT, an interactive platform for cell tracking in 4D that seamlessly integrates annotation, deep learning, and proofreading. ELEPHANT{\textquoteright}s user interface supports cycles of incremental learning starting from sparse annotations, yielding accurate, user-validated cell lineages with a modest investment in time and effort.Competing Interest StatementKS is employed part-time by LPIXEL Inc.},
+	URL = {https://www.biorxiv.org/content/early/2021/02/26/2021.02.26.432552},
+	eprint = {https://www.biorxiv.org/content/early/2021/02/26/2021.02.26.432552.full.pdf},
+	journal = {bioRxiv}
+}
+```
+
+<div style="text-align: right"><a href="https://www.biorxiv.org/highwire/citation/1813952/bibtext">download as .bib file</a></div>
 
 ## License
 

@@ -53,7 +53,7 @@ public interface ElephantGraphTagActionMixin
 	default void removeSpots( final RefCollection< Spot > spots, final Predicate< Spot > filter )
 	{
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final RefList< Spot > toRemove = RefCollections.createRefList( spots );
@@ -67,7 +67,7 @@ public interface ElephantGraphTagActionMixin
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}
@@ -76,7 +76,7 @@ public interface ElephantGraphTagActionMixin
 	default void removeEdges( final RefCollection< Link > edges, final Predicate< Link > filter )
 	{
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final RefList< Link > toRemove = RefCollections.createRefList( edges );
@@ -91,7 +91,7 @@ public interface ElephantGraphTagActionMixin
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}

@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.setting.server;
 
+import static org.elephant.setting.StyleElementsEx.intElementEx;
 import static org.elephant.setting.StyleElementsEx.passwordElement;
 import static org.elephant.setting.StyleElementsEx.stringElement;
 import static org.mastodon.app.ui.settings.StyleElements.separator;
@@ -61,6 +62,7 @@ public class ElephantServerSettingsPanel extends AbstractElephantSettingsPanel< 
 				separator(),
 
 				stringElement( "RabbitMQ server host name", style::getRabbitMQHost, style::setRabbitMQHost ),
+				intElementEx( "RabbitMQ server port", 1, 65535, "#", style::getRabbitMQPort, style::setRabbitMQPort ),
 				stringElement( "RabbitMQ server username", style::getRabbitMQUsername, style::setRabbitMQUsername ),
 				passwordElement( "RabbitMQ server password", style::getRabbitMQPassword, style::setRabbitMQPassword ) );
 	}

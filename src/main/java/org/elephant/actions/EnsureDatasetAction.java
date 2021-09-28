@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2020, Ko Sugawara
+ * Copyright (C) 2021, Ko Sugawara
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,65 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import org.elephant.actions.mixins.ElephantDatasetMixin;
+
 /**
- * An interface to be implemented by a class that listens a change of livemode.
+ * Ensure the dataset on the server.
  * 
  * @author Ko Sugawara
  */
-public interface LivemodeListener
+public class EnsureDatasetAction extends AbstractElephantAction
+		implements ElephantDatasetMixin
 {
-	void livemodeCahnged( final boolean isLivemode );
+
+	private static final long serialVersionUID = 1L;
+
+	private static final String NAME = "[elephant] ensure the dataset on the server";
+
+	private static final String MENU_TEXT = "Ensure Dataset";
+
+	@Override
+	public String getMenuText()
+	{
+		return MENU_TEXT;
+	}
+
+	public EnsureDatasetAction()
+	{
+		super( NAME );
+	}
+
+	@Override
+	void process()
+	{
+		final boolean isReady = ensureDataset();
+		if ( !isReady )
+		{
+			try
+			{
+				SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Dataset is not ready." ) );
+			}
+			catch ( InvocationTargetException | InterruptedException e )
+			{
+				handleError( e );
+			}
+		}
+		else
+		{
+			try
+			{
+				SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Dataset is ready." ) );
+			}
+			catch ( InvocationTargetException | InterruptedException e )
+			{
+				handleError( e );
+			}
+		}
+	}
+
 }

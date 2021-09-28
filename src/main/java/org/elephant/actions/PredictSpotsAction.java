@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
@@ -41,7 +43,7 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.ElephantUtils;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
@@ -50,6 +52,10 @@ import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -57,10 +63,6 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RealPoint;
@@ -71,21 +73,35 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  * 
  * @author Ko Sugawara
  */
-public class PredictSpotsAction extends AbstractElephantAction
+public class PredictSpotsAction extends AbstractElephantDatasetAction
 		implements BdvDataMixin, EllipsoidActionMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantStateManagerMixin, ElephantGraphTagActionMixin,
-		SpatioTemporalIndexActionMinxin, TimepointActionMixin, UIActionMixin, URLMixin, WindowManagerMixin
+		SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] predict spots%s";
+	private static final String NAME_BASE = "[elephant] predict spots%s";
+
+	private static final String NAME_ENTIRE = String.format( NAME_BASE, "" );
+
+	private static final String NAME_AROUND_MOUSE = String.format( NAME_BASE, " (around mouse)" );
 
 	private static final String MENU_TEXT = "Predict Spots";
 
+	private static final String[] MENU_KEYS_ENTIRE = new String[] { "alt S" };
+
+	private static final String[] MENU_KEYS_AROUND_MOUSE = new String[] { "alt shift S" };
+
+	private static final String DESCRIPTION_BASE = "Predict spots. %s";
+
+	private static final String DESCRIPTION_ENTIRE = String.format( DESCRIPTION_BASE, "(entire view)" );
+
+	private static final String DESCRIPTION_AROUND_MOUSE = String.format( DESCRIPTION_BASE, "(around mouse)" );
+
 	public enum PredictSpotsActionMode
 	{
-		ENTIRE( String.format( NAME, "" ), new String[] { "alt F" } ),
-		AROUND_MOUSE( String.format( NAME, " (around selection)" ), new String[] { "alt shift F" } );
+		ENTIRE( NAME_ENTIRE, MENU_KEYS_ENTIRE ),
+		AROUND_MOUSE( NAME_AROUND_MOUSE, MENU_KEYS_AROUND_MOUSE );
 
 		private String name;
 
@@ -118,6 +134,35 @@ public class PredictSpotsAction extends AbstractElephantAction
 
 	private JsonObject jsonRootObject;
 
+	private int timepointStart;
+
+	private int timepointEnd;
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_ENTIRE,
+					MENU_KEYS_ENTIRE,
+					DESCRIPTION_ENTIRE );
+			descriptions.add(
+					NAME_AROUND_MOUSE,
+					MENU_KEYS_AROUND_MOUSE,
+					DESCRIPTION_AROUND_MOUSE );
+		}
+	}
+
 	@Override
 	public String getMenuText()
 	{
@@ -138,11 +183,11 @@ public class PredictSpotsAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	boolean prepare()
 	{
-		final int timepointEnd = getCurrentTimepoint( 0 );
-		final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
-		final int timepointStart = Math.max( 0, timepointEnd - ( timeRange - 1 ) );
+		timepointEnd = getCurrentTimepoint( 0 );
+		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+		timepointStart = Math.max( 0, timepointEnd - ( timeRange - 1 ) );
 		ElephantActionStateManager.INSTANCE.setAborted( false );
 		final VoxelDimensions voxelSize = getVoxelDimensions();
 		final JsonArray scales = new JsonArray()
@@ -151,7 +196,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 				.add( voxelSize.dimension( 2 ) );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-				.add( JSON_KEY_SEG_MODEL_NAME, getMainSettings().getSegModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
@@ -193,6 +238,12 @@ public class PredictSpotsAction extends AbstractElephantAction
 					cropSize[ 1 ] * voxelSize.dimension( 1 ),
 					cropSize[ 2 ] * voxelSize.dimension( 2 ) );
 		}
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
 		predictSpotsAt( timepointStart, timepointEnd );
 	}
 
@@ -201,37 +252,31 @@ public class PredictSpotsAction extends AbstractElephantAction
 		if ( timepointEnd < timepoint )
 			return;
 		jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
-		Unirest.post( getEndpointURL( ENDPOINT_PREDICT_SEG ) )
-				.body( jsonRootObject.toString() )
-				.asStringAsync( new Callback< String >()
-				{
-
-					@Override
-					public void failed( final UnirestException e )
-					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-						getLogger().severe( "The request has failed" );
-						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-					}
-
-					@Override
-					public void completed( final HttpResponse< String > response )
-					{
-						if ( response.getStatus() == 200 )
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_DETECTION ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
 							final String body = response.getBody();
-							final RefCollection< Spot > spots = getGraph().vertices();
-							Predicate< Spot > predicate = spot -> spot.getTimepoint() == timepoint;
-							if ( mode == PredictSpotsActionMode.AROUND_MOUSE )
-								predicate = predicate.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
-							refreshLabels( spots, predicate );
-							predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
-							predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) != getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
-							removeSpots( spots, predicate );
-							addSpotsFromJsonString( body );
-							summary( timepoint );
-							showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
-							if ( getStateManager().isAborted() )
+							final JsonObject jsonRootObject = Json.parse( body ).asObject();
+							if ( Json.parse( body ).asObject().get( "completed" ).asBoolean() )
+							{
+								final RefCollection< Spot > spots = getGraph().vertices();
+								Predicate< Spot > predicate = spot -> spot.getTimepoint() == timepoint;
+								if ( mode == PredictSpotsActionMode.AROUND_MOUSE )
+									predicate = predicate.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
+								refreshLabels( spots, predicate );
+								predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
+								predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) != getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
+								removeSpots( spots, predicate );
+								final JsonArray jsonSpots = jsonRootObject.get( "spots" ).asArray();
+								addSpotsFromJson( jsonSpots );
+								summary( timepoint );
+								showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
+							}
+
+							if ( getActionStateManager().isAborted() )
 								showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 							else
 								predictSpotsAt( timepoint + 1, timepointEnd );
@@ -239,23 +284,20 @@ public class PredictSpotsAction extends AbstractElephantAction
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == 500 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 							}
 							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
+							getClientLogger().severe( sb.toString() );
 						}
-					}
-
-					@Override
-					public void cancelled()
-					{
-						getLogger().info( "The request has been cancelled" );
-					}
-
-				} );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 	private static enum SpotEditMode
@@ -303,7 +345,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 		map.put( getTag( getDetectionTagSet(), DETECTION_FB_TAG_NAME ), getTag( getDetectionTagSet(), DETECTION_TB_TAG_NAME ) );
 
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			for ( final Spot spot : spots )
@@ -318,12 +360,12 @@ public class PredictSpotsAction extends AbstractElephantAction
 		}
 		finally
 		{
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 		}
 	}
 
-	private void addSpotsFromJsonString( final String jsonString )
+	private void addSpotsFromJson( final JsonArray jsonSpots )
 	{
 		getGraph().getLock().readLock().lock();
 		try
@@ -336,9 +378,6 @@ public class PredictSpotsAction extends AbstractElephantAction
 			final double[] pos = new double[ 3 ];
 			final double[][] covariance = new double[ 3 ][ 3 ];
 			final SpotStruct jsonRef = new SpotStruct( pos, covariance );
-
-			final JsonObject jsonRootObject = Json.parse( jsonString ).asObject();
-			final JsonArray jsonSpots = jsonRootObject.get( "spots" ).asArray();
 
 			final Tag tpTag = getTag( getDetectionTagSet(), DETECTION_TP_TAG_NAME );
 			final Tag fpTag = getTag( getDetectionTagSet(), DETECTION_FP_TAG_NAME );
@@ -386,7 +425,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 					}
 					else
 					{
-						getLogger().info( nearestSpot + " does not have a valid tag" );
+						getClientLogger().info( nearestSpot + " does not have a valid tag" );
 						editMode = SpotEditMode.SKIP;
 					}
 				}
@@ -395,7 +434,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 				case CREATE:
 					getGraph().getLock().readLock().unlock();
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						final Spot spot = getGraph().addVertex( ref ).init( jsonRef.t, jsonRef.pos, jsonRef.covariance );
@@ -405,14 +444,14 @@ public class PredictSpotsAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getGraph().getLock().writeLock().unlock();
 					}
 					break;
 				case REFIT:
 					getGraph().getLock().readLock().unlock();
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						ref.refTo( nearestSpot );
@@ -422,7 +461,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getGraph().getLock().writeLock().unlock();
 					}
 					break;
@@ -437,7 +476,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 		}
 		catch ( final Exception e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		finally
 		{
@@ -452,7 +491,7 @@ public class PredictSpotsAction extends AbstractElephantAction
 		getGraph().getLock().readLock().lock();
 		try
 		{
-			getLogger().info( String.format( "FRAME: %d, TP: %d, FP: %d, TN: %d, FN: %d, TB: %d, FB: %d, unlabeled: %d",
+			getClientLogger().info( String.format( "FRAME: %d, TP: %d, FP: %d, TN: %d, FN: %d, TB: %d, FB: %d, unlabeled: %d",
 					timepoint,
 					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TP_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
 					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FP_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),

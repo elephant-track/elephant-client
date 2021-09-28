@@ -37,10 +37,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.elephant.actions.AbstractElephantAction;
+import org.elephant.actions.EnsureDatasetAction;
 import org.elephant.actions.RandomSampleAction;
 import org.elephant.actions.StartMeasurementAction;
 import org.elephant.actions.StopMeasurementAction;
 import org.elephant.actions.TrackingStatisticsAction;
+import org.elephant.actions.UploadAction;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.grouping.GroupHandle;
 import org.mastodon.mamut.plugin.MamutPlugin;
@@ -75,6 +77,8 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 
 	private final AbstractElephantAction trackingStatisticsAction;
 
+	private final AbstractElephantAction ensureDatasetAction;
+
 	private final List< AbstractElephantAction > pluginActions = new ArrayList<>();
 
 	public ElephantExtra()
@@ -89,6 +93,8 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 		pluginActions.add( randomSampleAction );
 		trackingStatisticsAction = new TrackingStatisticsAction();
 		pluginActions.add( trackingStatisticsAction );
+		ensureDatasetAction = new EnsureDatasetAction();
+		pluginActions.add( ensureDatasetAction );
 	}
 
 	/**
@@ -117,7 +123,9 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 								menu( "Utils",
 										separator(),
 										// item( toggleAutoFocusAction.name() ),
-										item( randomSampleAction.name() ) ),
+										item( randomSampleAction.name() ),
+										item( UploadAction.NAME ),
+										item( ensureDatasetAction.name() ) ),
 								menu( "Analysis",
 										separator(),
 										item( trackingStatisticsAction.name() ),

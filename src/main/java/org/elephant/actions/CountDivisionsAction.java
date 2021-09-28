@@ -141,7 +141,7 @@ public class CountDivisionsAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		final File file = fileReference.get();
 		if ( file != null )
@@ -176,7 +176,7 @@ public class CountDivisionsAction extends AbstractElephantAction
 				}
 				catch ( final IOException e )
 				{
-					getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+					getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 				}
 				break;
 			case TRACKWISE:
@@ -233,7 +233,7 @@ public class CountDivisionsAction extends AbstractElephantAction
 					}
 					catch ( final IOException e )
 					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+						getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 					}
 				}
 				finally

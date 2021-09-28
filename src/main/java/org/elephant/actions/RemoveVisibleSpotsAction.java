@@ -31,10 +31,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.collection.RefCollection;
 import org.mastodon.collection.RefCollections;
@@ -50,7 +51,7 @@ import org.mastodon.mamut.model.Spot;
  * @author Ko Sugawara
  */
 public class RemoveVisibleSpotsAction extends AbstractElephantAction
-		implements ElephantGraphTagActionMixin, ElephantStateManagerMixin, ElephantSettingsMixin, TimepointActionMixin, WindowManagerMixin
+		implements BdvContextMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, ElephantSettingsMixin, TimepointMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -58,49 +59,61 @@ public class RemoveVisibleSpotsAction extends AbstractElephantAction
 
 	private static final String MENU_TEXT = "Remove Visible Spots";
 
+	private final BdvContextService bdvContextService;
+
 	@Override
 	public String getMenuText()
 	{
 		return MENU_TEXT;
 	}
 
-	public RemoveVisibleSpotsAction()
+	public RemoveVisibleSpotsAction( final BdvContextService bdvContextService )
 	{
 		super( NAME );
+		this.bdvContextService = bdvContextService;
+	}
+
+	@Override
+	public BdvContextService getBdvContextService()
+	{
+		return bdvContextService;
 	}
 
 	@Override
 	public void process()
 	{
-		final int timepointEnd = getCurrentTimepoint( 0 );
-		final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
-		final int timepointStart = Math.max( 0, timepointEnd - timeRange + 1 );
-		final List< Integer > timepoints = IntStream.rangeClosed( timepointStart, timepointEnd ).boxed().collect( Collectors.toList() );
-
-		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
-		try
+		if ( showContextChooserDialog() )
 		{
-			for ( final int t : timepoints )
+			final int timepointEnd = getCurrentTimepoint( 0 );
+			final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+			final int timepointStart = Math.max( 0, timepointEnd - timeRange + 1 );
+			final List< Integer > timepoints = IntStream.rangeClosed( timepointStart, timepointEnd ).boxed().collect( Collectors.toList() );
+
+			getGraph().getLock().writeLock().lock();
+			getActionStateManager().setWriting( true );
+			try
 			{
-				final Iterable< Spot > spots = getVisibleVertices( t );
-				if ( spots != null )
+				for ( final int t : timepoints )
 				{
-					final RefCollection< Spot > refSet = RefCollections.createRefSet( getGraph().vertices() );
-					for ( final Spot spot : spots )
-						refSet.add( spot );
-					Predicate< Spot > spotFilter = spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME );
-					spotFilter = spotFilter.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) == getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME ) );
-					removeSpots( refSet, spotFilter );
+					final Iterable< Spot > spots = getVisibleVertices( t );
+					if ( spots != null )
+					{
+						final RefCollection< Spot > refSet = RefCollections.createRefSet( getGraph().vertices() );
+						for ( final Spot spot : spots )
+							refSet.add( spot );
+						Predicate< Spot > spotFilter = spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME );
+						spotFilter = spotFilter.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) == getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME ) );
+						removeSpots( refSet, spotFilter );
+					}
 				}
 			}
-		}
-		finally
-		{
-			getStateManager().setWriting( false );
-			getModel().setUndoPoint();
-			getGraph().getLock().writeLock().unlock();
-			notifyGraphChanged();
+			finally
+			{
+				getActionStateManager().setWriting( false );
+				getModel().setUndoPoint();
+				getGraph().getLock().writeLock().unlock();
+				notifyGraphChanged();
+			}
 		}
 	}
 

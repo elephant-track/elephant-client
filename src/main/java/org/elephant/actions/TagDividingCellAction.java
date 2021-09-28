@@ -61,7 +61,7 @@ public class TagDividingCellAction extends AbstractElephantAction
 	public void process()
 	{
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final ObjTagMap< Spot, Tag > spotTagMap = getVertexTagMap( getDivisionTagSet() );
@@ -85,7 +85,7 @@ public class TagDividingCellAction extends AbstractElephantAction
 		finally
 		{
 			getModel().setUndoPoint();
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}

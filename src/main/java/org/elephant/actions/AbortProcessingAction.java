@@ -26,20 +26,21 @@
  ******************************************************************************/
 package org.elephant.actions;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.elephant.actions.mixins.UnirestMixin;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 
 /**
  * Abort running actions and let send an abort signal to the server.
@@ -47,7 +48,7 @@ import kong.unirest.UnirestException;
  * @author Ko Sugawara
  */
 public class AbortProcessingAction extends AbstractElephantAction
-		implements ElephantConstantsMixin, ElephantStateManagerMixin, UIActionMixin, URLMixin
+		implements ElephantConstantsMixin, ElephantStateManagerMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -57,6 +58,29 @@ public class AbortProcessingAction extends AbstractElephantAction
 	private static final String MENU_TEXT = "Abort Processing";
 
 	private static final String[] MENU_KEYS = new String[] { "ctrl C" };
+
+	private static final String DESCRIPTION = "Abort processing.";
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME,
+					MENU_KEYS,
+					DESCRIPTION );
+		}
+	}
 
 	@Override
 	public String getMenuText()
@@ -78,33 +102,21 @@ public class AbortProcessingAction extends AbstractElephantAction
 	@Override
 	public void process()
 	{
-		getStateManager().setAborted( true );
+		getActionStateManager().setAborted( true );
 		// Send an abort signal to the server
 		final JsonObject jsonRootObject = Json.object().add( JSON_KEY_STATE, 0 );
-		Unirest.post( getEndpointURL( ENDPOINT_STATE ) ).body( jsonRootObject.toString() ).asStringAsync( new Callback< String >()
+		try
 		{
-
-			@Override
-			public void failed( final UnirestException e )
-			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-				getLogger().severe( "The request has failed" );
-			}
-
-			@Override
-			public void completed( final HttpResponse< String > response )
-			{
-				showTextOverlayAnimator( "Sent abort signal", 3000, TextOverlayAnimator.TextPosition.CENTER );
-				getStateManager().setLivemode( false );
-			}
-
-			@Override
-			public void cancelled()
-			{
-				getLogger().info( "The request has been cancelled" );
-			}
-
-		} );
+			postAsStringAsync( getEndpointURL( ENDPOINT_STATE ), jsonRootObject.toString(),
+					response -> {
+						showTextOverlayAnimator( "Sent abort signal", 3000, TextOverlayAnimator.TextPosition.CENTER );
+						getActionStateManager().setLivemode( false );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

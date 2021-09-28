@@ -109,10 +109,10 @@ public interface ElephantTagActionMixin extends TagActionMixin, ElephantConstant
 			final TagSet tagSetCopy = tssCopy.createTagSet( DETECTION_TAGSET_NAME );
 			tagSetCopy.createTag( DETECTION_TP_TAG_NAME, Color.CYAN.getRGB() );
 			tagSetCopy.createTag( DETECTION_FP_TAG_NAME, Color.MAGENTA.getRGB() );
-			tagSetCopy.createTag( DETECTION_TN_TAG_NAME, Color.RED.getRGB() );
-			tagSetCopy.createTag( DETECTION_FN_TAG_NAME, Color.YELLOW.getRGB() );
+			tagSetCopy.createTag( DETECTION_TN_TAG_NAME, Color.MAGENTA.getRGB() );
+			tagSetCopy.createTag( DETECTION_FN_TAG_NAME, Color.CYAN.getRGB() );
 			tagSetCopy.createTag( DETECTION_TB_TAG_NAME, Color.ORANGE.getRGB() );
-			tagSetCopy.createTag( DETECTION_FB_TAG_NAME, Color.PINK.getRGB() );
+			tagSetCopy.createTag( DETECTION_FB_TAG_NAME, Color.ORANGE.getRGB() );
 			tagSetCopy.createTag( DETECTION_UNLABELED_TAG_NAME, Color.GREEN.getRGB() );
 			getTagSetModel().pauseListeners();
 			try

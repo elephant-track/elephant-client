@@ -111,7 +111,7 @@ public class RemoveSpotsByTagAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e1 )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e1 ) );
 		}
 		if ( tagSetName.get() != null && tagName.get() != null )
 		{

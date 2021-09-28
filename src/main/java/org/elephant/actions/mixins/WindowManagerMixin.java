@@ -32,10 +32,10 @@ import java.util.function.Consumer;
 import org.mastodon.mamut.MamutViewBdv;
 import org.mastodon.mamut.WindowManager;
 import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
-import org.mastodon.mamut.model.Link;
-import org.mastodon.mamut.model.Spot;
-import org.mastodon.views.bdv.BdvContextProvider;
-import org.mastodon.views.bdv.overlay.wrap.OverlayContextWrapper;
+import org.mastodon.views.bdv.ViewerFrameMamut;
+
+import bdv.viewer.animate.TextOverlayAnimator;
+import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 
 /**
  * Handle @{@link WindowManager} and {@link MamutViewBdv}.
@@ -60,27 +60,20 @@ public interface WindowManagerMixin extends ElephantActionMixin
 		getBdvWindows().forEach( action );
 	}
 
-	default Iterable< Spot > getVisibleVertices( final int timepoint )
-	{
-		if ( 0 < getBdvWindows().size() )
-		{
-			final MamutViewBdv bdv = getBdvWindows().get( 0 );
-			@SuppressWarnings( "unchecked" )
-			final OverlayContextWrapper< Spot, Link > overlayContextWrapper = ( ( BdvContextProvider< Spot, Link > ) bdv.getContextProvider() ).getOverlayContextWrapper();
-			final Iterable< Spot > vertices = overlayContextWrapper.getInsideVertices( timepoint );
-			return vertices;
-		}
-		return null;
-	}
-
 	default void addBdvCreatedListener( final BdvViewCreatedListener listener )
 	{
-		getWindowManager().addBdvViewCreatedListner( listener );
+		getWindowManager().bdvViewCreatedListeners().add( listener );
 	}
 
 	default void removeBdvCreatedListener( final BdvViewCreatedListener listener )
 	{
-		getWindowManager().removeBdvViewCreatedListner( listener );
+		getWindowManager().bdvViewCreatedListeners().remove( listener );
+	}
+
+	default void addTextOverlayAnimator( final String text, final long duration, final TextPosition position )
+	{
+		final TextOverlayAnimator overlayAnimator = new TextOverlayAnimator( text, 3000, TextPosition.CENTER );
+		forEachBdvView( bdv -> ( ( ViewerFrameMamut ) bdv.getFrame() ).getViewerPanel().addOverlayAnimator( overlayAnimator ) );
 	}
 
 }

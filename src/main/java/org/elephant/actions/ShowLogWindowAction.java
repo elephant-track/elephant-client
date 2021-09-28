@@ -39,25 +39,72 @@ public class ShowLogWindowAction extends AbstractElephantAction implements Logge
 {
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] show log window";
+	private static final String NAME_BASE = "[elephant] show %s log window";
 
-	private static final String MENU_TEXT = "Show Log Window";
+	private static final String NAME_CLIENT = String.format( NAME_BASE, "client" );
+
+	private static final String NAME_SERVER = String.format( NAME_BASE, "server" );
+
+	private static final String MENU_TEXT_BASE = "%s Log";
+
+	private static final String MENU_TEXT_CLIENT = String.format( MENU_TEXT_BASE, "Client" );
+
+	private static final String MENU_TEXT_Server = String.format( MENU_TEXT_BASE, "Server" );
+
+	public enum LogTarget
+	{
+		CLIENT( NAME_CLIENT, MENU_TEXT_CLIENT ),
+		SERVER( NAME_SERVER, MENU_TEXT_Server );
+
+		private final String name;
+
+		private final String menuText;
+
+		LogTarget( final String name, final String menuText )
+		{
+			this.name = name;
+			this.menuText = menuText;
+		}
+
+		public String getName()
+		{
+			return name;
+		}
+
+		public String getMenuText()
+		{
+			return menuText;
+		}
+	}
+
+	private final LogTarget logTarget;
 
 	@Override
 	public String getMenuText()
 	{
-		return MENU_TEXT;
+		return logTarget.getMenuText();
 	}
 
-	public ShowLogWindowAction()
+	public ShowLogWindowAction( final LogTarget logTarget )
 	{
-		super( NAME );
+		super( logTarget.getName() );
+		this.logTarget = logTarget;
 	}
 
 	@Override
 	public void process()
 	{
-		SwingUtilities.invokeLater( () -> showLogWindow() );
+		switch ( logTarget )
+		{
+		case CLIENT:
+			SwingUtilities.invokeLater( () -> showClientLogWindow() );
+			break;
+		case SERVER:
+			SwingUtilities.invokeLater( () -> showServerLogWindow() );
+			break;
+		default:
+			break;
+		}
 	}
 
 }

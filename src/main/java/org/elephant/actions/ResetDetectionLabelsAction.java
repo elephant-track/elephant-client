@@ -27,12 +27,14 @@
 package org.elephant.actions;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.UIActionMixin;
@@ -43,25 +45,21 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 
 /**
  * Send a request for reseting voxel-classification labels to the server.
  * 
  * @author Ko Sugawara
  */
-public class ResetSegLabelsAction extends AbstractElephantAction
+public class ResetDetectionLabelsAction extends AbstractElephantDatasetAction
 		implements ElephantConstantsMixin, ElephantSettingsMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] reset seg labels";
+	private static final String NAME = "[elephant] reset detection labels";
 
-	private static final String MENU_TEXT = "Reset Seg Labels";
+	private static final String MENU_TEXT = "Reset Detection Labels";
 
 	@Override
 	public String getMenuText()
@@ -69,68 +67,53 @@ public class ResetSegLabelsAction extends AbstractElephantAction
 		return MENU_TEXT;
 	}
 
-	public ResetSegLabelsAction()
+	public ResetDetectionLabelsAction()
 	{
 		super( NAME );
 	}
 
 	@Override
-	public void process()
+	public void processDataset()
 	{
 		final AtomicInteger option = new AtomicInteger();
 		try
 		{
-			SwingUtilities.invokeAndWait( () -> option.set( JOptionPane.showConfirmDialog( null, "Segmentation labels will be reset", "Select an option", JOptionPane.OK_CANCEL_OPTION ) ) );
+			SwingUtilities.invokeAndWait( () -> option.set( JOptionPane.showConfirmDialog( null, "Detection labels will be reset", "Select an option", JOptionPane.OK_CANCEL_OPTION ) ) );
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		if ( option.get() == JOptionPane.OK_OPTION )
 		{
 			final JsonObject jsonRootObject = Json.object()
 					.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 					.add( JSON_KEY_RESET, true );
-			Unirest.post( getEndpointURL( ENDPOINT_UPDATE_SEG ) )
-					.body( jsonRootObject.toString() )
-					.asStringAsync( new Callback< String >()
-					{
-
-						@Override
-						public void failed( final UnirestException e )
-						{
-							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-							getLogger().severe( "The request has failed" );
-							showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-						}
-
-						@Override
-						public void completed( final HttpResponse< String > response )
-						{
-							if ( response.getStatus() == 200 )
+			try
+			{
+				postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_DETECTION ), jsonRootObject.toString(),
+						response -> {
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
-								showTextOverlayAnimator( "Segmentation labels are reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
+								showTextOverlayAnimator( "Detection labels are reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
 							}
 							else
 							{
 								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == 500 )
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 								{
 									sb.append( ": " );
 									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 								}
 								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getLogger().severe( sb.toString() );
+								getClientLogger().severe( sb.toString() );
 							}
-						}
-
-						@Override
-						public void cancelled()
-						{
-							getLogger().info( "The request has been cancelled" );
-						}
-
-					} );
+						} );
+			}
+			catch ( final ElephantConnectException e )
+			{
+				// already handled by UnirestMixin
+			}
 		}
 	}
 

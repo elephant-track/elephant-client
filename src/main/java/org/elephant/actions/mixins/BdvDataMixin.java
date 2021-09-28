@@ -26,6 +26,10 @@
  ******************************************************************************/
 package org.elephant.actions.mixins;
 
+import java.io.File;
+
+import bdv.img.hdf5.Hdf5ImageLoader;
+import mpicbg.spim.data.generic.sequence.BasicImgLoader;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
 
@@ -52,6 +56,22 @@ public interface BdvDataMixin extends ElephantActionMixin
 	{
 		return getAppModel().getSharedBdvData().getSpimData()
 				.getSequenceDescription().getViewSetupsOrdered().get( 0 ).getVoxelSize();
+	}
+
+	default File getBasePath()
+	{
+		return getAppModel().getSharedBdvData().getSpimData().getBasePath();
+	}
+
+	default File getHdf5File()
+	{
+		final BasicImgLoader imgLoader = getAppModel().getSharedBdvData().getSpimData().getSequenceDescription().getImgLoader();
+		File file = null;
+		if ( imgLoader instanceof Hdf5ImageLoader )
+		{
+			file = ( ( Hdf5ImageLoader ) imgLoader ).getHdf5File();
+		}
+		return file;
 	}
 
 	default int getNKeepAxials()

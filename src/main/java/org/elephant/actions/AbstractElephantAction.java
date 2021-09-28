@@ -61,7 +61,9 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String LOG_KEY = "elephant";
+	private static final String CLIENT_LOG_KEY = "elephantClient";
+
+	private static final String SERVER_LOG_KEY = "elephantServer";
 
 	private static final String LOG_DIR = System.getProperty( "user.home" ).replace( "\\", "/" ) + "/.mastodon/logs";
 
@@ -96,6 +98,11 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 		return groupHandle;
 	}
 
+	public void init( final MamutPluginAppModel pluginAppModel )
+	{
+		init( pluginAppModel, null );
+	}
+
 	public void init( final MamutPluginAppModel pluginAppModel, final GroupHandle groupHandle )
 	{
 		this.pluginAppModel = pluginAppModel;
@@ -103,19 +110,35 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 	}
 
 	@Override
-	public Logger getLogger()
+	public Logger getClientLogger()
 	{
-		return Logger.getLogger( LOG_KEY );
+		return Logger.getLogger( CLIENT_LOG_KEY );
 	}
 
 	@Override
-	public String getLogFileName()
+	public Logger getServerLogger()
+	{
+		return Logger.getLogger( SERVER_LOG_KEY );
+	}
+
+	@Override
+	public String getClientLogFileName()
 	{
 		final File logDir = new File( LOG_DIR );
 		if ( !logDir.exists() )
 			logDir.mkdir();
 
-		return Paths.get( LOG_DIR, getMainSettings().getLogFileName() ).toString();
+		return Paths.get( LOG_DIR, "client_" + getMainSettings().getLogFileName() ).toString();
+	}
+
+	@Override
+	public String getServerLogFileName()
+	{
+		final File logDir = new File( LOG_DIR );
+		if ( !logDir.exists() )
+			logDir.mkdir();
+
+		return Paths.get( LOG_DIR, "server_" + getMainSettings().getLogFileName() ).toString();
 	}
 
 	@Override
@@ -132,7 +155,7 @@ public abstract class AbstractElephantAction extends AbstractConcurrentRunnableA
 			}
 			catch ( InvocationTargetException | InterruptedException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 		}
 		else

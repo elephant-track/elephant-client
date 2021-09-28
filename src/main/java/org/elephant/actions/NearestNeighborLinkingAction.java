@@ -26,6 +26,7 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,13 +46,14 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantUtils;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.collection.RefCollections;
@@ -63,6 +65,10 @@ import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.model.tag.TagSetStructure.TagSet;
 import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -70,10 +76,6 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RealPoint;
@@ -83,20 +85,34 @@ import net.imglib2.RealPoint;
  * 
  * @author Ko Sugawara
  */
-public class NearestNeighborLinkingAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantGraphTagActionMixin, UIActionMixin, SpatioTemporalIndexActionMinxin, TimepointActionMixin, URLMixin
+public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantGraphTagActionMixin, UIActionMixin, SpatioTemporalIndexActionMinxin, TimepointMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] nearest neighbor linking%s";
+	private static final String NAME_BASE = "[elephant] nearest neighbor linking%s";
+
+	private static final String NAME_ENTIRE = String.format( NAME_BASE, "" );
+
+	private static final String NAME_AROUND_MOUSE = String.format( NAME_BASE, " (around mouse)" );
 
 	private static final String MENU_TEXT = "Nearest Neighbor Linking";
 
+	private static final String[] MENU_KEYS_ENTIRE = new String[] { "alt L" };
+
+	private static final String[] MENU_KEYS_AROUND_MOUSE = new String[] { "alt shift L" };
+
+	private static final String DESCRIPTION_BASE = "Link spots by the nearest neighbor algorithm. %s";
+
+	private static final String DESCRIPTION_ENTIRE = String.format( DESCRIPTION_BASE, "(entire view)" );
+
+	private static final String DESCRIPTION_AROUND_MOUSE = String.format( DESCRIPTION_BASE, "(around mouse)" );
+
 	public enum NearestNeighborLinkingActionMode
 	{
-		ENTIRE( String.format( NAME, "" ), new String[] { "alt L" } ),
-		AROUND_HIGHLIGHT( String.format( NAME, " (around selection)" ), new String[] { "alt shift L" } );
+		ENTIRE( NAME_ENTIRE, MENU_KEYS_ENTIRE ),
+		AROUND_MOUSE( NAME_AROUND_MOUSE, MENU_KEYS_AROUND_MOUSE );
 
 		private String name;
 
@@ -137,6 +153,37 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 
 	private int maxEdges;
 
+	private final double[] pos = new double[ 3 ];
+
+	private final double[][] cov = new double[ 3 ][ 3 ];
+
+	private Iterator< Integer > timepointIterator;
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME_ENTIRE,
+					MENU_KEYS_ENTIRE,
+					DESCRIPTION_ENTIRE );
+			descriptions.add(
+					NAME_AROUND_MOUSE,
+					MENU_KEYS_AROUND_MOUSE,
+					DESCRIPTION_AROUND_MOUSE );
+		}
+	}
+
 	@Override
 	public String getMenuText()
 	{
@@ -157,17 +204,15 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	boolean prepare()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
-		final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 1, timepointEnd - timeRange + 1 );
-		final Iterator< Integer > timepointIterator = IntStream.rangeClosed( timepointStart, timepointEnd )
+		timepointIterator = IntStream.rangeClosed( timepointStart, timepointEnd )
 				.boxed().sorted( Collections.reverseOrder() ).iterator();
 
-		final double[] pos = new double[ 3 ];
-		final double[][] cov = new double[ 3 ][ 3 ];
-		getStateManager().setAborted( false );
+		getActionStateManager().setAborted( false );
 
 		final VoxelDimensions voxelSize = getVoxelDimensions();
 		final JsonArray scales = new JsonArray()
@@ -176,12 +221,12 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 				.add( voxelSize.dimension( 2 ) );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-				.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_OUTPUT_PREDICTION, getMainSettings().getOutputPrediction() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
-				.add( JSON_KEY_IS_3D, !is2D() );;
+				.add( JSON_KEY_IS_3D, !is2D() );
 		if ( getMainSettings().getPatch() )
 		{
 			jsonRootObject.add( JSON_KEY_PATCH, new JsonArray()
@@ -190,7 +235,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 					.add( getMainSettings().getPatchSizeZ() ) );
 		}
 
-		if ( mode == NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT )
+		if ( mode == NearestNeighborLinkingActionMode.AROUND_MOUSE )
 		{
 			final long[] cropOrigin = new long[ 3 ];
 			final long[] cropSize = new long[ 3 ];
@@ -214,6 +259,12 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 		distanceThreshold = getMainSettings().getNNLinkingThreshold();
 		squaredDistanceThreshold = distanceThreshold * distanceThreshold;
 		maxEdges = getMainSettings().getNNMaxEdges();
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
 		processNext( timepointIterator, pos, cov );
 	}
 
@@ -226,7 +277,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			final Tag trackingUnlabeledTag = getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME );
 			Predicate< Link > edgeFilter = edge -> edge.getTarget().getTimepoint() == timepoint;
 			edgeFilter = edgeFilter.and( edge -> getEdgeTagMap( getTrackingTagSet() ).get( edge ) == trackingUnlabeledTag );
-			if ( mode == NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT )
+			if ( mode == NearestNeighborLinkingActionMode.AROUND_MOUSE )
 				edgeFilter = edgeFilter.and( edge -> ElephantUtils.edgeIsInside( edge, cropBoxOrigin, cropBoxSize ) );
 			// acquire lock inside removeEdgesTaggedWith
 			removeEdges( getGraph().edges(), edgeFilter );
@@ -240,7 +291,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 				Predicate< Spot > spotFilter = spot -> spot.getTimepoint() == timepoint;
 				spotFilter = spotFilter.and( spot -> tagsToProcess.contains( tagMapDetection.get( spot ) ) );
 				spotFilter = spotFilter.and( spot -> spot.incomingEdges().size() == 0 );
-				if ( mode == NearestNeighborLinkingActionMode.AROUND_HIGHLIGHT )
+				if ( mode == NearestNeighborLinkingActionMode.AROUND_MOUSE )
 					spotFilter = spotFilter.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
 				addSpotsToJsonFlow( getGraph().vertices(), jsonSpots, spotFilter );
 			}
@@ -252,29 +303,20 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			{
 				jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
 				jsonRootObject.set( JSON_KEY_SPOTS, jsonSpots );
-				Unirest.post( getEndpointURL( ENDPOINT_PREDICT_FLOW ) )
-						.body( jsonRootObject.toString() )
-						.asStringAsync( new Callback< String >()
-						{
-
-							@Override
-							public void failed( final UnirestException e )
-							{
-								getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-								getLogger().severe( "The request has failed" );
-								showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-							}
-
-							@Override
-							public void completed( final HttpResponse< String > response )
-							{
-								if ( response.getStatus() == 200 )
+				try
+				{
+					postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
+							response -> {
+								if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 								{
 									final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-									final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
-									linkSpots( jsonSpots, timepoint, tagsToProcess, timepointIterator, pos, cov );
-									showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
-									if ( getStateManager().isAborted() )
+									if ( rootObject.get( "completed" ).asBoolean() )
+									{
+										final JsonArray jsonSpotsRes = rootObject.get( "spots" ).asArray();
+										linkSpots( jsonSpotsRes, timepoint, tagsToProcess, timepointIterator, pos, cov );
+										showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
+									}
+									if ( getActionStateManager().isAborted() )
 										showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 									else
 										processNext( timepointIterator, pos, cov );
@@ -282,29 +324,26 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 								else
 								{
 									final StringBuilder sb = new StringBuilder( response.getStatusText() );
-									if ( response.getStatus() == 500 )
+									if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 									{
 										sb.append( ": " );
 										sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 									}
 									showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-									getLogger().severe( sb.toString() );
+									getClientLogger().severe( sb.toString() );
 								}
-							}
-
-							@Override
-							public void cancelled()
-							{
-								getLogger().info( "The request has been cancelled" );
-							}
-
-						} );
+							} );
+				}
+				catch ( final ElephantConnectException e )
+				{
+					// already handled by UnirestMixin
+				}
 			}
 			else
 			{
 				linkSpots( jsonSpots, timepoint, tagsToProcess, timepointIterator, pos, cov );
 				showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
-				if ( getStateManager().isAborted() )
+				if ( getActionStateManager().isAborted() )
 					showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
 				else
 					processNext( timepointIterator, pos, cov );
@@ -365,7 +404,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 					final Spot spot = spotSupplier.get().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
 					if ( spot == null )
 					{
-						getLogger().info( "spot " + spot + " was not found" );
+						getClientLogger().info( "spot " + spot + " was not found" );
 					}
 					else
 					{
@@ -428,7 +467,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 										spot.getCovariance( cov );
 										getGraph().getLock().readLock().unlock();
 										getGraph().getLock().writeLock().lock();
-										getStateManager().setWriting( true );
+										getActionStateManager().setWriting( true );
 										try
 										{
 											final Spot newSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, pos, cov );
@@ -440,13 +479,13 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 										}
 										finally
 										{
-											getStateManager().setWriting( false );
+											getActionStateManager().setWriting( false );
 											getGraph().getLock().writeLock().unlock();
 										}
 									}
 									getGraph().getLock().readLock().unlock();
 									getGraph().getLock().writeLock().lock();
-									getStateManager().setWriting( true );
+									getActionStateManager().setWriting( true );
 									try
 									{
 										final Link edge = getGraph().addEdge( nearestSpot, spot ).init();
@@ -458,7 +497,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 									}
 									finally
 									{
-										getStateManager().setWriting( false );
+										getActionStateManager().setWriting( false );
 										getGraph().getLock().writeLock().unlock();
 									}
 									break;
@@ -472,7 +511,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			}
 			getGraph().getLock().readLock().unlock();
 			getGraph().getLock().writeLock().lock();
-			getStateManager().setWriting( true );
+			getActionStateManager().setWriting( true );
 			try
 			{
 				for ( final Link edge : linksToRemove )
@@ -486,7 +525,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 			}
 			finally
 			{
-				getStateManager().setWriting( false );
+				getActionStateManager().setWriting( false );
 				getGraph().getLock().writeLock().unlock();
 			}
 			getGraph().releaseRef( sourceRef );
@@ -495,7 +534,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantAction
 		}
 		catch ( final Exception e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 		finally
 		{

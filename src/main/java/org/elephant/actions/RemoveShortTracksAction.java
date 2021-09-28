@@ -77,7 +77,7 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 		try
 		{
 			SwingUtilities.invokeAndWait( () -> {
-				final IntegerInputDialog dialog = new IntegerInputDialog( getAppModel().getMaxTimepoint() );
+				final IntegerInputDialog dialog = new IntegerInputDialog( getAppModel().getMaxTimepoint(), "Minimum number of links" );
 				dialog.setVisible( true );
 				try
 				{
@@ -94,14 +94,14 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e1 )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
 		}
 		final int minLinks = minLinksAtomic.get();
 		if ( minLinks == -1 )
 			return;
 
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final PoolCollectionWrapper< Spot > spots = getGraph().vertices();
@@ -131,7 +131,7 @@ public class RemoveShortTracksAction extends AbstractElephantAction
 		finally
 		{
 			getModel().setUndoPoint();
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}

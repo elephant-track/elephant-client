@@ -27,6 +27,7 @@
 package org.elephant.actions.mixins;
 
 import org.elephant.actions.ElephantActionStateManager;
+import org.elephant.actions.ElephantServerStateManager;
 
 /**
  * Provide easy access to the state manager.
@@ -36,9 +37,14 @@ import org.elephant.actions.ElephantActionStateManager;
 public interface ElephantStateManagerMixin
 {
 
-	default ElephantActionStateManager getStateManager()
+	default ElephantActionStateManager getActionStateManager()
 	{
 		return ElephantActionStateManager.INSTANCE;
+	}
+
+	default ElephantServerStateManager getServerStateManager()
+	{
+		return ElephantServerStateManager.INSTANCE;
 	}
 
 }

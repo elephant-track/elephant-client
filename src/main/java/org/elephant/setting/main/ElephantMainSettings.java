@@ -48,35 +48,35 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final boolean DEFAULT_IS_PAD = true;
 
-	public static final boolean DEFAULT_USE_PATCH = false;
+	public static final boolean DEFAULT_USE_PATCH = true;
 
-	public static final int DEFAULT_PATCH_SIZE_X = 256;
+	public static final int DEFAULT_PATCH_SIZE_X = 384;
 
-	public static final int DEFAULT_PATCH_SIZE_Y = 256;
+	public static final int DEFAULT_PATCH_SIZE_Y = 384;
 
-	public static final int DEFAULT_PATCH_SIZE_Z = 16;
+	public static final int DEFAULT_PATCH_SIZE_Z = 24;
 
-	public static final int DEFAULT_TRAINING_CROP_SIZE_X = 128;
+	public static final int DEFAULT_TRAINING_CROP_SIZE_X = 256;
 
-	public static final int DEFAULT_TRAINING_CROP_SIZE_Y = 128;
+	public static final int DEFAULT_TRAINING_CROP_SIZE_Y = 256;
 
 	public static final int DEFAULT_TRAINING_CROP_SIZE_Z = 16;
 
-	public static final int DEFAULT_NUM_CROPS = 3;
+	public static final int DEFAULT_NUM_CROPS = 5;
 
-	public static final int DEFAULT_NUM_EPOCHS = 3;
+	public static final int DEFAULT_NUM_EPOCHS = 10;
 
 	public static final int DEFAULT_TIME_RANGE = 10;
 
 	public static final double DEFAULT_AUTO_BG_THRESHOLD = 0.0;
 
-	public static final double DEFAULT_LEARNING_RATE = 0.00005;
+	public static final double DEFAULT_LEARNING_RATE = 0.001;
 
-	public static final double DEFAULT_SEG_WEIGHT_BG = 1.0;
+	public static final double DEFAULT_CLASS_WEIGHT_BG = 1.0;
 
-	public static final double DEFAULT_SEG_WEIGHT_BORDER = 10.0;
+	public static final double DEFAULT_CLASS_WEIGHT_BORDER = 10.0;
 
-	public static final double DEFAULT_SEG_WEIGHT_CENTER = 10.0;
+	public static final double DEFAULT_CLASS_WEIGHT_CENTER = 10.0;
 
 	public static final double DEFAULT_FLOW_WEIGHT_X = 1.0;
 
@@ -84,13 +84,13 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_FLOW_WEIGHT_Z = 1.0;
 
-	public static final double DEFAULT_FALSE_WEIGHT = 3.0;
+	public static final double DEFAULT_FALSE_WEIGHT = 10.0;
 
-	public static final double DEFAULT_CENTER_RATIO = 0.3;
+	public static final double DEFAULT_CENTER_RATIO = 0.4;
 
-	public static final double DEFAULT_PROB_THRESHOLD = 0.3;
+	public static final double DEFAULT_PROB_THRESHOLD = 0.5;
 
-	public static final double DEFAULT_SUPPRESSION_DISTANCE = 5.0;
+	public static final double DEFAULT_SUPPRESSION_DISTANCE = 3.0;
 
 	public static final double DEFAULT_MIN_RADIUS = 1.0;
 
@@ -102,6 +102,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final double DEFAULT_AUG_ROTATION_ANGLE = 0.0;
 
+	public static final double DEFAULT_AUG_CONTRAST = 0.0;
+
 	public static final double DEFAULT_NN_LINKING_THRESHOLD = 5.0;
 
 	public static final int DEFAULT_NN_SEARCH_DEPTH = 1;
@@ -110,17 +112,19 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_NN_MAX_EDGES = 2;
 
+	public static final int DEFAULT_LOG_INTERVAL = 1;
+
 	public static final boolean DEFAULT_USE_OPTICALFLOW = false;
 
 	public static final boolean DEFAULT_USE_INTERPOLATION = false;
 
 	public static final boolean DEFAULT_USE_2D_MODEL = false;
 
-	public static final String DEFAULT_SEG_MODEL_NAME = "seg.pth";
+	public static final String DEFAULT_DETECTION_MODEL_NAME = "detection.pth";
 
 	public static final String DEFAULT_FLOW_MODEL_NAME = "flow.pth";
 
-	public static final String DEFAULT_SEG_LOG_NAME = "seg_log";
+	public static final String DEFAULT_DETECTION_LOG_NAME = "detection_log";
 
 	public static final String DEFAULT_FLOW_LOG_NAME = "flow_log";
 
@@ -159,9 +163,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		timeRange = settings.timeRange;
 		autoBgThreshold = settings.autoBgThreshold;
 		learningRate = settings.learningRate;
-		segWeightBG = settings.segWeightBG;
-		segWeightBorder = settings.segWeightBorder;
-		segWeightCenter = settings.segWeightCenter;
+		classWeightBG = settings.classWeightBG;
+		classWeightBorder = settings.classWeightBorder;
+		classWeightCenter = settings.classWeightCenter;
 		flowWeightX = settings.flowWeightX;
 		flowWeightY = settings.flowWeightY;
 		flowWeightZ = settings.flowWeightZ;
@@ -174,16 +178,18 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		maxDisplacement = settings.maxDisplacement;
 		augScaleFactorBase = settings.augScaleFactorBase;
 		augRotationAngle = settings.augRotationAngle;
+		augContrast = settings.augContrast;
 		nnLinkingThreshold = settings.nnLinkingThreshold;
 		nnSearchDepth = settings.nnSearchDepth;
 		nnSearchNeighbors = settings.nnSearchNeighbors;
 		nnMaxEdges = settings.nnMaxEdges;
+		logInterval = settings.logInterval;
 		useOpticalflow = settings.useOpticalflow;
 		useInterpolation = settings.useInterpolation;
 		use2dModel = settings.use2dModel;
-		segModelName = settings.segModelName;
+		detectionModelName = settings.detectionModelName;
 		flowModelName = settings.flowModelName;
-		segLogName = settings.segLogName;
+		detectionLogName = settings.detectionLogName;
 		flowLogName = settings.flowLogName;
 		datasetName = settings.datasetName;
 		logFileName = settings.logFileName;
@@ -222,11 +228,11 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	private double learningRate = DEFAULT_LEARNING_RATE;
 
-	private double segWeightBG = DEFAULT_SEG_WEIGHT_BG;
+	private double classWeightBG = DEFAULT_CLASS_WEIGHT_BG;
 
-	private double segWeightBorder = DEFAULT_SEG_WEIGHT_BORDER;
+	private double classWeightBorder = DEFAULT_CLASS_WEIGHT_BORDER;
 
-	private double segWeightCenter = DEFAULT_SEG_WEIGHT_CENTER;
+	private double classWeightCenter = DEFAULT_CLASS_WEIGHT_CENTER;
 
 	private double flowWeightX = DEFAULT_FLOW_WEIGHT_X;
 
@@ -252,6 +258,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	private double augRotationAngle = DEFAULT_AUG_ROTATION_ANGLE;
 
+	private double augContrast = DEFAULT_AUG_CONTRAST;
+
 	private double nnLinkingThreshold = DEFAULT_NN_LINKING_THRESHOLD;
 
 	private int nnSearchDepth = DEFAULT_NN_SEARCH_DEPTH;
@@ -260,17 +268,19 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	private int nnMaxEdges = DEFAULT_NN_MAX_EDGES;
 
+	private int logInterval = DEFAULT_LOG_INTERVAL;
+
 	private boolean useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 
 	private boolean useInterpolation = DEFAULT_USE_INTERPOLATION;
 
 	private boolean use2dModel = DEFAULT_USE_2D_MODEL;
 
-	private String segModelName = DEFAULT_SEG_MODEL_NAME;
+	private String detectionModelName = DEFAULT_DETECTION_MODEL_NAME;
 
 	private String flowModelName = DEFAULT_FLOW_MODEL_NAME;
 
-	private String segLogName = DEFAULT_SEG_LOG_NAME;
+	private String detectionLogName = DEFAULT_DETECTION_LOG_NAME;
 
 	private String flowLogName = DEFAULT_FLOW_LOG_NAME;
 
@@ -502,44 +512,44 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
-	public double getSegWeightBG()
+	public double getClassWeightBG()
 	{
-		return segWeightBG;
+		return classWeightBG;
 	}
 
-	public synchronized void setSegWeightBG( final double classWeightBG )
+	public synchronized void setClassWeightBG( final double classWeightBG )
 	{
-		if ( this.segWeightBG != classWeightBG )
+		if ( this.classWeightBG != classWeightBG )
 		{
-			this.segWeightBG = classWeightBG;
+			this.classWeightBG = classWeightBG;
 			notifyListeners();
 		}
 	}
 
-	public double getSegWeightBorder()
+	public double getClassWeightBorder()
 	{
-		return segWeightBorder;
+		return classWeightBorder;
 	}
 
-	public synchronized void setSegWeightBorder( final double classWeightBorder )
+	public synchronized void setClassWeightBorder( final double classWeightBorder )
 	{
-		if ( this.segWeightBorder != classWeightBorder )
+		if ( this.classWeightBorder != classWeightBorder )
 		{
-			this.segWeightBorder = classWeightBorder;
+			this.classWeightBorder = classWeightBorder;
 			notifyListeners();
 		}
 	}
 
-	public double getSegWeightCenter()
+	public double getClassWeightCenter()
 	{
-		return segWeightCenter;
+		return classWeightCenter;
 	}
 
-	public synchronized void setSegWeightCenter( final double classWeightCenter )
+	public synchronized void setClassWeightCenter( final double classWeightCenter )
 	{
-		if ( this.segWeightCenter != classWeightCenter )
+		if ( this.classWeightCenter != classWeightCenter )
 		{
-			this.segWeightCenter = classWeightCenter;
+			this.classWeightCenter = classWeightCenter;
 			notifyListeners();
 		}
 	}
@@ -712,6 +722,20 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
+	public double getAugContrast()
+	{
+		return augContrast;
+	}
+
+	public synchronized void setAugContrast( final double augContrast )
+	{
+		if ( this.augContrast != augContrast )
+		{
+			this.augContrast = augContrast;
+			notifyListeners();
+		}
+	}
+
 	public double getNNLinkingThreshold()
 	{
 		return nnLinkingThreshold;
@@ -768,6 +792,20 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
+	public int getLogInterval()
+	{
+		return logInterval;
+	}
+
+	public synchronized void setLogInterval( final int logInterval )
+	{
+		if ( this.logInterval != logInterval )
+		{
+			this.logInterval = logInterval;
+			notifyListeners();
+		}
+	}
+
 	public boolean getUseOpticalflow()
 	{
 		return useOpticalflow;
@@ -810,16 +848,16 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
-	public String getSegModelName()
+	public String getDetectionModelName()
 	{
-		return segModelName != null ? segModelName : DEFAULT_SEG_MODEL_NAME;
+		return detectionModelName != null ? detectionModelName : DEFAULT_DETECTION_MODEL_NAME;
 	}
 
-	public synchronized void setSegModelName( final String segModelName )
+	public synchronized void setDetectionModelName( final String detectionModelName )
 	{
-		if ( !Objects.equals( this.segModelName, segModelName ) )
+		if ( !Objects.equals( this.detectionModelName, detectionModelName ) )
 		{
-			this.segModelName = segModelName;
+			this.detectionModelName = detectionModelName;
 			notifyListeners();
 		}
 	}
@@ -838,16 +876,16 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
-	public String getSegLogName()
+	public String getDetectionLogName()
 	{
-		return segLogName != null ? segLogName : DEFAULT_SEG_LOG_NAME;
+		return detectionLogName != null ? detectionLogName : DEFAULT_DETECTION_LOG_NAME;
 	}
 
-	public synchronized void setSegLogName( final String segLogName )
+	public synchronized void setDetectionLogName( final String detectionLogName )
 	{
-		if ( !Objects.equals( this.segLogName, segLogName ) )
+		if ( !Objects.equals( this.detectionLogName, detectionLogName ) )
 		{
-			this.segLogName = segLogName;
+			this.detectionLogName = detectionLogName;
 			notifyListeners();
 		}
 	}
@@ -914,9 +952,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.timeRange = DEFAULT_TIME_RANGE;
 		df.autoBgThreshold = DEFAULT_AUTO_BG_THRESHOLD;
 		df.learningRate = DEFAULT_LEARNING_RATE;
-		df.segWeightBG = DEFAULT_SEG_WEIGHT_BG;
-		df.segWeightBorder = DEFAULT_SEG_WEIGHT_BORDER;
-		df.segWeightCenter = DEFAULT_SEG_WEIGHT_CENTER;
+		df.classWeightBG = DEFAULT_CLASS_WEIGHT_BG;
+		df.classWeightBorder = DEFAULT_CLASS_WEIGHT_BORDER;
+		df.classWeightCenter = DEFAULT_CLASS_WEIGHT_CENTER;
 		df.flowWeightX = DEFAULT_FLOW_WEIGHT_X;
 		df.flowWeightY = DEFAULT_FLOW_WEIGHT_Y;
 		df.flowWeightZ = DEFAULT_FLOW_WEIGHT_Z;
@@ -936,9 +974,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 		df.useInterpolation = DEFAULT_USE_INTERPOLATION;
 		df.use2dModel = DEFAULT_USE_2D_MODEL;
-		df.segModelName = DEFAULT_SEG_MODEL_NAME;
+		df.detectionModelName = DEFAULT_DETECTION_MODEL_NAME;
 		df.flowModelName = DEFAULT_FLOW_MODEL_NAME;
-		df.segLogName = DEFAULT_SEG_LOG_NAME;
+		df.detectionLogName = DEFAULT_DETECTION_LOG_NAME;
 		df.flowLogName = DEFAULT_FLOW_LOG_NAME;
 		df.datasetName = DEFAULT_DATASET_NAME;
 		df.logFileName = DEFAULT_LOG_FILE_NAME;

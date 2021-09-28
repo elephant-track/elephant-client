@@ -26,28 +26,31 @@
  ******************************************************************************/
 package org.elephant.actions;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import java.net.HttpURLConnection;
+
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
+import org.elephant.actions.mixins.UnirestMixin;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
@@ -56,8 +59,8 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class BackTrackAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, TimepointActionMixin, UIActionMixin, URLMixin
+public class BackTrackAction extends AbstractElephantDatasetAction
+		implements BdvDataMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -65,6 +68,39 @@ public class BackTrackAction extends AbstractElephantAction
 	private static final String NAME = "[elephant] back track";
 
 	private static final String[] MENU_KEYS = new String[] { "alt C" };
+
+	private static final String DESCRIPTION = "Track the highlighted vertex backward in time.";
+
+	private int timepoint;
+
+	private JsonObject jsonRootObject;
+
+	private final double[] pos = new double[ 3 ];
+
+	private final double[][] cov = new double[ 3 ][ 3 ];
+
+	private final double[] cov1d = new double[ 9 ];
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME,
+					MENU_KEYS,
+					DESCRIPTION );
+		}
+	}
 
 	@Override
 	public String[] getMenuKeys()
@@ -78,19 +114,19 @@ public class BackTrackAction extends AbstractElephantAction
 	}
 
 	@Override
-	public void process()
+	boolean prepare()
 	{
-		final int timepoint = getCurrentTimepoint( 0 );
+		timepoint = getCurrentTimepoint( 0 );
 		if ( timepoint < 1 )
-			return;
+			return false;
 		final VoxelDimensions voxelSize = getVoxelDimensions();
 		final JsonArray scales = new JsonArray()
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
-		final JsonObject jsonRootObject = Json.object()
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-				.add( JSON_KEY_FLOW_MODEL_NAME, getMainSettings().getFlowModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() );
@@ -102,129 +138,112 @@ public class BackTrackAction extends AbstractElephantAction
 					.add( getMainSettings().getPatchSizeZ() ) );
 		}
 		final Spot spotRef = getGraph().vertexRef();
+		getGraph().getLock().readLock().lock();
 		try
 		{
-			final double[] pos = new double[ 3 ];
-			final double[][] cov = new double[ 3 ][ 3 ];
-			final double[] cov1d = new double[ 9 ];
-			getGraph().getLock().readLock().lock();
-			try
-			{
-				final Spot spot = getAppModel().getHighlightModel().getHighlightedVertex( spotRef );
-				if ( spot == null )
-					return;
-				spot.localize( pos );
-				spot.getCovariance( cov );
-				for ( int i = 0; i < 3; i++ )
-					for ( int j = 0; j < 3; j++ )
-						cov1d[ i * 3 + j ] = cov[ i ][ j ];
-				final int id = spot.getInternalPoolIndex();
-				final JsonObject jsonSpot = Json.object()
-						.add( "pos", Json.array( pos ) )
-						.add( "covariance", Json.array( cov1d ) )
-						.add( "id", id );
-				final JsonArray jsonSpots = Json.array().add( jsonSpot );
-				jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
-				jsonRootObject.set( "spots", jsonSpots );
-			}
-			finally
-			{
-				getGraph().getLock().readLock().unlock();
-			}
-			Unirest.post( getEndpointURL( ENDPOINT_PREDICT_FLOW ) )
-					.body( jsonRootObject.toString() )
-					.asStringAsync( new Callback< String >()
-					{
-
-						@Override
-						public void failed( final UnirestException e )
-						{
-							getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-							getLogger().severe( "The request has failed" );
-						}
-
-						@Override
-						public void completed( final HttpResponse< String > response )
-						{
-							if ( response.getStatus() == 200 )
-							{
-								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-								final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
-								final JsonObject jsonSpot = jsonSpots.get( 0 ).asObject();
-								final int spotId = jsonSpot.get( "id" ).asInt();
-								final Spot spotRef = getGraph().vertexRef();
-								final Spot newSpotRef = getGraph().vertexRef();
-								final Link edgeRef = getGraph().edgeRef();
-								getGraph().getLock().writeLock().lock();
-								try
-								{
-									final Spot spot = getGraph().vertices().stream().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
-									if ( spot == null )
-									{
-										final String msg = "spot " + spot + " was not found";
-										getLogger().info( msg );
-										showTextOverlayAnimator( msg, 3000, TextPosition.CENTER );
-									}
-									else
-									{
-										spotRef.refTo( spot );
-										final JsonArray jsonPositions = jsonSpot.get( "pos" ).asArray();
-										for ( int j = 0; j < 3; j++ )
-											pos[ j ] = jsonPositions.get( j ).asDouble();
-										final Spot newSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, pos, cov );
-										final Tag detectionFNTag = getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME );
-										final Tag trackingApprovedTag = getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME );
-										getVertexTagMap( getDetectionTagSet() ).set( newSpot, detectionFNTag );
-										final ObjTagMap< Spot, Tag > tagMapTrackingSpot = getVertexTagMap( getTrackingTagSet() );
-										tagMapTrackingSpot.set( newSpot, trackingApprovedTag );
-										final Link edge = getGraph().addEdge( newSpot, spot, edgeRef ).init();
-										final ObjTagMap< Link, Tag > tagMapTrackingLink = getEdgeTagMap( getTrackingTagSet() );
-										tagMapTrackingLink.set( edge, trackingApprovedTag );
-									}
-								}
-								finally
-								{
-									getModel().setUndoPoint();
-									getGraph().getLock().writeLock().unlock();
-									getGraph().getLock().readLock().lock();
-									try
-									{
-										getGroupHandle().getModel( getAppModel().NAVIGATION ).notifyNavigateToVertex( newSpotRef );
-									}
-									finally
-									{
-										getGraph().getLock().readLock().unlock();
-									}
-									notifyGraphChanged();
-									getGraph().releaseRef( spotRef );
-									getGraph().releaseRef( newSpotRef );
-									getGraph().releaseRef( edgeRef );
-								}
-							}
-							else
-							{
-								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == 500 )
-								{
-									sb.append( ": " );
-									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-								}
-								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getLogger().severe( sb.toString() );
-							}
-						}
-
-						@Override
-						public void cancelled()
-						{
-							getLogger().info( "The request has been cancelled" );
-						}
-
-					} );
+			final Spot spot = getAppModel().getHighlightModel().getHighlightedVertex( spotRef );
+			if ( spot == null )
+				return false;
+			spot.localize( pos );
+			spot.getCovariance( cov );
+			for ( int i = 0; i < 3; i++ )
+				for ( int j = 0; j < 3; j++ )
+					cov1d[ i * 3 + j ] = cov[ i ][ j ];
+			final int id = spot.getInternalPoolIndex();
+			final JsonObject jsonSpot = Json.object()
+					.add( "pos", Json.array( pos ) )
+					.add( "covariance", Json.array( cov1d ) )
+					.add( "id", id );
+			final JsonArray jsonSpots = Json.array().add( jsonSpot );
+			jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
+			jsonRootObject.set( "spots", jsonSpots );
 		}
 		finally
 		{
+			getGraph().getLock().readLock().unlock();
 			getGraph().releaseRef( spotRef );
+		}
+		return true;
+	}
+
+	@Override
+	public void processDataset()
+	{
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+						{
+							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+							final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
+							final JsonObject jsonSpot = jsonSpots.get( 0 ).asObject();
+							final int spotId = jsonSpot.get( "id" ).asInt();
+							final Spot orgSpotRef = getGraph().vertexRef();
+							final Spot newSpotRef = getGraph().vertexRef();
+							final Link edgeRef = getGraph().edgeRef();
+							getGraph().getLock().writeLock().lock();
+							try
+							{
+								final Spot spot = getGraph().vertices().stream().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
+								if ( spot == null )
+								{
+									final String msg = "spot " + spot + " was not found";
+									getClientLogger().info( msg );
+									showTextOverlayAnimator( msg, 3000, TextPosition.CENTER );
+								}
+								else
+								{
+									orgSpotRef.refTo( spot );
+									final JsonArray jsonPositions = jsonSpot.get( "pos" ).asArray();
+									for ( int j = 0; j < 3; j++ )
+										pos[ j ] = jsonPositions.get( j ).asDouble();
+									final Spot newSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, pos, cov );
+									final Tag detectionFNTag = getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME );
+									final Tag trackingApprovedTag = getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME );
+									getVertexTagMap( getDetectionTagSet() ).set( newSpot, detectionFNTag );
+									final ObjTagMap< Spot, Tag > tagMapTrackingSpot = getVertexTagMap( getTrackingTagSet() );
+									tagMapTrackingSpot.set( newSpot, trackingApprovedTag );
+									final Link edge = getGraph().addEdge( newSpot, spot, edgeRef ).init();
+									final ObjTagMap< Link, Tag > tagMapTrackingLink = getEdgeTagMap( getTrackingTagSet() );
+									tagMapTrackingLink.set( edge, trackingApprovedTag );
+								}
+							}
+							finally
+							{
+								getModel().setUndoPoint();
+								getGraph().getLock().writeLock().unlock();
+								getGraph().getLock().readLock().lock();
+								try
+								{
+									getGroupHandle().getModel( getAppModel().NAVIGATION ).notifyNavigateToVertex( newSpotRef );
+								}
+								finally
+								{
+									getGraph().getLock().readLock().unlock();
+								}
+								notifyGraphChanged();
+								getGraph().releaseRef( orgSpotRef );
+								getGraph().releaseRef( newSpotRef );
+								getGraph().releaseRef( edgeRef );
+							}
+						}
+						else
+						{
+							final StringBuilder sb = new StringBuilder( response.getStatusText() );
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							{
+								sb.append( ": " );
+								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+							}
+							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+							getClientLogger().severe( sb.toString() );
+						}
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
 		}
 	}
 

@@ -78,7 +78,7 @@ public class RandomSampleAction extends AbstractElephantAction
 		try
 		{
 			SwingUtilities.invokeAndWait( () -> {
-				final IntegerInputDialog dialog = new IntegerInputDialog( size );
+				final IntegerInputDialog dialog = new IntegerInputDialog( size, "Number of samples" );
 				dialog.setVisible( true );
 				try
 				{
@@ -95,14 +95,14 @@ public class RandomSampleAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e1 )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
 		}
 		final int nSamples = nSamplesAtomic.get();
 		if ( nSamples == -1 )
 			return;
 
 		getGraph().getLock().writeLock().lock();
-		getStateManager().setWriting( true );
+		getActionStateManager().setWriting( true );
 		try
 		{
 			final List< Integer > indexSampler = IntStream.range( 0, size ).boxed().collect( Collectors.toList() );
@@ -124,7 +124,7 @@ public class RandomSampleAction extends AbstractElephantAction
 		finally
 		{
 			getModel().setUndoPoint();
-			getStateManager().setWriting( false );
+			getActionStateManager().setWriting( false );
 			getGraph().getLock().writeLock().unlock();
 			notifyGraphChanged();
 		}

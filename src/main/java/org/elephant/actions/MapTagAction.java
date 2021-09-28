@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
@@ -54,16 +53,42 @@ public class MapTagAction extends AbstractElephantAction
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String WORD_TO_REPLACE = "MODE";
+	private static final String NAME_BASE = "[elephant] map %s tag";
 
-	private static final String NAME = "[elephant] map " + WORD_TO_REPLACE + " tag";
+	private static final String NAME_SPOT = String.format( NAME_BASE, "spot" );
 
-	private static final String MENU_TEXT = "Map " + WORD_TO_REPLACE + " Tag";
+	private static final String NAME_LINK = String.format( NAME_BASE, "link" );
+
+	private static final String MENU_TEXT_BASE = "Map %s Tag";
+
+	private static final String MENU_TEXT_SPOT = String.format( MENU_TEXT_BASE, "Spot" );
+
+	private static final String MENU_TEXT_LINK = String.format( MENU_TEXT_BASE, "Link" );
 
 	public enum ChangeTagActionMode
 	{
-		SPOT,
-		LINK;
+		SPOT( NAME_SPOT, MENU_TEXT_SPOT ),
+		LINK( NAME_LINK, MENU_TEXT_LINK );
+
+		private final String name;
+
+		private final String menuText;
+
+		private ChangeTagActionMode( final String name, final String menuText )
+		{
+			this.name = name;
+			this.menuText = menuText;
+		}
+
+		public String getName()
+		{
+			return name;
+		}
+
+		public String getMenuText()
+		{
+			return menuText;
+		}
 	}
 
 	private final ChangeTagActionMode mode;
@@ -71,12 +96,12 @@ public class MapTagAction extends AbstractElephantAction
 	@Override
 	public String getMenuText()
 	{
-		return MENU_TEXT.replace( WORD_TO_REPLACE, StringUtils.capitalize( mode.name().toLowerCase() ) );
+		return mode.getMenuText();
 	}
 
 	public MapTagAction( final ChangeTagActionMode mode )
 	{
-		super( NAME.replace( WORD_TO_REPLACE, mode.name().toLowerCase() ) );
+		super( mode.name() );
 		this.mode = mode;
 	}
 
@@ -130,7 +155,7 @@ public class MapTagAction extends AbstractElephantAction
 		}
 		catch ( InvocationTargetException | InterruptedException e1 )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e1 ) );;
 		}
 		if ( tagSetNameFrom.get() != null && tagSetNameTo.get() != null &&
 				tagNameFrom.get() != null && tagNameTo.get() != null )
@@ -148,7 +173,7 @@ public class MapTagAction extends AbstractElephantAction
 					final ObjTagMap< Spot, Tag > tagMapToSpot = getTagSetModel().getVertexTags().tags( tagSetTo );
 
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						final Spot ref = getGraph().vertexRef();
@@ -163,7 +188,7 @@ public class MapTagAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getModel().setUndoPoint();
 						getGraph().getLock().writeLock().unlock();
 						notifyGraphChanged();
@@ -174,7 +199,7 @@ public class MapTagAction extends AbstractElephantAction
 					final ObjTagMap< Link, Tag > tagMapToLink = getTagSetModel().getEdgeTags().tags( tagSetTo );
 
 					getGraph().getLock().writeLock().lock();
-					getStateManager().setWriting( true );
+					getActionStateManager().setWriting( true );
 					try
 					{
 						final Link ref = getGraph().edgeRef();
@@ -189,7 +214,7 @@ public class MapTagAction extends AbstractElephantAction
 					}
 					finally
 					{
-						getStateManager().setWriting( false );
+						getActionStateManager().setWriting( false );
 						getModel().setUndoPoint();
 						getGraph().getLock().writeLock().unlock();
 						notifyGraphChanged();
@@ -201,7 +226,7 @@ public class MapTagAction extends AbstractElephantAction
 			}
 			catch ( final NoSuchElementException e )
 			{
-				getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 			}
 
 		}

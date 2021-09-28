@@ -60,16 +60,19 @@ public class GraphListenerService extends AbstractElephantService
 	@Override
 	public void graphRebuilt()
 	{
-		getLogger().info( "Graph rebuilt" );
+		getClientLogger().info( "Graph rebuilt" );
 	}
 
 	@Override
 	public void vertexAdded( Spot vertex )
 	{
 		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		if ( !getActionStateManager().isWriting() )
 		{
-			getLogger().info( vertex + " added" );
+			if ( getActionStateManager().isMeasuring() )
+			{
+				getClientLogger().info( vertex + " added" );
+			}
 			final ObjTagMap< Spot, Tag > tagMapDetection = getTagSetModel().getVertexTags().tags( getDetectionTagSet() );
 			final ObjTagMap< Spot, Tag > tagMapTracking = getTagSetModel().getVertexTags().tags( getTrackingTagSet() );
 			getGraph().getLock().writeLock().lock();
@@ -94,10 +97,10 @@ public class GraphListenerService extends AbstractElephantService
 	@Override
 	public void vertexRemoved( Spot vertex )
 	{
-		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		// ignore if not measuring or modified programatically during measurement
+		if ( getActionStateManager().isMeasuring() && !getActionStateManager().isWriting() )
 		{
-			getLogger().info( vertex + " removed" );
+			getClientLogger().info( vertex + " removed" );
 		}
 	}
 
@@ -105,9 +108,12 @@ public class GraphListenerService extends AbstractElephantService
 	public void edgeAdded( Link edge )
 	{
 		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		if ( !getActionStateManager().isWriting() )
 		{
-			getLogger().info( edge + " added" );
+			if ( getActionStateManager().isMeasuring() )
+			{
+				getClientLogger().info( edge + " added" );
+			}
 			final TagSet tagSetTracking = getTrackingTagSet();
 			final ObjTagMap< Link, Tag > tagMapTracking = getTagSetModel().getEdgeTags().tags( tagSetTracking );
 			getGraph().getLock().writeLock().lock();
@@ -130,10 +136,10 @@ public class GraphListenerService extends AbstractElephantService
 	@Override
 	public void edgeRemoved( Link edge )
 	{
-		// ignore if modified programatically
-		if ( !getStateManager().isWriting() )
+		// ignore if not measuring or modified programatically during measurement
+		if ( getActionStateManager().isMeasuring() && !getActionStateManager().isWriting() )
 		{
-			getLogger().info( edge + " removed" );
+			getClientLogger().info( edge + " removed" );
 		}
 	}
 

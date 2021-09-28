@@ -26,18 +26,20 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.mamut.model.Spot;
@@ -49,16 +51,12 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
  * Send a request for training a voxel-classification model.
  * 
- * There are three modes in the {@link TrainSegAction}.
+ * There are three modes in the {@link TrainDetectionAction}.
  * 
  * <ol>
  * <li>LIVE: start live training</li>
@@ -69,20 +67,24 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class TrainSegAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
-		TimepointActionMixin, UIActionMixin, URLMixin
+public class TrainDetectionAction extends AbstractElephantDatasetAction
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
+		TimepointMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
 	private final TrainingMode trainingMode;
 
+	private final BdvContextService bdvContextService;
+
+	private JsonObject jsonRootObject;
+
 	public static enum TrainingMode
 	{
 		LIVE( "[elephant] start live training", "Start Live Training" ),
-		SELECTED( "[elephant] train a seg model (selected timepoints)", "Train a Seg Model (Selected Timepoints)" ),
-		ALL( "[elephant] train a seg model (all timepoints)", "Train a Seg Model (All Timepoints)" );
+		SELECTED( "[elephant] train detection model (selected timepoints)", "Train Detection Model (Selected Timepoints)" ),
+		ALL( "[elephant] train detection model (all timepoints)", "Train Detection Model (All Timepoints)" );
 
 		private String name;
 
@@ -111,19 +113,26 @@ public class TrainSegAction extends AbstractElephantAction
 		return trainingMode.getMenuText();
 	}
 
-	public TrainSegAction( TrainingMode trainingMode )
+	public TrainDetectionAction( final TrainingMode trainingMode, final BdvContextService bdvContextService )
 	{
 		super( trainingMode.getName() );
 		this.trainingMode = trainingMode;
+		this.bdvContextService = bdvContextService;
 	}
 
 	@Override
-	public void process()
+	public BdvContextService getBdvContextService()
+	{
+		return bdvContextService;
+	}
+
+	@Override
+	boolean prepare()
 	{
 		if ( ElephantActionStateManager.INSTANCE.isLivemode() )
-			return;
+			return false;
 		final int currentTimepoint = getCurrentTimepoint( 0 );
-		getLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
+		getClientLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
 		final List< Integer > timepoints = new ArrayList<>( 0 );
 		final JsonArray jsonSpots = Json.array();
 		final List< Tag > tagsToProcess = new ArrayList< Tag >();
@@ -152,7 +161,7 @@ public class TrainSegAction extends AbstractElephantAction
 				break;
 			case SELECTED:
 				final int timepointEnd = getCurrentTimepoint( 0 );
-				final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+				final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 				final int timepointStart = Math.max( 0, timepointEnd - timeRange + 1 );
 				timepoints.addAll( IntStream.rangeClosed( timepointStart, timepointEnd ).boxed().collect( Collectors.toList() ) );
 				addSpotsToJson( getGraph().vertices(), jsonSpots, spotFilter );
@@ -180,15 +189,15 @@ public class TrainSegAction extends AbstractElephantAction
 				.add( getMainSettings().getTrainingCropSizeY() )
 				.add( getMainSettings().getTrainingCropSizeZ() );
 		final JsonArray classWeights = new JsonArray()
-				.add( getMainSettings().getSegWeightBG() )
-				.add( getMainSettings().getSegWeightBorder() )
-				.add( getMainSettings().getSegWeightCenter() );
-		final JsonObject jsonRootObject = Json.object()
+				.add( getMainSettings().getClassWeightBG() )
+				.add( getMainSettings().getClassWeightBorder() )
+				.add( getMainSettings().getClassWeightCenter() );
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_TRAIN_CROP_SIZE, cropSize )
 				.add( JSON_KEY_SPOTS, jsonSpots )
-				.add( JSON_KEY_SEG_MODEL_NAME, getMainSettings().getSegModelName() )
+				.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
@@ -197,59 +206,65 @@ public class TrainSegAction extends AbstractElephantAction
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_AUG_SCALE_FACTOR_BASE, getMainSettings().getAugScaleFactorBase() )
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
+				.add( JSON_KEY_AUG_CONTRAST, getMainSettings().getAugContrast() )
 				.add( JSON_KEY_TIMEPOINT, currentTimepoint )
-				.add( JSON_KEY_SEG_CLASS_WEIGHTS, classWeights )
+				.add( JSON_KEY_CLASS_WEIGHTS, classWeights )
 				.add( JSON_KEY_FALSE_WEIGHT, getMainSettings().getFalseWeight() )
 				.add( JSON_KEY_AUTO_BG_THRESH, getMainSettings().getAutoBgThreshold() )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
-				.add( JSON_KEY_SEG_LOG_DIR, getMainSettings().getSegLogName() )
+				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
+				.add( JSON_KEY_LOG_DIR, getMainSettings().getDetectionLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
 
-		Unirest.post( getEndpointURL( ENDPOINT_TRAIN_SEG ) ).body( jsonRootObject.toString() )
-				.asStringAsync( new Callback< String >()
-				{
-
-					@Override
-					public void failed( final UnirestException e )
-					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-						getLogger().severe( "The request has failed" );
-						ElephantActionStateManager.INSTANCE.setLivemode( false );
-						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-					}
-
-					@Override
-					public void completed( final HttpResponse< String > response )
-					{
-						if ( response.getStatus() == 200 )
+	@Override
+	public void processDataset()
+	{
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_DETECTION ), jsonRootObject.toString(),
+					response -> {
+						try
 						{
-							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
-							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+							{
+								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+								final String message = rootObject.get( "completed" ).asBoolean() ? "Training completed" : "Training aborted";
+								showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+							}
+							else
+							{
+								final StringBuilder sb = new StringBuilder( response.getStatusText() );
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+								{
+									sb.append( ": " );
+									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								}
+								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+								getClientLogger().severe( sb.toString() );
+							}
+						}
+						finally
+						{
 							ElephantActionStateManager.INSTANCE.setLivemode( false );
 						}
-						else
-						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == 500 )
-							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
-						}
-					}
-
-					@Override
-					public void cancelled()
-					{
-						getLogger().info( "The request has been cancelled" );
+					},
+					e -> {
+						handleError( e );
+						getClientLogger().severe( "The request has failed" );
 						ElephantActionStateManager.INSTANCE.setLivemode( false );
-					}
-
-				} );
-
+						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
+					},
+					() -> {
+						getClientLogger().info( "The request has been cancelled" );
+						ElephantActionStateManager.INSTANCE.setLivemode( false );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

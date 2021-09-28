@@ -26,23 +26,29 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.BdvDataMixin;
+import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.TimepointActionMixin;
+import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.scijava.plugin.Plugin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -50,10 +56,6 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
-import kong.unirest.Callback;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 
 /**
@@ -62,16 +64,43 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * 
  * @author Ko Sugawara
  */
-public class UpdateSegLabelsAction extends AbstractElephantAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointActionMixin, UIActionMixin, URLMixin, WindowManagerMixin
+public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME = "[elephant] update seg labels";
+	private static final String NAME = "[elephant] update detection labels";
 
-	private static final String MENU_TEXT = "Update Seg Labels";
+	private static final String MENU_TEXT = "Update Detection Labels";
 
 	private static final String[] MENU_KEYS = new String[] { "U" };
+
+	private static final String DESCRIPTION = "Update labels for detection.";
+
+	private final BdvContextService bdvContextService;
+
+	private JsonObject jsonRootObject;
+
+	/*
+	 * Command description.
+	 */
+	@Plugin( type = Descriptions.class )
+	public static class Descriptions extends CommandDescriptionProvider
+	{
+		public Descriptions()
+		{
+			super( KeyConfigContexts.BIGDATAVIEWER );
+		}
+
+		@Override
+		public void getCommandDescriptions( final CommandDescriptions descriptions )
+		{
+			descriptions.add(
+					NAME,
+					MENU_KEYS,
+					DESCRIPTION );
+		}
+	}
 
 	@Override
 	public String getMenuText()
@@ -85,16 +114,23 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 		return MENU_KEYS;
 	}
 
-	public UpdateSegLabelsAction()
+	public UpdateDetectionLabelsAction( final BdvContextService bdvContextService )
 	{
 		super( NAME );
+		this.bdvContextService = bdvContextService;
 	}
 
 	@Override
-	public void process()
+	public BdvContextService getBdvContextService()
+	{
+		return bdvContextService;
+	}
+
+	@Override
+	boolean prepare()
 	{
 		final int timepointEnd = getCurrentTimepoint( 0 );
-		final int timeRange = getStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
 		final int timepointStart = Math.max( 0, timepointEnd - timeRange + 1 );
 		final List< Integer > timepoints = IntStream.rangeClosed( timepointStart, timepointEnd ).boxed().collect( Collectors.toList() );
 		final JsonArray jsonSpots = Json.array();
@@ -109,7 +145,7 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 			tagsToProcess.add( getTag( getDetectionTagSet(), DETECTION_TB_TAG_NAME ) );
 			tagsToProcess.add( getTag( getDetectionTagSet(), DETECTION_FB_TAG_NAME ) );
 			Iterable< Spot > spots;
-			if ( getStateManager().isLivemode() )
+			if ( getActionStateManager().isLivemode() )
 			{
 				spots = getVisibleVertices( timepointStart );
 				if ( spots != null )
@@ -134,7 +170,7 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
-		final JsonObject jsonRootObject = Json.object()
+		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_AUTO_BG_THRESH, getMainSettings().getAutoBgThreshold() )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
@@ -142,49 +178,39 @@ public class UpdateSegLabelsAction extends AbstractElephantAction
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_SPOTS, jsonSpots )
 				.add( JSON_KEY_IS_3D, !is2D() );
+		return true;
+	}
 
-		Unirest.post( getEndpointURL( ENDPOINT_UPDATE_SEG ) )
-				.body( jsonRootObject.toString() )
-				.asStringAsync( new Callback< String >()
-				{
-
-					@Override
-					public void failed( final UnirestException e )
-					{
-						getLogger().severe( ExceptionUtils.getStackTrace( e ) );
-						getLogger().severe( "The request has failed" );
-						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
-					}
-
-					@Override
-					public void completed( final HttpResponse< String > response )
-					{
-						if ( response.getStatus() == 200 )
+	@Override
+	public void processDataset()
+	{
+		try
+		{
+			postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_DETECTION ), jsonRootObject.toString(),
+					response -> {
+						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
 							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final String message = rootObject.get( "completed" ).asBoolean() ? "Segmentation labels are updated" : "Update aborted";
+							final String message = rootObject.get( "completed" ).asBoolean() ? "Detection labels are updated" : "Update aborted";
 							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.CENTER );
 						}
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == 500 )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
 							}
 							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getLogger().severe( sb.toString() );
+							getClientLogger().severe( sb.toString() );
 						}
-					}
-
-					@Override
-					public void cancelled()
-					{
-						getLogger().info( "The request has been cancelled" );
-					}
-
-				} );
+					} );
+		}
+		catch ( final ElephantConnectException e )
+		{
+			// already handled by UnirestMixin
+		}
 	}
 
 }

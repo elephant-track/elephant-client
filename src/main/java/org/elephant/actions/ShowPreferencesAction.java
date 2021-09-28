@@ -88,7 +88,7 @@ public class ShowPreferencesAction extends AbstractElephantAction implements Bdv
 		}
 		catch ( UnsupportedOperationException | TypeMismatchException e )
 		{
-			getLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 		}
 	}
 
