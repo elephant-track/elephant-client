@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.mastodon.ui.keymap.KeymapParser;
 import org.scijava.plugin.Parameter;
@@ -57,6 +58,16 @@ public class ElephantKeyMapService extends AbstractService
 
 	public ElephantKeyMapService()
 	{
+		// Create a directory if not exists
+		try
+		{
+			Files.createDirectories( Paths.get( KEYMAPS_PATH ) );
+		}
+		catch ( final IOException e )
+		{
+			e.printStackTrace();
+		}
+		// Copy a file if not exists
 		final File elephantKeymapFile = new File( KEYMAPS_PATH + ELEPHANT_KEYMAP_FILENAME );
 		if ( !elephantKeymapFile.exists() )
 		{
