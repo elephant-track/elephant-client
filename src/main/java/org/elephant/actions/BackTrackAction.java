@@ -128,6 +128,7 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
+				.add( JSON_KEY_MAX_DISPLACEMENT, getMainSettings().getMaxDisplacement() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() );
 		if ( getMainSettings().getPatch() )
