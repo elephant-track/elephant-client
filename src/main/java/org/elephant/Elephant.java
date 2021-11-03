@@ -54,6 +54,8 @@ import org.elephant.actions.ChangeEllipsoidSizeAction;
 import org.elephant.actions.ChangeEllipsoidSizeAction.ChangeEllipsoidSizeActionMode;
 import org.elephant.actions.CountDivisionsAction;
 import org.elephant.actions.CountDivisionsAction.CountDivisionsActionMode;
+import org.elephant.actions.DownloadModelAction;
+import org.elephant.actions.DownloadModelAction.DownloadModelActionMode;
 import org.elephant.actions.ElephantActionStateManager;
 import org.elephant.actions.ElephantOverlayService;
 import org.elephant.actions.ElephantServerStatusListener;
@@ -237,6 +239,10 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction exportCTCAction;
 
+	private final AbstractElephantAction downloadDetectionModelAction;
+
+	private final AbstractElephantAction downloadFlowModelAction;
+
 	private final AbstractElephantAction showClientLogWindowAction;
 
 	private final AbstractElephantAction showServerLogWindowAction;
@@ -363,6 +369,10 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( importMastodonAction );
 		exportCTCAction = new ExportCTCAction();
 		pluginActions.add( exportCTCAction );
+		downloadDetectionModelAction = new DownloadModelAction( DownloadModelActionMode.DETECTION );
+		pluginActions.add( downloadDetectionModelAction );
+		downloadFlowModelAction = new DownloadModelAction( DownloadModelActionMode.FLOW );
+		pluginActions.add( downloadFlowModelAction );
 		changeDetectionTagSetColorsAction = new ChangeDetectionTagSetColorsAction();
 		pluginActions.add( changeDetectionTagSetColorsAction );
 		uploadAction = new UploadAction();
@@ -448,13 +458,15 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( liveTrainingAction.name() ),
 										item( trainSelectedAction.name() ),
 										item( trainAllAction.name() ),
-										item( resetDetectionModelAction.name() ) ),
+										item( resetDetectionModelAction.name() ),
+										item( downloadDetectionModelAction.name() ) ),
 								menu( "Linking",
 										item( nnLinkingAction.name() ),
 										item( updateFlowLabelsAction.name() ),
 										item( resetFlowLabelsAction.name() ),
 										item( trainFlowAction.name() ),
-										item( resetFlowModelAction.name() ) ),
+										item( resetFlowModelAction.name() ),
+										item( downloadFlowModelAction.name() ) ),
 								menu( "Utils",
 										item( mapSpotTagAction.name() ),
 										item( mapLinkTagAction.name() ),

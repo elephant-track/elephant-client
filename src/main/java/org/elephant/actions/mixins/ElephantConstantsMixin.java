@@ -122,6 +122,8 @@ public interface ElephantConstantsMixin
 
 	public static final String ENDPOINT_DATASET_GENERATE = "dataset/generate";
 
+	public static final String ENDPOINT_MODEL_DOWNLOAD = "model/download";
+
 	/**
 	 * REST API JSON keys
 	 */
