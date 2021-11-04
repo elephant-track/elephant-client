@@ -26,10 +26,12 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import javax.swing.SwingUtilities;
 
@@ -47,6 +49,7 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
+import kong.unirest.HttpResponse;
 
 /**
  * Send a request for reseting a flow model to the server.
@@ -78,6 +81,7 @@ public class ResetFlowModelAction extends AbstractElephantDatasetAction
 	public void processDataset()
 	{
 		final AtomicBoolean isCanceled = new AtomicBoolean(); // false by default
+		final AtomicReference< File > atomoicFile = new AtomicReference<>();
 		final AtomicReference< String > atomoicUrl = new AtomicReference<>();
 		try
 		{
@@ -87,6 +91,7 @@ public class ResetFlowModelAction extends AbstractElephantDatasetAction
 				try
 				{
 					isCanceled.set( dialog.isCanceled() );
+					atomoicFile.set( dialog.getFile() );
 					atomoicUrl.set( dialog.getUrl() );
 				}
 				finally
@@ -108,24 +113,31 @@ public class ResetFlowModelAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_MODEL_URL, atomoicUrl.get() );
 			try
 			{
-				postAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), jsonRootObject.toString(),
-						response -> {
-							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
-							{
-								showTextOverlayAnimator( "Flow model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
-							}
-							else
-							{
-								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
-								{
-									sb.append( ": " );
-									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-								}
-								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-								getClientLogger().severe( sb.toString() );
-							}
-						} );
+				final Consumer< HttpResponse< String > > completed = response -> {
+					if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+					{
+						showTextOverlayAnimator( "Flow model is reset", 3000, TextOverlayAnimator.TextPosition.CENTER );
+					}
+					else
+					{
+						final StringBuilder sb = new StringBuilder( response.getStatusText() );
+						if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+						{
+							sb.append( ": " );
+							sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+						}
+						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+						getClientLogger().severe( sb.toString() );
+					}
+				};
+				if ( atomoicFile.get() == null )
+				{
+					postAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), jsonRootObject.toString(), completed );
+				}
+				else
+				{
+					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), atomoicFile.get(), jsonRootObject.toString(), completed );
+				}
 			}
 			catch ( final ElephantConnectException e )
 			{

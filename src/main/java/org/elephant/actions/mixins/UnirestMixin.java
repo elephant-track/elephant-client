@@ -37,6 +37,7 @@ import org.elephant.actions.ElephantStatusService.ElephantStatus;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 import kong.unirest.Callback;
 import kong.unirest.HttpResponse;
+import kong.unirest.MultipartBody;
 import kong.unirest.RequestBodyEntity;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -48,7 +49,8 @@ import kong.unirest.UnirestException;
  */
 public interface UnirestMixin extends ElephantActionMixin, ElephantStateManagerMixin, LoggerMixin, UIActionMixin
 {
-	default RequestBodyEntity postBaseJson( final String endpointUrl, final String body ) throws ElephantConnectException
+
+	default void validateServerAvailability() throws ElephantConnectException
 	{
 		if ( getServerStateManager().getElephantServerStatus() == ElephantStatus.UNAVAILABLE )
 		{
@@ -56,9 +58,61 @@ public interface UnirestMixin extends ElephantActionMixin, ElephantStateManagerM
 			JOptionPane.showMessageDialog( null, "The ELEPHANT server is unavailable. Please set it up first.", "ELEPHANT server is unavailable", JOptionPane.ERROR_MESSAGE );
 			throw new ElephantConnectException( "ELEPHANT server is unavailable" );
 		}
+	}
+
+	default RequestBodyEntity postBaseJson( final String endpointUrl, final String body ) throws ElephantConnectException
+	{
+		validateServerAvailability();
 		return Unirest.post( endpointUrl )
 				.header( "Content-Type", "application/json" )
 				.body( body );
+	}
+
+	default MultipartBody postBaseMultipartFormData( final String endpointUrl, final File file, final String data ) throws ElephantConnectException
+	{
+		validateServerAvailability();
+		return Unirest.post( endpointUrl )
+				.field( "file", file )
+				.field( "data", data );
+	}
+
+	default CompletableFuture< HttpResponse< String > > postMultipartFormDataAsStringAsync( final String endpointUrl, final File file, final String data,
+			final Consumer< HttpResponse< String > > completed ) throws ElephantConnectException
+	{
+		return postMultipartFormDataAsStringAsync( endpointUrl, file, data, completed,
+				e -> {
+					handleError( e );
+					getClientLogger().severe( "The request has failed" );
+					showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
+				},
+				() -> getClientLogger().info( "The request has been cancelled" ) );
+	}
+
+	default CompletableFuture< HttpResponse< String > > postMultipartFormDataAsStringAsync( final String endpointUrl, final File file, final String data,
+			final Consumer< HttpResponse< String > > completed, final Consumer< UnirestException > failed, final Runnable cancelled ) throws ElephantConnectException
+	{
+		return postBaseMultipartFormData( endpointUrl, file, data ).asStringAsync( new Callback< String >()
+		{
+
+			@Override
+			public void failed( UnirestException e )
+			{
+				failed.accept( e );
+			};
+
+			@Override
+			public void completed( HttpResponse< String > response )
+			{
+				completed.accept( response );
+			}
+
+			@Override
+			public void cancelled()
+			{
+				cancelled.run();
+			}
+
+		} );
 	}
 
 	default CompletableFuture< HttpResponse< String > > postAsStringAsync( final String endpointUrl, final String body,
