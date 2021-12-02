@@ -80,6 +80,11 @@ public class ResetDetectionModelAction extends AbstractElephantDatasetAction
 	@Override
 	public void processDataset()
 	{
+		if ( getActionStateManager().isLivemode() )
+		{
+			showTextOverlayAnimator( "Model cannot be reset during live mode", 3000, TextOverlayAnimator.TextPosition.CENTER );
+			return;
+		}
 		final AtomicBoolean isCanceled = new AtomicBoolean(); // false by default
 		final AtomicReference< File > atomoicFile = new AtomicReference<>();
 		final AtomicReference< String > atomoicUrl = new AtomicReference<>();
