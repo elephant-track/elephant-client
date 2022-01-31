@@ -124,6 +124,8 @@ import org.mastodon.ui.keymap.Keymap.UpdateListener;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.command.ContextCommand;
+import org.scijava.log.LogService;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.Actions;
 
@@ -135,7 +137,7 @@ import mpicbg.spim.data.SpimDataException;
  * 
  * @author Ko Sugawara
  */
-@Plugin( type = Elephant.class )
+@Plugin( type = MamutPlugin.class )
 public class Elephant extends AbstractContextual implements MamutPlugin, UpdateListener
 {
 
@@ -261,6 +263,9 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	final LoggerService loggerService = new LoggerService();
 
+	@Parameter
+	private LogService scijavaLogService;
+
 	public Elephant()
 	{
 		loggerService.setup();
@@ -385,6 +390,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 	@Override
 	public void setAppPluginModel( final MamutPluginAppModel pluginAppModel )
 	{
+		loggerService.setupSciJavaHandler( scijavaLogService );
+
 		this.pluginAppModel = pluginAppModel;
 		// Create a GroupHandle instance
 		groupHandle = pluginAppModel.getAppModel().getGroupManager().createGroupHandle();

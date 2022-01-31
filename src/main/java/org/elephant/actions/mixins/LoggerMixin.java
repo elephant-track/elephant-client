@@ -29,7 +29,6 @@ package org.elephant.actions.mixins;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.logging.ConsoleHandler;
-import java.util.logging.ErrorManager;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -43,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.scijava.log.LogService;
 
 /**
  * Provide {@link Logger}.
@@ -60,7 +60,7 @@ public interface LoggerMixin
 
 	String getServerLogFileName();
 
-	default void setUpLogger( final Logger logger, final String logFileName, final JFrameHandler jFrameHandler )
+	default void setUpLogger( final Logger logger, final String logFileName )
 	{
 		try
 		{
@@ -87,17 +87,6 @@ public interface LoggerMixin
 			{
 				logger.addHandler( new ConsoleHandler() );
 			}
-			// Create a JFrameHandler when it is not exists
-			boolean hasJFrameHandler = false;
-			for ( final Handler handler : handlers )
-			{
-				if ( handler instanceof JFrameHandler )
-					hasJFrameHandler = true;
-			}
-			if ( !hasJFrameHandler )
-			{
-				logger.addHandler( jFrameHandler );
-			}
 		}
 		catch ( SecurityException | IOException e )
 		{
@@ -107,18 +96,43 @@ public interface LoggerMixin
 
 	default void setUpLogging()
 	{
-		setUpLogger( getClientLogger(), getClientLogFileName(), ClientHandler.getInstance() );
-		setUpLogger( getServerLogger(), getServerLogFileName(), ServerHandler.getInstance() );
+		setUpLogger( getClientLogger(), getClientLogFileName() );
+		setUpLogger( getServerLogger(), getServerLogFileName() );
+	}
+
+	default void setUpSciJavaLogger( final LogService sciJavaLogService )
+	{
+		boolean hasClientHandler = false;
+		for ( final Handler handler : getClientLogger().getHandlers() )
+		{
+			if ( handler instanceof SciJavaHandler )
+				hasClientHandler = true;
+		}
+		if ( !hasClientHandler )
+		{
+			getClientLogger().addHandler( new ClientHandler( sciJavaLogService ) );
+		}
+
+		boolean hasServerHandler = false;
+		for ( final Handler handler : getServerLogger().getHandlers() )
+		{
+			if ( handler instanceof SciJavaHandler )
+				hasServerHandler = true;
+		}
+		if ( !hasServerHandler )
+		{
+			getServerLogger().addHandler( new ServerHandler( sciJavaLogService ) );
+		}
 	}
 
 	default void showClientLogWindow()
 	{
-		ClientHandler.getInstance().showLogWindow();
+//		ClientHandler.getInstance().showLogWindow();
 	}
 
 	default void showServerLogWindow()
 	{
-		ServerHandler.getInstance().showLogWindow();
+//		ServerHandler.getInstance().showLogWindow();
 	}
 
 	default void handleError( Exception e )
@@ -163,88 +177,74 @@ public interface LoggerMixin
 		}
 	}
 
-	class ClientHandler extends JFrameHandler
+	class ClientHandler extends SciJavaHandler
 	{
-		private static JFrameHandler handler = null;
+		private static SciJavaHandler handler = null;
 
-		public ClientHandler()
+		public ClientHandler( final LogService sciJavaLogService )
 		{
-			super( "ELEPHANT Client Log Window" );
+			super( sciJavaLogService, "ELEPHANT client" );
 		}
 
-		public static synchronized JFrameHandler getInstance()
+		public static synchronized SciJavaHandler getInstance( final LogService sciJavaLogService )
 		{
 			if ( handler == null )
 			{
-				handler = new ClientHandler();
+				handler = new ClientHandler( sciJavaLogService );
 			}
 			return handler;
 		}
 	}
 
-	class ServerHandler extends JFrameHandler
+	class ServerHandler extends SciJavaHandler
 	{
-		private static JFrameHandler handler = null;
+		private static SciJavaHandler handler = null;
 
-		public ServerHandler()
+		public ServerHandler( final LogService sciJavaLogService )
 		{
-			super( "ELEPHANT Server Log Window" );
+			super( sciJavaLogService, "ELEPHANT Server" );
 		}
 
-		public static synchronized JFrameHandler getInstance()
+		public static synchronized SciJavaHandler getInstance( final LogService sciJavaLogService )
 		{
 			if ( handler == null )
 			{
-				handler = new ServerHandler();
+				handler = new ServerHandler( sciJavaLogService );
 			}
 			return handler;
 		}
 	}
 
-	abstract class JFrameHandler extends Handler
+	abstract class SciJavaHandler extends Handler
 	{
 
-		private LogWindow window = null;
+		private org.scijava.log.Logger sciJavaLogger = null;
 
-		private JFrameHandler( final String title )
+		private SciJavaHandler( final LogService sciJavaLogService, final String name )
 		{
+			sciJavaLogger = sciJavaLogService.subLogger( name );
 			final LogManager manager = LogManager.getLogManager();
 			final String className = this.getClass().getName();
 			final String level = manager.getProperty( className + ".level" );
 			setLevel( level != null ? Level.parse( level ) : Level.INFO );
 			setFormatter( new SimpleFormatter() );
-			if ( window == null )
-				window = new LogWindow( title );
-		}
-
-		public void showLogWindow()
-		{
-			SwingUtilities.invokeLater( () -> window.setVisible( true ) );
 		}
 
 		@Override
 		public void publish( LogRecord record )
 		{
-			if ( !isLoggable( record ) ) { return; }
-			String msg;
-			Color color = Color.BLACK;
-			try
-			{
-				final Level level = record.getLevel();
-				if ( level == Level.WARNING || level == Level.SEVERE )
-				{
-					color = Color.RED;
-				}
-				msg = getFormatter().format( record );
-			}
-			catch ( final Exception ex )
-			{
-				// We don't want to throw an exception here, but we
-				// report the exception to any registered ErrorManager.
-				reportError( null, ex, ErrorManager.FORMAT_FAILURE );
-				return;
-			}
-			window.showMessage( msg, color );
+			String msg = getFormatter().format( record );
+			final Level level = record.getLevel();
+			if ( level == Level.SEVERE )
+				sciJavaLogger.error( msg );
+			else if ( level == Level.WARNING )
+				sciJavaLogger.warn( msg );
+			else if ( level == Level.INFO )
+				sciJavaLogger.info( msg );
+			else if ( level == Level.CONFIG )
+				sciJavaLogger.debug( msg );
+			else
+				sciJavaLogger.trace( msg );
 		}
 
 		@Override
