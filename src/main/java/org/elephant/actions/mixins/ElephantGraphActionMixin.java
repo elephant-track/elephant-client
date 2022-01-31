@@ -36,17 +36,22 @@ import net.imglib2.Dimensions;
  * 
  * @author Ko Sugawara
  */
-public interface ElephantGraphActionMixin extends BdvDataMixin, GraphActionMixin
+public interface ElephantGraphActionMixin extends BdvDataMixin, ElephantSettingsMixin, GraphActionMixin
 {
 
 	static final int[] DEFAULT_CROP_BOX_SIZE = new int[] { 256, 256, 16 };
 
 	default void calculateCropBoxAround( final double[] pos, final long[] cropOrigin, final long[] cropSize )
 	{
+		final int[] cropBoxSize = new int[] {
+				getMainSettings().getPatchSizeX(),
+				getMainSettings().getPatchSizeY(),
+				getMainSettings().getPatchSizeZ()
+		};
 		final Dimensions dimensions = getDimensions();
 		for ( int i = 0; i < pos.length; i++ )
 		{
-			cropSize[ i ] = Math.min( dimensions.dimension( i ), DEFAULT_CROP_BOX_SIZE[ i ] );
+			cropSize[ i ] = Math.min( dimensions.dimension( i ), cropBoxSize[ i ] );
 			pos[ i ] /= getVoxelDimensions().dimension( i );
 			pos[ i ] = Math.min(
 					dimensions.dimension( i ) - cropSize[ i ],

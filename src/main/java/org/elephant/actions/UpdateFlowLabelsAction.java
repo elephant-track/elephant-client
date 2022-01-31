@@ -128,7 +128,8 @@ public class UpdateFlowLabelsAction extends AbstractElephantDatasetAction
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR ||
+									response.getStatus() == HttpURLConnection.HTTP_BAD_REQUEST )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );

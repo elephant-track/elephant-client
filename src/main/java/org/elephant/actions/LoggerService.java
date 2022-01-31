@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.setting.main.ElephantMainSettingsListener;
+import org.scijava.log.LogService;
 
 /**
  * Set up a logger. A static {@link Logger} instance is used across the process.
@@ -75,6 +76,11 @@ public class LoggerService extends AbstractElephantService implements ElephantMa
 			}
 		} ) );
 		setUpLogging();
+	}
+
+	public void setupSciJavaHandler( LogService sciJavaLogService )
+	{
+		setUpSciJavaLogger( sciJavaLogService );
 	}
 
 	@Override

@@ -138,6 +138,8 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_LOG_INTERVAL = "log_interval";
 
+	public static final String JSON_KEY_CACHE_MAXBYTES = "cache_maxbytes";
+
 	public static final String JSON_KEY_DEBUG = "debug";
 
 	public static final String JSON_KEY_SCALES = "scales";
@@ -176,6 +178,8 @@ public interface ElephantConstantsMixin
 
 	public static final String JSON_KEY_RESET = "reset";
 
+	public static final String JSON_KEY_BATCH_SIZE = "batch_size";
+
 	public static final String JSON_KEY_N_CROPS = "n_crops";
 
 	public static final String JSON_KEY_N_EPOCHS = "n_epochs";
@@ -189,6 +193,8 @@ public interface ElephantConstantsMixin
 	public static final String JSON_KEY_AUG_CONTRAST = "aug_contrast";
 
 	public static final String JSON_KEY_USE_2D_MODEL = "use_2d";
+
+	public static final String JSON_KEY_USE_MEMMAP = "use_memmap";
 
 	public static final String JSON_KEY_IS_LIVEMODE = "is_livemode";
 

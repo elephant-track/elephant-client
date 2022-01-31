@@ -141,6 +141,8 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				intElement( "training crop size y", 1, 9999, style::getTrainingCropSizeY, style::setTrainingCropSizeY ),
 				intElement( "training crop size z", 1, 9999, style::getTrainingCropSizeZ, style::setTrainingCropSizeZ ),
 
+				intElement( "batch size", 0, 1000, style::getBatchSize, style::setBatchSize ),
+
 				doubleElementEx( "class weight background", 0.0, 100, 0.1, style::getClassWeightBG, style::setClassWeightBG ),
 				doubleElementEx( "class weight border", 0.0, 100, 0.1, style::getClassWeightBorder, style::setClassWeightBorder ),
 				doubleElementEx( "class weight center", 0.0, 100, 0.1, style::getClassWeightCenter, style::setClassWeightCenter ),
@@ -155,10 +157,11 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				doubleElementEx( "augmentation scale factor base", 0.0, 0.999999, 0.01, style::getAugScaleFactorBase, style::setAugScaleFactorBase ),
 				doubleElementEx( "augmentation rotation angle (degree)", 0.0, 180.0, 0.01, style::getAugRotationAngle, style::setAugRotationAngle ),
 				doubleElementEx( "augmentation contrast", 0.0, 1.0, 0.01, style::getAugContrast, style::setAugContrast ),
-				intElement( "NN search depth", 0, 100, style::getNNSearchDepth, style::setNNSearchDepth ),
-				intElement( "NN search neighbors", 0, 100, style::getNNSearchNeighbors, style::setNNSearchNeighbors ),
-				intElement( "Training log interval", 0, 1000, style::getLogInterval, style::setLogInterval ),
-				booleanElement( "use interpolation for linking", style::getUseInterpolation, style::setUseInterpolation ),
+				intElement( "NN search depth", 0, Integer.MAX_VALUE, style::getNNSearchDepth, style::setNNSearchDepth ),
+				intElement( "NN search neighbors", 0, Integer.MAX_VALUE, style::getNNSearchNeighbors, style::setNNSearchNeighbors ),
+				intElement( "Training log interval", 0, Integer.MAX_VALUE, style::getLogInterval, style::setLogInterval ),
+				intElement( "Cache maximum bytes (MiB)", 0, Integer.MAX_VALUE, style::getCacheMaxbytesMebi, style::setCacheMaxbytesMebi ),
+				booleanElement( "use memmap", style::getUseMemmap, style::setUseMemmap ),
 				// booleanElement( "use 2d model", style::getUse2dModel, style::setUse2dModel ),
 
 				separator(),

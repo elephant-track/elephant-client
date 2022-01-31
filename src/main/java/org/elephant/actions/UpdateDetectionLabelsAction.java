@@ -39,6 +39,7 @@ import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
@@ -65,7 +66,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
-		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, ElephantStateManagerMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -177,7 +178,8 @@ public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_RESET, false )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_SPOTS, jsonSpots )
-				.add( JSON_KEY_IS_3D, !is2D() );
+				.add( JSON_KEY_IS_3D, !is2D() )
+				.add( JSON_KEY_IS_LIVEMODE, getActionStateManager().isLivemode() );
 		return true;
 	}
 
@@ -197,7 +199,8 @@ public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR ||
+									response.getStatus() == HttpURLConnection.HTTP_BAD_REQUEST )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );

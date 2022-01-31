@@ -62,6 +62,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_TRAINING_CROP_SIZE_Z = 16;
 
+	public static final int DEFAULT_BATCH_SIZE = 1;
+
 	public static final int DEFAULT_NUM_CROPS = 5;
 
 	public static final int DEFAULT_NUM_EPOCHS = 10;
@@ -114,11 +116,15 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_LOG_INTERVAL = 1;
 
+	public static final int DEFAULT_CACHE_MAXBYTES_MEBI = 1024; // 1 GiB
+
 	public static final boolean DEFAULT_USE_OPTICALFLOW = false;
 
 	public static final boolean DEFAULT_USE_INTERPOLATION = false;
 
 	public static final boolean DEFAULT_USE_2D_MODEL = false;
+
+	public static final boolean DEFAULT_USE_MEMMAP = true;
 
 	public static final String DEFAULT_DETECTION_MODEL_NAME = "detection.pth";
 
@@ -158,6 +164,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		trainingCropSizeX = settings.trainingCropSizeX;
 		trainingCropSizeY = settings.trainingCropSizeY;
 		trainingCropSizeZ = settings.trainingCropSizeZ;
+		batchSize = settings.batchSize;
 		numCrops = settings.numCrops;
 		numEpochs = settings.numEpochs;
 		timeRange = settings.timeRange;
@@ -184,9 +191,11 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		nnSearchNeighbors = settings.nnSearchNeighbors;
 		nnMaxEdges = settings.nnMaxEdges;
 		logInterval = settings.logInterval;
+		cacheMaxbytesMebi = settings.cacheMaxbytesMebi;
 		useOpticalflow = settings.useOpticalflow;
 		useInterpolation = settings.useInterpolation;
 		use2dModel = settings.use2dModel;
+		useMemmap = settings.useMemmap;
 		detectionModelName = settings.detectionModelName;
 		flowModelName = settings.flowModelName;
 		detectionLogName = settings.detectionLogName;
@@ -217,6 +226,8 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 	private int trainingCropSizeY = DEFAULT_TRAINING_CROP_SIZE_Y;
 
 	private int trainingCropSizeZ = DEFAULT_TRAINING_CROP_SIZE_Z;
+
+	private int batchSize = DEFAULT_BATCH_SIZE;
 
 	private int numCrops = DEFAULT_NUM_CROPS;
 
@@ -270,11 +281,15 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	private int logInterval = DEFAULT_LOG_INTERVAL;
 
+	private int cacheMaxbytesMebi = DEFAULT_CACHE_MAXBYTES_MEBI;
+
 	private boolean useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 
 	private boolean useInterpolation = DEFAULT_USE_INTERPOLATION;
 
 	private boolean use2dModel = DEFAULT_USE_2D_MODEL;
+
+	private boolean useMemmap = DEFAULT_USE_MEMMAP;
 
 	private String detectionModelName = DEFAULT_DETECTION_MODEL_NAME;
 
@@ -438,6 +453,20 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		if ( this.trainingCropSizeZ != trainingCropSizeZ )
 		{
 			this.trainingCropSizeZ = trainingCropSizeZ;
+			notifyListeners();
+		}
+	}
+
+	public int getBatchSize()
+	{
+		return batchSize;
+	}
+
+	public synchronized void setBatchSize( final int batchSize )
+	{
+		if ( this.batchSize != batchSize )
+		{
+			this.batchSize = batchSize;
 			notifyListeners();
 		}
 	}
@@ -806,6 +835,25 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		}
 	}
 
+	public long getCacheMaxbytes()
+	{
+		return ( ( long ) cacheMaxbytesMebi ) << 20;
+	}
+
+	public int getCacheMaxbytesMebi()
+	{
+		return cacheMaxbytesMebi;
+	}
+
+	public synchronized void setCacheMaxbytesMebi( final int cacheMaxbytesMebi )
+	{
+		if ( this.cacheMaxbytesMebi != cacheMaxbytesMebi )
+		{
+			this.cacheMaxbytesMebi = cacheMaxbytesMebi;
+			notifyListeners();
+		}
+	}
+
 	public boolean getUseOpticalflow()
 	{
 		return useOpticalflow;
@@ -844,6 +892,20 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		if ( this.use2dModel != use2dModel )
 		{
 			this.use2dModel = use2dModel;
+			notifyListeners();
+		}
+	}
+
+	public boolean getUseMemmap()
+	{
+		return useMemmap;
+	}
+
+	public synchronized void setUseMemmap( final boolean useMemmap )
+	{
+		if ( this.useMemmap != useMemmap )
+		{
+			this.useMemmap = useMemmap;
 			notifyListeners();
 		}
 	}
@@ -947,6 +1009,7 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.trainingCropSizeX = DEFAULT_TRAINING_CROP_SIZE_X;
 		df.trainingCropSizeY = DEFAULT_TRAINING_CROP_SIZE_Y;
 		df.trainingCropSizeZ = DEFAULT_TRAINING_CROP_SIZE_Z;
+		df.batchSize = DEFAULT_BATCH_SIZE;
 		df.numCrops = DEFAULT_NUM_CROPS;
 		df.numEpochs = DEFAULT_NUM_EPOCHS;
 		df.timeRange = DEFAULT_TIME_RANGE;
@@ -971,9 +1034,12 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.nnSearchDepth = DEFAULT_NN_SEARCH_DEPTH;
 		df.nnSearchNeighbors = DEFAULT_NN_SEARCH_NEIGHBORS;
 		df.nnMaxEdges = DEFAULT_NN_MAX_EDGES;
+		df.logInterval = DEFAULT_LOG_INTERVAL;
+		df.cacheMaxbytesMebi = DEFAULT_CACHE_MAXBYTES_MEBI;
 		df.useOpticalflow = DEFAULT_USE_OPTICALFLOW;
 		df.useInterpolation = DEFAULT_USE_INTERPOLATION;
 		df.use2dModel = DEFAULT_USE_2D_MODEL;
+		df.useMemmap = DEFAULT_USE_MEMMAP;
 		df.detectionModelName = DEFAULT_DETECTION_MODEL_NAME;
 		df.flowModelName = DEFAULT_FLOW_MODEL_NAME;
 		df.detectionLogName = DEFAULT_DETECTION_LOG_NAME;

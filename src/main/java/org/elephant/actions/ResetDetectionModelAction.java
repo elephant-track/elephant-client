@@ -128,6 +128,7 @@ public class ResetDetectionModelAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
 					.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 					.add( JSON_KEY_IS_3D, !is2D() )
+					.add( JSON_KEY_CACHE_MAXBYTES, getMainSettings().getCacheMaxbytes() )
 					.add( JSON_KEY_MODEL_URL, atomoicUrl.get() );
 			try
 			{

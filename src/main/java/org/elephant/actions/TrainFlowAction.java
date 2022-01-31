@@ -116,6 +116,7 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_SPOTS, jsonSpots )
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
+				.add( JSON_KEY_BATCH_SIZE, getMainSettings().getBatchSize() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
 				.add( JSON_KEY_N_EPOCHS, getMainSettings().getNumEpochs() )
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
@@ -126,9 +127,11 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_AUG_SCALE_FACTOR_BASE, getMainSettings().getAugScaleFactorBase() )
 				.add( JSON_KEY_AUG_ROTATION_ANGLE, getMainSettings().getAugRotationAngle() )
+				.add( JSON_KEY_CACHE_MAXBYTES, getMainSettings().getCacheMaxbytes() )
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
 				.add( JSON_KEY_LOG_DIR, getMainSettings().getFlowLogName() )
-				.add( JSON_KEY_IS_3D, !is2D() );
+				.add( JSON_KEY_IS_3D, !is2D() )
+				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() );
 		return true;
 	}
 
@@ -148,7 +151,8 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 						else
 						{
 							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR ||
+									response.getStatus() == HttpURLConnection.HTTP_BAD_REQUEST )
 							{
 								sb.append( ": " );
 								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );

@@ -39,6 +39,7 @@ import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantSettingsMixin;
+import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
@@ -68,7 +69,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class TrainDetectionAction extends AbstractElephantDatasetAction
-		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, ElephantStateManagerMixin,
 		TimepointMixin, UIActionMixin, URLMixin
 {
 
@@ -129,7 +130,7 @@ public class TrainDetectionAction extends AbstractElephantDatasetAction
 	@Override
 	boolean prepare()
 	{
-		if ( ElephantActionStateManager.INSTANCE.isLivemode() )
+		if ( getActionStateManager().isLivemode() )
 			return false;
 		final int currentTimepoint = getCurrentTimepoint( 0 );
 		getClientLogger().info( String.format( "Timepoint is %d.", currentTimepoint ) );
@@ -152,7 +153,6 @@ public class TrainDetectionAction extends AbstractElephantDatasetAction
 			{
 			case LIVE:
 				timepoints.add( currentTimepoint );
-				ElephantActionStateManager.INSTANCE.setLivemode( true );
 				spots = getVisibleVertices( currentTimepoint );
 				if ( spots != null )
 				{
@@ -200,6 +200,7 @@ public class TrainDetectionAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )
+				.add( JSON_KEY_BATCH_SIZE, getMainSettings().getBatchSize() )
 				.add( JSON_KEY_N_CROPS, getMainSettings().getNumCrops() )
 				.add( JSON_KEY_N_EPOCHS, getMainSettings().getNumEpochs() )
 				.add( JSON_KEY_IS_LIVEMODE, trainingMode == TrainingMode.LIVE )
@@ -212,15 +213,22 @@ public class TrainDetectionAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_FALSE_WEIGHT, getMainSettings().getFalseWeight() )
 				.add( JSON_KEY_AUTO_BG_THRESH, getMainSettings().getAutoBgThreshold() )
 				.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
+				.add( JSON_KEY_CACHE_MAXBYTES, getMainSettings().getCacheMaxbytes() )
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
 				.add( JSON_KEY_LOG_DIR, getMainSettings().getDetectionLogName() )
-				.add( JSON_KEY_IS_3D, !is2D() );
+				.add( JSON_KEY_IS_3D, !is2D() )
+				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() );
 		return true;
 	}
 
 	@Override
 	public void processDataset()
 	{
+		if ( trainingMode == TrainingMode.LIVE )
+		{
+			getActionStateManager().setLivemode( true );
+		}
+
 		try
 		{
 			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_DETECTION ), jsonRootObject.toString(),
@@ -236,7 +244,8 @@ public class TrainDetectionAction extends AbstractElephantDatasetAction
 							else
 							{
 								final StringBuilder sb = new StringBuilder( response.getStatusText() );
-								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR ||
+										response.getStatus() == HttpURLConnection.HTTP_BAD_REQUEST )
 								{
 									sb.append( ": " );
 									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
@@ -247,23 +256,23 @@ public class TrainDetectionAction extends AbstractElephantDatasetAction
 						}
 						finally
 						{
-							ElephantActionStateManager.INSTANCE.setLivemode( false );
+							getActionStateManager().setLivemode( false );
 						}
 					},
 					e -> {
 						handleError( e );
 						getClientLogger().severe( "The request has failed" );
-						ElephantActionStateManager.INSTANCE.setLivemode( false );
+						getActionStateManager().setLivemode( false );
 						showTextOverlayAnimator( e.getLocalizedMessage(), 3000, TextPosition.CENTER );
 					},
 					() -> {
 						getClientLogger().info( "The request has been cancelled" );
-						ElephantActionStateManager.INSTANCE.setLivemode( false );
+						getActionStateManager().setLivemode( false );
 					} );
 		}
 		catch ( final ElephantConnectException e )
 		{
-			// already handled by UnirestMixin
+			getActionStateManager().setLivemode( false );
 		}
 	}
 
