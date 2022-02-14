@@ -108,7 +108,8 @@ public class UpdateFlowLabelsAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_MAX_DISPLACEMENT, getMainSettings().getMaxDisplacement() )
 				.add( JSON_KEY_SCALES, scales )
 				.add( JSON_KEY_SPOTS, jsonSpots )
-				.add( JSON_KEY_IS_3D, !is2D() );
+				.add( JSON_KEY_IS_3D, !is2D() )
+				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() );
 		return true;
 	}
 
