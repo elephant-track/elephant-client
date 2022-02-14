@@ -94,7 +94,6 @@ import org.elephant.actions.SetControlAxisAction.ControlAxis;
 import org.elephant.actions.SetUpTagSetsService;
 import org.elephant.actions.ShowControlPanelAction;
 import org.elephant.actions.ShowLogWindowAction;
-import org.elephant.actions.ShowLogWindowAction.LogTarget;
 import org.elephant.actions.ShowPreferencesAction;
 import org.elephant.actions.TagDividingCellAction;
 import org.elephant.actions.TagHighlightedVertexAction;
@@ -127,6 +126,7 @@ import org.scijava.command.ContextCommand;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 import org.scijava.ui.behaviour.util.Actions;
 
 import mpicbg.spim.data.SpimDataException;
@@ -245,9 +245,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction downloadFlowModelAction;
 
-	private final AbstractElephantAction showClientLogWindowAction;
-
-	private final AbstractElephantAction showServerLogWindowAction;
+	private final AbstractElephantAction showLogWindowAction;
 
 	private final AbstractElephantAction changeDetectionTagSetColorsAction;
 
@@ -265,6 +263,9 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	@Parameter
 	private LogService scijavaLogService;
+
+	@Parameter
+	private UIService uiService;
 
 	public Elephant()
 	{
@@ -302,10 +303,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( trainFlowAction );
 		abortProcessingAction = new AbortProcessingAction();
 		pluginActions.add( abortProcessingAction );
-		showClientLogWindowAction = new ShowLogWindowAction( LogTarget.CLIENT );
-		pluginActions.add( showClientLogWindowAction );
-		showServerLogWindowAction = new ShowLogWindowAction( LogTarget.SERVER );
-		pluginActions.add( showServerLogWindowAction );
+		showLogWindowAction = new ShowLogWindowAction();
+		pluginActions.add( showLogWindowAction );
 		showControlPanelAction = new ShowControlPanelAction();
 		pluginActions.add( showControlPanelAction );
 		showPreferencesAction = new ShowPreferencesAction();
@@ -391,6 +390,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 	public void setAppPluginModel( final MamutPluginAppModel pluginAppModel )
 	{
 		loggerService.setupSciJavaHandler( scijavaLogService );
+		( ( ShowLogWindowAction ) showLogWindowAction ).setUIService( uiService );
 
 		this.pluginAppModel = pluginAppModel;
 		// Create a GroupHandle instance
@@ -495,8 +495,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( countDivisionsEntireAction.name() ),
 										item( countDivisionsTrackwiseAction.name() ) ),
 								menu( "Window",
-										item( showClientLogWindowAction.name() ),
-										item( showServerLogWindowAction.name() ),
+										item( showLogWindowAction.name() ),
 										item( showControlPanelAction.name() ) ),
 								item( abortProcessingAction.name() ),
 								item( showPreferencesAction.name() ) ) ) );

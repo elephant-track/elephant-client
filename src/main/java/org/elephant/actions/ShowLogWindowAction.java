@@ -29,6 +29,10 @@ package org.elephant.actions;
 import javax.swing.SwingUtilities;
 
 import org.elephant.actions.mixins.LoggerMixin;
+import org.scijava.ui.UIService;
+import org.scijava.ui.UserInterface;
+import org.scijava.ui.console.ConsolePane;
+import org.scijava.ui.swing.console.SwingConsolePane;
 
 /**
  * Show a log window.
@@ -39,72 +43,39 @@ public class ShowLogWindowAction extends AbstractElephantAction implements Logge
 {
 	private static final long serialVersionUID = 1L;
 
-	private static final String NAME_BASE = "[elephant] show %s log window";
+	private static final String NAME = "[elephant] show log window";
 
-	private static final String NAME_CLIENT = String.format( NAME_BASE, "client" );
+	private static final String MENU_TEXT = "Log Window";
 
-	private static final String NAME_SERVER = String.format( NAME_BASE, "server" );
-
-	private static final String MENU_TEXT_BASE = "%s Log";
-
-	private static final String MENU_TEXT_CLIENT = String.format( MENU_TEXT_BASE, "Client" );
-
-	private static final String MENU_TEXT_Server = String.format( MENU_TEXT_BASE, "Server" );
-
-	public enum LogTarget
-	{
-		CLIENT( NAME_CLIENT, MENU_TEXT_CLIENT ),
-		SERVER( NAME_SERVER, MENU_TEXT_Server );
-
-		private final String name;
-
-		private final String menuText;
-
-		LogTarget( final String name, final String menuText )
-		{
-			this.name = name;
-			this.menuText = menuText;
-		}
-
-		public String getName()
-		{
-			return name;
-		}
-
-		public String getMenuText()
-		{
-			return menuText;
-		}
-	}
-
-	private final LogTarget logTarget;
+	private UIService uiService;
 
 	@Override
 	public String getMenuText()
 	{
-		return logTarget.getMenuText();
+		return MENU_TEXT;
 	}
 
-	public ShowLogWindowAction( final LogTarget logTarget )
+	public ShowLogWindowAction()
 	{
-		super( logTarget.getName() );
-		this.logTarget = logTarget;
+		super( NAME );
+	}
+
+	public void setUIService( final UIService uiService )
+	{
+		this.uiService = uiService;
 	}
 
 	@Override
 	public void process()
 	{
-		switch ( logTarget )
-		{
-		case CLIENT:
-			SwingUtilities.invokeLater( () -> showClientLogWindow() );
-			break;
-		case SERVER:
-			SwingUtilities.invokeLater( () -> showServerLogWindow() );
-			break;
-		default:
-			break;
-		}
+		final UserInterface ui = uiService.getDefaultUI();
+		if ( ui == null )
+			return;
+		final ConsolePane< ? > console = ui.getConsolePane();
+		if ( console == null )
+			return;
+		console.show();
+		SwingUtilities.getWindowAncestor( ( ( SwingConsolePane ) console ).getComponent() ).toFront();
 	}
 
 }
