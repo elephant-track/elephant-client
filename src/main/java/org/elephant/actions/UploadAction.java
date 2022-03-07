@@ -126,7 +126,7 @@ public class UploadAction extends AbstractElephantAction
 							{
 								fos.write( buff );
 							}
-							Unirest.post( getEndpointURL( ENDPOINT_UPLOAD ) )
+							Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
 									.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 									.field( "filename", hdf5File.getName() )
 									.field( "action", bytesOffset == 0 ? "init" : "append" )
@@ -143,7 +143,7 @@ public class UploadAction extends AbstractElephantAction
 							tempFile.delete();
 						}
 					}
-					Unirest.post( getEndpointURL( ENDPOINT_UPLOAD ) )
+					Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
 							.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 							.field( "filename", hdf5File.getName() )
 							.field( "action", uploadDialog.isCancelled() ? "cancel" : "complete" )

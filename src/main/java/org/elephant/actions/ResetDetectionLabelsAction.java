@@ -91,7 +91,7 @@ public class ResetDetectionLabelsAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_RESET, true );
 			try
 			{
-				postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_DETECTION ), jsonRootObject.toString(),
+				postAsStringAsync( getEndpointURL( ENDPOINT_DETECTION_UPDATE ), jsonRootObject.toString(),
 						response -> {
 							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{

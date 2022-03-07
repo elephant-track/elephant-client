@@ -309,7 +309,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 				jsonRootObject.set( JSON_KEY_SPOTS, jsonSpots );
 				try
 				{
-					postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
+					postAsStringAsync( getEndpointURL( ENDPOINT_FLOW_PREDICT ), jsonRootObject.toString(),
 							response -> {
 								if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 								{

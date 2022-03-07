@@ -91,7 +91,7 @@ public class ResetFlowLabelsAction extends AbstractElephantDatasetAction
 					.add( JSON_KEY_RESET, true );
 			try
 			{
-				postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_FLOW ), jsonRootObject.toString(),
+				postAsStringAsync( getEndpointURL( ENDPOINT_FLOW_UPDATE ), jsonRootObject.toString(),
 						response -> {
 							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{

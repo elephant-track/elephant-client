@@ -92,37 +92,37 @@ public interface ElephantConstantsMixin
 	 * REST API endpoints
 	 */
 
-	public static final String ENDPOINT_STATE = "state";
-
-	public static final String ENDPOINT_PARAMS = "params";
-
-	public static final String ENDPOINT_PREDICT_DETECTION = "predict/seg";
-
-	public static final String ENDPOINT_PREDICT_FLOW = "predict/flow";
-
-	public static final String ENDPOINT_TRAIN_DETECTION = "train/seg";
-
-	public static final String ENDPOINT_TRAIN_FLOW = "train/flow";
-
-	public static final String ENDPOINT_UPDATE_DETECTION = "update/seg";
-
-	public static final String ENDPOINT_UPDATE_FLOW = "update/flow";
-
-	public static final String ENDPOINT_RESET_DETECTION_MODEL = "reset/seg";
-
-	public static final String ENDPOINT_RESET_FLOW_MODEL = "reset/flow";
-
-	public static final String ENDPOINT_EXPORT_CTC = "export/ctc";
-
-	public static final String ENDPOINT_GPUS = "gpus";
-
-	public static final String ENDPOINT_UPLOAD = "upload";
-
 	public static final String ENDPOINT_DATASET_CHECK = "dataset/check";
 
 	public static final String ENDPOINT_DATASET_GENERATE = "dataset/generate";
 
-	public static final String ENDPOINT_MODEL_DOWNLOAD = "model/download";
+	public static final String ENDPOINT_DOWNLOAD_CTC = "download/ctc";
+
+	public static final String ENDPOINT_DOWNLOAD_MODEL = "download/model";
+
+	public static final String ENDPOINT_FLOW_PREDICT = "flow/predict";
+
+	public static final String ENDPOINT_FLOW_RESET_MODEL = "flow/reset";
+
+	public static final String ENDPOINT_FLOW_TRAIN = "flow/train";
+
+	public static final String ENDPOINT_FLOW_UPDATE = "flow/update";
+
+	public static final String ENDPOINT_PARAMS = "params";
+
+	public static final String ENDPOINT_DETECTION_PREDICT = "seg/predict";
+
+	public static final String ENDPOINT_DETECTION_TRAIN = "seg/train";
+
+	public static final String ENDPOINT_DETECTION_UPDATE = "seg/update";
+
+	public static final String ENDPOINT_DETECTION_RESET_MODEL = "seg/reset";
+
+	public static final String ENDPOINT_STATE_GPUS = "state/gpus";
+
+	public static final String ENDPOINT_STATE_PROCESS = "state/process";
+
+	public static final String ENDPOINT_UPLOAD_IMAGE = "upload/image";
 
 	/**
 	 * REST API JSON keys
@@ -143,6 +143,8 @@ public interface ElephantConstantsMixin
 	public static final String JSON_KEY_DEBUG = "debug";
 
 	public static final String JSON_KEY_SCALES = "scales";
+
+	public static final String JSON_KEY_INPUT_SIZE = "input_size";
 
 	public static final String JSON_KEY_TRAIN_CROP_SIZE = "crop_size";
 

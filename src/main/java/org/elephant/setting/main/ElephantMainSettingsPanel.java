@@ -137,6 +137,10 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 
 				separator(),
 
+				doubleElementEx( "rescale x", 0, 100, 0.01, style::getRescaleX, style::setRescaleX ),
+				doubleElementEx( "rescale y", 0, 100, 0.01, style::getRescaleY, style::setRescaleY ),
+				doubleElementEx( "rescale z", 0, 100, 0.01, style::getRescaleZ, style::setRescaleZ ),
+
 				intElement( "training crop size x", 1, 9999, style::getTrainingCropSizeX, style::setTrainingCropSizeX ),
 				intElement( "training crop size y", 1, 9999, style::getTrainingCropSizeY, style::setTrainingCropSizeY ),
 				intElement( "training crop size z", 1, 9999, style::getTrainingCropSizeZ, style::setTrainingCropSizeZ ),

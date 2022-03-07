@@ -107,7 +107,7 @@ public class AbortProcessingAction extends AbstractElephantAction
 		final JsonObject jsonRootObject = Json.object().add( JSON_KEY_STATE, 0 );
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_STATE ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_STATE_PROCESS ), jsonRootObject.toString(),
 					response -> {
 						showTextOverlayAnimator( "Sent abort signal", 3000, TextOverlayAnimator.TextPosition.CENTER );
 						getActionStateManager().setLivemode( false );

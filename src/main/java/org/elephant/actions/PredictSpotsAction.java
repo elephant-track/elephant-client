@@ -65,6 +65,7 @@ import com.eclipsesource.json.JsonValue;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imglib2.Dimensions;
 import net.imglib2.RealPoint;
 import net.imglib2.neighborsearch.NearestNeighborSearch;
 
@@ -194,6 +195,11 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
+		final Dimensions dimensions = getRescaledDimensions();
+		final JsonArray inputSize = new JsonArray()
+				.add( dimensions.dimension( 0 ) )
+				.add( dimensions.dimension( 1 ) )
+				.add( dimensions.dimension( 2 ) );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
@@ -211,7 +217,8 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_IS_3D, !is2D() )
 				.add( JSON_KEY_USE_2D_MODEL, getMainSettings().getUse2dModel() )
 				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() )
-				.add( JSON_KEY_BATCH_SIZE, getMainSettings().getBatchSize() );
+				.add( JSON_KEY_BATCH_SIZE, getMainSettings().getBatchSize() )
+				.add( JSON_KEY_INPUT_SIZE, inputSize );
 		if ( getMainSettings().getPatch() )
 		{
 			jsonRootObject.add( JSON_KEY_PATCH, new JsonArray()
@@ -257,7 +264,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_DETECTION ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_DETECTION_PREDICT ), jsonRootObject.toString(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{

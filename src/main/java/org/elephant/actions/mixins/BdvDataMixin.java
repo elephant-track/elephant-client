@@ -30,15 +30,17 @@ import java.io.File;
 
 import bdv.img.hdf5.Hdf5ImageLoader;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;
+import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
+import net.imglib2.FinalDimensions;
 
 /**
  * Get the metadata of the BDV data.
  * 
  * @author Ko Sugawara
  */
-public interface BdvDataMixin extends ElephantActionMixin
+public interface BdvDataMixin extends ElephantActionMixin, ElephantSettingsMixin
 {
 
 	default boolean is2D()
@@ -46,10 +48,32 @@ public interface BdvDataMixin extends ElephantActionMixin
 		return getAppModel().getSharedBdvData().is2D();
 	}
 
+	default Dimensions getRescaledDimensions()
+	{
+		final Dimensions dimensions = getDimensions();
+		final int numdimensions = dimensions.numDimensions();
+		final long[] rescaledDimensions = new long[ numdimensions ];
+		rescaledDimensions[ 0 ] = ( long ) ( dimensions.dimension( 0 ) * getMainSettings().getRescaleX() );
+		rescaledDimensions[ 1 ] = ( long ) ( dimensions.dimension( 1 ) * getMainSettings().getRescaleY() );
+		rescaledDimensions[ 2 ] = ( long ) ( dimensions.dimension( 2 ) * getMainSettings().getRescaleZ() );
+		return new FinalDimensions( rescaledDimensions );
+	}
+
 	default Dimensions getDimensions()
 	{
 		return getAppModel().getSharedBdvData().getSpimData()
 				.getSequenceDescription().getViewSetupsOrdered().get( 0 ).getSize();
+	}
+
+	default VoxelDimensions getRescaledVoxelDimensions()
+	{
+		VoxelDimensions voxelDimensions = getVoxelDimensions();
+		final int numdimensions = voxelDimensions.numDimensions();
+		final double[] rescaledVoxelDimensions = new double[ numdimensions ];
+		rescaledVoxelDimensions[ 0 ] = voxelDimensions.dimension( 0 ) / getMainSettings().getRescaleX();
+		rescaledVoxelDimensions[ 1 ] = voxelDimensions.dimension( 1 ) / getMainSettings().getRescaleY();
+		rescaledVoxelDimensions[ 2 ] = voxelDimensions.dimension( 2 ) / getMainSettings().getRescaleZ();
+		return new FinalVoxelDimensions( voxelDimensions.unit(), rescaledVoxelDimensions );
 	}
 
 	default VoxelDimensions getVoxelDimensions()
@@ -76,7 +100,7 @@ public interface BdvDataMixin extends ElephantActionMixin
 
 	default int getNKeepAxials()
 	{
-		final VoxelDimensions voxelDimensions = getVoxelDimensions();
+		final VoxelDimensions voxelDimensions = getRescaledVoxelDimensions();
 		final double anisotropy = voxelDimensions.dimension( 2 ) / voxelDimensions.dimension( 0 );
 		final int floorLog2 = 31 - Integer.numberOfLeadingZeros( ( int ) anisotropy );
 		final int ceilLog2 = 32 - Integer.numberOfLeadingZeros( ( int ) ( anisotropy - 1 ) );

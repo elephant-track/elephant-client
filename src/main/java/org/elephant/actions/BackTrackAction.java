@@ -172,7 +172,7 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 	{
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_PREDICT_FLOW ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_FLOW_PREDICT ), jsonRootObject.toString(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{

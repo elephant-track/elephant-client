@@ -151,11 +151,11 @@ public class ResetDetectionModelAction extends AbstractElephantDatasetAction
 				};
 				if ( atomoicFile.get() == null )
 				{
-					postAsStringAsync( getEndpointURL( ENDPOINT_RESET_DETECTION_MODEL ), jsonRootObject.toString(), completed );
+					postAsStringAsync( getEndpointURL( ENDPOINT_DETECTION_RESET_MODEL ), jsonRootObject.toString(), completed );
 				}
 				else
 				{
-					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_RESET_DETECTION_MODEL ), atomoicFile.get(), jsonRootObject.toString(), completed );
+					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_DETECTION_RESET_MODEL ), atomoicFile.get(), jsonRootObject.toString(), completed );
 				}
 			}
 			catch ( final ElephantConnectException e )

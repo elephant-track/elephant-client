@@ -62,6 +62,12 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_TRAINING_CROP_SIZE_Z = 16;
 
+	public static final double DEFAULT_RESCALE_X = 1.0;
+
+	public static final double DEFAULT_RESCALE_Y = 1.0;
+
+	public static final double DEFAULT_RESCALE_Z = 1.0;
+
 	public static final int DEFAULT_BATCH_SIZE = 1;
 
 	public static final int DEFAULT_NUM_CROPS = 5;
@@ -164,6 +170,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		trainingCropSizeX = settings.trainingCropSizeX;
 		trainingCropSizeY = settings.trainingCropSizeY;
 		trainingCropSizeZ = settings.trainingCropSizeZ;
+		rescaleX = settings.rescaleX;
+		rescaleY = settings.rescaleY;
+		rescaleZ = settings.rescaleZ;
 		batchSize = settings.batchSize;
 		numCrops = settings.numCrops;
 		numEpochs = settings.numEpochs;
@@ -226,6 +235,12 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 	private int trainingCropSizeY = DEFAULT_TRAINING_CROP_SIZE_Y;
 
 	private int trainingCropSizeZ = DEFAULT_TRAINING_CROP_SIZE_Z;
+
+	private double rescaleX = DEFAULT_RESCALE_X;
+
+	private double rescaleY = DEFAULT_RESCALE_Y;
+
+	private double rescaleZ = DEFAULT_RESCALE_Z;
 
 	private int batchSize = DEFAULT_BATCH_SIZE;
 
@@ -453,6 +468,48 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		if ( this.trainingCropSizeZ != trainingCropSizeZ )
 		{
 			this.trainingCropSizeZ = trainingCropSizeZ;
+			notifyListeners();
+		}
+	}
+
+	public double getRescaleX()
+	{
+		return rescaleX;
+	}
+
+	public synchronized void setRescaleX( final double rescaleX )
+	{
+		if ( this.rescaleX != rescaleX )
+		{
+			this.rescaleX = rescaleX;
+			notifyListeners();
+		}
+	}
+
+	public double getRescaleY()
+	{
+		return rescaleY;
+	}
+
+	public synchronized void setRescaleY( final double rescaleY )
+	{
+		if ( this.rescaleY != rescaleY )
+		{
+			this.rescaleY = rescaleY;
+			notifyListeners();
+		}
+	}
+
+	public double getRescaleZ()
+	{
+		return rescaleZ;
+	}
+
+	public synchronized void setRescaleZ( final double rescaleZ )
+	{
+		if ( this.rescaleZ != rescaleZ )
+		{
+			this.rescaleZ = rescaleZ;
 			notifyListeners();
 		}
 	}
@@ -1009,6 +1066,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.trainingCropSizeX = DEFAULT_TRAINING_CROP_SIZE_X;
 		df.trainingCropSizeY = DEFAULT_TRAINING_CROP_SIZE_Y;
 		df.trainingCropSizeZ = DEFAULT_TRAINING_CROP_SIZE_Z;
+		df.rescaleX = DEFAULT_RESCALE_X;
+		df.rescaleY = DEFAULT_RESCALE_Y;
+		df.rescaleZ = DEFAULT_RESCALE_Z;
 		df.batchSize = DEFAULT_BATCH_SIZE;
 		df.numCrops = DEFAULT_NUM_CROPS;
 		df.numEpochs = DEFAULT_NUM_EPOCHS;

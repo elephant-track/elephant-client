@@ -132,11 +132,11 @@ public class ResetFlowModelAction extends AbstractElephantDatasetAction
 				};
 				if ( atomoicFile.get() == null )
 				{
-					postAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), jsonRootObject.toString(), completed );
+					postAsStringAsync( getEndpointURL( ENDPOINT_FLOW_RESET_MODEL ), jsonRootObject.toString(), completed );
 				}
 				else
 				{
-					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_RESET_FLOW_MODEL ), atomoicFile.get(), jsonRootObject.toString(), completed );
+					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_FLOW_RESET_MODEL ), atomoicFile.get(), jsonRootObject.toString(), completed );
 				}
 			}
 			catch ( final ElephantConnectException e )

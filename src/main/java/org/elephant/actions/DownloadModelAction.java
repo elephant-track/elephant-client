@@ -188,7 +188,7 @@ public class DownloadModelAction extends AbstractElephantAction implements Eleph
 				.add( JSON_KEY_MODEL_NAME, modelFilename );
 		try
 		{
-			postAsFileAsync( getEndpointURL( ENDPOINT_MODEL_DOWNLOAD ), jsonRootObject.toString(), file.getAbsolutePath(),
+			postAsFileAsync( getEndpointURL( ENDPOINT_DOWNLOAD_MODEL ), jsonRootObject.toString(), file.getAbsolutePath(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{

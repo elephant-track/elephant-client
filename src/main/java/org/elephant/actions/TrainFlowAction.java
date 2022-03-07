@@ -140,7 +140,7 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 	{
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_TRAIN_FLOW ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_FLOW_TRAIN ), jsonRootObject.toString(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{

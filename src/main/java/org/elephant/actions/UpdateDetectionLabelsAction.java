@@ -189,7 +189,7 @@ public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
 	{
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_UPDATE_DETECTION ), jsonRootObject.toString(),
+			postAsStringAsync( getEndpointURL( ENDPOINT_DETECTION_UPDATE ), jsonRootObject.toString(),
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{

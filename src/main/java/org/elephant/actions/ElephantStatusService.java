@@ -50,7 +50,7 @@ public class ElephantStatusService extends AbstractElephantService
 					{
 						try
 						{
-							final HttpResponse< String > response = Unirest.get( getEndpointURL( ENDPOINT_GPUS ) ).asString();
+							final HttpResponse< String > response = Unirest.get( getEndpointURL( ENDPOINT_STATE_GPUS ) ).asString();
 							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 							{
 								final String body = response.getBody();

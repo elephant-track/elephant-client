@@ -235,7 +235,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 		final String zipAbsolutePath = Paths.get( dir.getAbsolutePath(), RES_ZIPNAME ).toString();
 		try
 		{
-			postAsFileAsync( getEndpointURL( ENDPOINT_EXPORT_CTC ), jsonRootObject.toString(), zipAbsolutePath,
+			postAsFileAsync( getEndpointURL( ENDPOINT_DOWNLOAD_CTC ), jsonRootObject.toString(), zipAbsolutePath,
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
