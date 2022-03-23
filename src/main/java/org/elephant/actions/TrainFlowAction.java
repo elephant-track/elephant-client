@@ -48,6 +48,7 @@ import com.eclipsesource.json.JsonObject;
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imglib2.Dimensions;
 
 /**
  * Send a request for training a flow model.
@@ -103,6 +104,11 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
+		final Dimensions dimensions = getRescaledDimensions();
+		final JsonArray inputSize = new JsonArray()
+				.add( dimensions.dimension( 0 ) )
+				.add( dimensions.dimension( 1 ) )
+				.add( dimensions.dimension( 2 ) );
 		final JsonArray cropSize = new JsonArray()
 				.add( getMainSettings().getTrainingCropSizeX() )
 				.add( getMainSettings().getTrainingCropSizeY() )
@@ -131,7 +137,8 @@ public class TrainFlowAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_LOG_INTERVAL, getMainSettings().getLogInterval() )
 				.add( JSON_KEY_LOG_DIR, getMainSettings().getFlowLogName() )
 				.add( JSON_KEY_IS_3D, !is2D() )
-				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() );
+				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() )
+				.add( JSON_KEY_INPUT_SIZE, inputSize );
 		return true;
 	}
 

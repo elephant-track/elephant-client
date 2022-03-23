@@ -30,6 +30,7 @@ import java.net.HttpURLConnection;
 
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
+import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
@@ -52,6 +53,7 @@ import com.eclipsesource.json.JsonObject;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imglib2.Dimensions;
 
 /**
  * Track the highlighted spot backward, creating a new spot based on a flow
@@ -60,7 +62,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class BackTrackAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
+		implements BdvDataMixin, ElephantGraphActionMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -124,13 +126,22 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
+		final Dimensions dimensions = getRescaledDimensions();
+		final JsonArray inputSize = new JsonArray()
+				.add( dimensions.dimension( 0 ) )
+				.add( dimensions.dimension( 1 ) )
+				.add( dimensions.dimension( 2 ) );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
 				.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
+				.add( JSON_KEY_OUTPUT_PREDICTION, getMainSettings().getOutputPrediction() )
 				.add( JSON_KEY_MAX_DISPLACEMENT, getMainSettings().getMaxDisplacement() )
 				.add( JSON_KEY_SCALES, scales )
-				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() );
+				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
+				.add( JSON_KEY_INPUT_SIZE, inputSize )
+				.add( JSON_KEY_CACHE_MAXBYTES, getMainSettings().getCacheMaxbytes() )
+				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() );
 		if ( getMainSettings().getPatch() )
 		{
 			jsonRootObject.add( JSON_KEY_PATCH, new JsonArray()
@@ -158,6 +169,12 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 			final JsonArray jsonSpots = Json.array().add( jsonSpot );
 			jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
 			jsonRootObject.set( "spots", jsonSpots );
+			final long[] cropOrigin = new long[ 3 ];
+			final long[] cropSize = new long[ 3 ];
+			calculateCropBoxAround( pos, cropOrigin, cropSize );
+			jsonRootObject.add( JSON_KEY_PREDICT_CROP_BOX, Json.array()
+					.add( cropOrigin[ 0 ] ).add( cropOrigin[ 1 ] ).add( cropOrigin[ 2 ] )
+					.add( cropSize[ 0 ] ).add( cropSize[ 1 ] ).add( cropSize[ 2 ] ) );
 		}
 		finally
 		{

@@ -78,6 +78,7 @@ import com.eclipsesource.json.JsonValue;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imglib2.Dimensions;
 import net.imglib2.RealPoint;
 
 /**
@@ -219,6 +220,11 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 				.add( voxelSize.dimension( 0 ) )
 				.add( voxelSize.dimension( 1 ) )
 				.add( voxelSize.dimension( 2 ) );
+		final Dimensions dimensions = getRescaledDimensions();
+		final JsonArray inputSize = new JsonArray()
+				.add( dimensions.dimension( 0 ) )
+				.add( dimensions.dimension( 1 ) )
+				.add( dimensions.dimension( 2 ) );
 		jsonRootObject = Json.object()
 				.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 				.add( JSON_KEY_MODEL_NAME, getMainSettings().getFlowModelName() )
@@ -230,7 +236,8 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_CACHE_MAXBYTES, getMainSettings().getCacheMaxbytes() )
 				.add( JSON_KEY_IS_3D, !is2D() )
 				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() )
-				.add( JSON_KEY_BATCH_SIZE, getMainSettings().getBatchSize() );
+				.add( JSON_KEY_BATCH_SIZE, getMainSettings().getBatchSize() )
+				.add( JSON_KEY_INPUT_SIZE, inputSize );
 		if ( getMainSettings().getPatch() )
 		{
 			jsonRootObject.add( JSON_KEY_PATCH, new JsonArray()
@@ -245,6 +252,9 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 			final long[] cropSize = new long[ 3 ];
 			mouseMotionService.getMousePositionGlobal( pos );
 			calculateCropBoxAround( pos, cropOrigin, cropSize );
+			jsonRootObject.add( JSON_KEY_PREDICT_CROP_BOX, Json.array()
+					.add( cropOrigin[ 0 ] ).add( cropOrigin[ 1 ] ).add( cropOrigin[ 2 ] )
+					.add( cropSize[ 0 ] ).add( cropSize[ 1 ] ).add( cropSize[ 2 ] ) );
 			cropBoxOrigin = new FinalVoxelDimensions(
 					getVoxelDimensions().unit(),
 					cropOrigin[ 0 ] * voxelSize.dimension( 0 ),
