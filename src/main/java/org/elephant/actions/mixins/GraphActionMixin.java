@@ -26,7 +26,10 @@
  ******************************************************************************/
 package org.elephant.actions.mixins;
 
+import org.mastodon.graph.GraphIdBimap;
+import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.ModelGraph;
+import org.mastodon.mamut.model.Spot;
 
 /**
  * Provide access to {@link ModelGraph}.
@@ -39,6 +42,21 @@ public interface GraphActionMixin extends ElephantActionMixin
 	default ModelGraph getGraph()
 	{
 		return getModel().getGraph();
+	}
+
+	default GraphIdBimap< Spot, Link > getGraphIdBimap()
+	{
+		return getGraph().getGraphIdBimap();
+	}
+
+	default int getVertexId( final Spot spot )
+	{
+		return getGraphIdBimap().getVertexId( spot );
+	}
+
+	default int getEdgeId( final Link link )
+	{
+		return getGraphIdBimap().getEdgeId( link );
 	}
 
 }

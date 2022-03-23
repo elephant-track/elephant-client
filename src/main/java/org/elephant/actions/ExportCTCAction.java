@@ -94,6 +94,8 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 
 	private static final String RES_FILENAME = "res_track.txt";
 
+	private static final String ID_MAP_FILENAME = "id_map.csv";
+
 	private static final String RES_ZIPNAME = "res.zip";
 
 	private int id;
@@ -122,6 +124,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 	private enum Prefs
 	{
 		FileLocation;
+
 		private static Preferences prefs = Preferences.userRoot().node( Prefs.class.getName() );
 
 		String get()
@@ -170,6 +173,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 			return false;
 		final ObjTagMap< Spot, Tag > tagMapStatus = getVertexTagMap( getStatusTagSet() );
 		final Tag statusCompletedTag = getTag( getStatusTagSet(), STATUS_COMPLETED_TAG_NAME );
+		final List< IdMapEntity > idMapList = new ArrayList<>();
 		final List< CTCTrackEntity > trackList = new ArrayList<>();
 		final JsonArray jsonSpots = Json.array();
 		getGraph().getLock().readLock().lock();
@@ -186,7 +190,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 			for ( int i = 0; i < rootSpots.size(); i++ )
 			{
 				rootSpots.get( i, ref );
-				buildResult( ref, trackList, UNSET, 0, jsonSpots );
+				buildResult( ref, idMapList, trackList, UNSET, 0, jsonSpots );
 			}
 			getGraph().releaseRef( ref );
 		}
@@ -203,6 +207,26 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 			{
 				for ( int i = 0; i < trackList.size(); i++ )
 					writer.writeNext( trackList.get( i ).toCsvEntry() );
+			}
+			finally
+			{
+				writer.close();
+			}
+		}
+		catch ( final IOException e )
+		{
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+		}
+
+		final File idMapFile = Paths.get( dir.getAbsolutePath(), ID_MAP_FILENAME ).toFile();
+		try (final FileWriter fileWriter = new FileWriter( idMapFile ))
+		{
+			final CSVWriter writer = new CSVWriter( fileWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
+			writer.writeNext( new String[] { "Original ID", "ID" } );
+			try
+			{
+				for ( int i = 0; i < idMapList.size(); i++ )
+					writer.writeNext( idMapList.get( i ).toCsvEntry() );
 			}
 			finally
 			{
@@ -281,6 +305,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 
 	private class CTCTrackEntity
 	{
+
 		private final int id;
 
 		private final int start;
@@ -308,7 +333,28 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 		}
 	}
 
-	private void buildResult( Spot spot, List< CTCTrackEntity > trackList, int start, int parent, final JsonArray jsonSpots )
+	private class IdMapEntity
+	{
+		private final int originalId;
+
+		private final int id;
+
+		public IdMapEntity( final int originalId, final int id )
+		{
+			this.originalId = originalId;
+			this.id = id;
+		}
+
+		public String[] toCsvEntry()
+		{
+			return new String[] {
+					Integer.toString( originalId ),
+					Integer.toString( id ),
+			};
+		}
+	}
+
+	private void buildResult( Spot spot, List< IdMapEntity > idMapList, List< CTCTrackEntity > trackList, int start, int parent, final JsonArray jsonSpots )
 	{
 		final RefList< Link > outgoingEdges = RefCollections.createRefList( getGraph().edges() );
 		for ( final Link edge : spot.outgoingEdges() )
@@ -326,6 +372,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 				.add( "pos", Json.array( pos ) )
 				.add( "covariance", Json.array( cov1d ) )
 				.add( "value", id ) );
+		idMapList.add( new IdMapEntity( getVertexId( spot ), id ) );
 		if ( outgoingEdges.size() == 0 )
 		{
 			trackList.add( new CTCTrackEntity( id, start, spot.getTimepoint(), parent ) );
@@ -340,7 +387,7 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 			start = UNSET;
 		}
 		for ( final Link edge : outgoingEdges )
-			buildResult( edge.getTarget( spot ), trackList, start, parent, jsonSpots );
+			buildResult( edge.getTarget( spot ), idMapList, trackList, start, parent, jsonSpots );
 	}
 
 }
