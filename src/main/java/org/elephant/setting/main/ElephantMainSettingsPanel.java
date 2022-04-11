@@ -117,6 +117,7 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				doubleElementEx( String.format( "NN linking threshold (%s)", unit ), 0.0, 100.0, 0.01, style::getNNLinkingThreshold, style::setNNLinkingThreshold ),
 				intElement( "NN max edges", 1, 5, style::getNNMaxEdges, style::setNNMaxEdges ),
 				booleanElement( "use optical flow for linking", style::getUseOpticalflow, style::setUseOpticalflow ),
+				booleanElement( "use interpolation for linking", style::getUseInterpolation, style::setUseInterpolation ),
 
 				separator(),
 
