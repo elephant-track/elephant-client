@@ -32,11 +32,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.elephant.actions.mixins.BdvDataMixin;
@@ -44,6 +44,8 @@ import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.UnirestMixin;
 
+import bdv.img.hdf5.Hdf5ImageLoader;
+import bdv.img.hdf5.Partition;
 import kong.unirest.Unirest;
 
 /**
@@ -74,89 +76,175 @@ public class UploadAction extends AbstractElephantAction
 		super( NAME );
 	}
 
+	private void uploadFile( final File file, final UploadDialog uploadDialog, final String labelPrefix )
+	{
+		final byte[] buff = new byte[ CHUNK_SIZE ];
+		final long fileSize = file.length();
+		long bytesOffset = 0;
+		try (final InputStream fis = new FileInputStream( file ))
+		{
+			while ( !uploadDialog.isCancelled() )
+			{
+				final int readBytes = fis.read( buff );
+				if ( readBytes == -1 )
+				{
+					break;
+				}
+				final long bytesOffsetFinal = bytesOffset;
+				final File tempFile = File.createTempFile( "elephant", ".h5", null );
+				try
+				{
+					try (final FileOutputStream fos = new FileOutputStream( tempFile ))
+					{
+						fos.write( buff );
+					}
+					Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
+							.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
+							.field( "filename", file.getName() )
+							.field( "action", bytesOffset == 0 ? "init" : "append" )
+							.field( "file", tempFile )
+							.uploadMonitor( ( field, fileName, bytesWritten, totalBytes ) -> {
+								uploadDialog.setLabelText( labelPrefix + String.format( "%.2f MB / %.2f MB", toMB( Math.min( fileSize, bytesOffsetFinal + bytesWritten ) ), toMB( fileSize ) ) );
+								uploadDialog.setProgressBarValue( ( int ) ( 100 * ( bytesOffsetFinal + bytesWritten ) / fileSize ) );
+							} )
+							.asEmpty();
+					bytesOffset += readBytes;
+				}
+				finally
+				{
+					tempFile.delete();
+				}
+			}
+			Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
+					.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
+					.field( "filename", file.getName() )
+					.field( "action", uploadDialog.isCancelled() ? "cancel" : "complete" )
+					.asEmpty();
+		}
+		catch ( final IOException e )
+		{
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			return;
+		}
+	}
+
+	private void uploadPartition( final Partition partition, final int i, final UploadDialog uploadDialog, final int nPartitions )
+	{
+		getClientLogger().info( partition.getPath() );
+		final File hdf5File = new File( partition.getPath() );
+		final String labelPrefix = String.format( "%d / %d: ", i, nPartitions );
+		uploadFile( hdf5File, uploadDialog, labelPrefix );
+		final byte[] buff = new byte[ CHUNK_SIZE ];
+		final long fileSize = hdf5File.length();
+		long bytesOffset = 0;
+		try (final InputStream fis = new FileInputStream( hdf5File ))
+		{
+			while ( !uploadDialog.isCancelled() )
+			{
+				final int readBytes = fis.read( buff );
+				if ( readBytes == -1 )
+				{
+					break;
+				}
+				final long bytesOffsetFinal = bytesOffset;
+				final File tempFile = File.createTempFile( "elephant", ".h5", null );
+				try
+				{
+					try (final FileOutputStream fos = new FileOutputStream( tempFile ))
+					{
+						fos.write( buff );
+					}
+					Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
+							.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
+							.field( "filename", hdf5File.getName() )
+							.field( "action", bytesOffset == 0 ? "init" : "append" )
+							.field( "file", tempFile )
+							.uploadMonitor( ( field, fileName, bytesWritten, totalBytes ) -> {
+								uploadDialog.setLabelText( String.format( "%d / %d: %.2f MB / %.2f MB", i, nPartitions, toMB( Math.min( fileSize, bytesOffsetFinal + bytesWritten ) ), toMB( fileSize ) ) );
+								uploadDialog.setProgressBarValue( ( int ) ( 100 * ( bytesOffsetFinal + bytesWritten ) / fileSize ) );
+							} )
+							.asEmpty();
+					bytesOffset += readBytes;
+				}
+				finally
+				{
+					tempFile.delete();
+				}
+			}
+			Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
+					.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
+					.field( "filename", hdf5File.getName() )
+					.field( "action", uploadDialog.isCancelled() ? "cancel" : "complete" )
+					.asEmpty();
+		}
+		catch ( final IOException e )
+		{
+			getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+			return;
+		}
+	}
+
 	@Override
 	void process()
 	{
-		File hdf5File = getHdf5File();
-		if ( hdf5File == null || !hdf5File.exists() )
+		if ( !( getImgLoader() instanceof Hdf5ImageLoader ) )
 		{
-			final JFileChooser chooser = new JFileChooser();
-			final FileNameExtensionFilter filter = new FileNameExtensionFilter( "BigDataViewer HDF 5", "h5" );
-			chooser.setFileFilter( filter );
-			final AtomicReference< File > file = new AtomicReference<>();
 			try
 			{
-				SwingUtilities.invokeAndWait( () -> {
-					final int returnVal = chooser.showOpenDialog( null );
-					if ( returnVal == JFileChooser.APPROVE_OPTION )
-					{
-						file.set( chooser.getSelectedFile() );
-					}
-				} );
+				SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "ELEPHANT only supports XML/HDF5 data format" ) );
 			}
-			catch ( final InvocationTargetException | InterruptedException e )
+			catch ( InvocationTargetException | InterruptedException e )
 			{
-				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+				handleError( e );
 			}
-			hdf5File = file.get();
+			return;
 		}
-		if ( hdf5File != null )
+		if ( !( ( Hdf5ImageLoader ) getImgLoader() ).getPartitions().isEmpty() )
 		{
 			final UploadDialog uploadDialog = new UploadDialog();
 			SwingUtilities.invokeLater( () -> uploadDialog.setVisible( true ) );
 			try
 			{
-				final byte[] buff = new byte[ CHUNK_SIZE ];
-				final long fileSize = hdf5File.length();
-				long bytesOffset = 0;
-				try (final InputStream fis = new FileInputStream( hdf5File ))
+				final ArrayList< Partition > partitions = getPartitions();
+				final int nPartitions = partitions.size();
+				final AtomicInteger count = new AtomicInteger();
+				for ( final Partition partition : partitions )
 				{
-					while ( !uploadDialog.isCancelled() )
-					{
-						final int readBytes = fis.read( buff );
-						if ( readBytes == -1 )
-						{
-							break;
-						}
-						final long bytesOffsetFinal = bytesOffset;
-						final File tempFile = File.createTempFile( "elephant", ".h5", null );
-						try
-						{
-							try (final FileOutputStream fos = new FileOutputStream( tempFile ))
-							{
-								fos.write( buff );
-							}
-							Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
-									.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-									.field( "filename", hdf5File.getName() )
-									.field( "action", bytesOffset == 0 ? "init" : "append" )
-									.field( "file", tempFile )
-									.uploadMonitor( ( field, fileName, bytesWritten, totalBytes ) -> {
-										uploadDialog.setLabelText( String.format( "%.2f MB / %.2f MB", toMB( Math.min( fileSize, bytesOffsetFinal + bytesWritten ) ), toMB( fileSize ) ) );
-										uploadDialog.setProgressBarValue( ( int ) ( 100 * ( bytesOffsetFinal + bytesWritten ) / fileSize ) );
-									} )
-									.asEmpty();
-							bytesOffset += readBytes;
-						}
-						finally
-						{
-							tempFile.delete();
-						}
-					}
-					Unirest.post( getEndpointURL( ENDPOINT_UPLOAD_IMAGE ) )
-							.field( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
-							.field( "filename", hdf5File.getName() )
-							.field( "action", uploadDialog.isCancelled() ? "cancel" : "complete" )
-							.asEmpty();
+					uploadPartition( partition, count.getAndIncrement(), uploadDialog, nPartitions );
 				}
+				if ( uploadDialog.isCancelled() )
+				{
+					try
+					{
+						SwingUtilities.invokeAndWait( () -> JOptionPane.showMessageDialog( null, "Upload cancelled" ) );
+					}
+					catch ( InvocationTargetException | InterruptedException e )
+					{
+						handleError( e );
+					}
+					return;
+				}
+			}
+			finally
+			{
 				SwingUtilities.invokeLater( () -> uploadDialog.dispose() );
 			}
-			catch ( final IOException e )
-			{
-				getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
-				return;
-			}
 		}
+//
+//		File hdf5File = getHdf5File();
+//		if ( hdf5File != null )
+//		{
+//			final UploadDialog uploadDialog = new UploadDialog();
+//			SwingUtilities.invokeLater( () -> uploadDialog.setVisible( true ) );
+//			try
+//			{
+//				uploadFile( hdf5File, uploadDialog, "" );
+//			}
+//			finally
+//			{
+//				SwingUtilities.invokeLater( () -> uploadDialog.dispose() );
+//			}
+//		}
 	}
 
 	private static double toMB( final long bytes )

@@ -27,8 +27,13 @@
 package org.elephant.actions.mixins;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import bdv.img.hdf5.Hdf5ImageLoader;
+import bdv.img.hdf5.Partition;
+import bdv.spimdata.tools.MergePartitionList;
+import mpicbg.spim.data.generic.AbstractSpimData;
+import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import mpicbg.spim.data.sequence.VoxelDimensions;
@@ -61,8 +66,7 @@ public interface BdvDataMixin extends ElephantActionMixin, ElephantSettingsMixin
 
 	default Dimensions getDimensions()
 	{
-		return getAppModel().getSharedBdvData().getSpimData()
-				.getSequenceDescription().getViewSetupsOrdered().get( 0 ).getSize();
+		return getSequenceDescription().getViewSetupsOrdered().get( 0 ).getSize();
 	}
 
 	default VoxelDimensions getRescaledVoxelDimensions()
@@ -78,24 +82,44 @@ public interface BdvDataMixin extends ElephantActionMixin, ElephantSettingsMixin
 
 	default VoxelDimensions getVoxelDimensions()
 	{
-		return getAppModel().getSharedBdvData().getSpimData()
-				.getSequenceDescription().getViewSetupsOrdered().get( 0 ).getVoxelSize();
+		return getSequenceDescription().getViewSetupsOrdered().get( 0 ).getVoxelSize();
+	}
+
+	default AbstractSpimData< ? > getSpimData()
+	{
+		return getAppModel().getSharedBdvData().getSpimData();
 	}
 
 	default File getBasePath()
 	{
-		return getAppModel().getSharedBdvData().getSpimData().getBasePath();
+		return getSpimData().getBasePath();
+	}
+
+	default AbstractSequenceDescription< ?, ?, ? > getSequenceDescription()
+	{
+		return getSpimData().getSequenceDescription();
+	}
+
+	default BasicImgLoader getImgLoader()
+	{
+		return getSequenceDescription().getImgLoader();
 	}
 
 	default File getHdf5File()
 	{
-		final BasicImgLoader imgLoader = getAppModel().getSharedBdvData().getSpimData().getSequenceDescription().getImgLoader();
+		final BasicImgLoader imgLoader = getImgLoader();
 		File file = null;
 		if ( imgLoader instanceof Hdf5ImageLoader )
 		{
 			file = ( ( Hdf5ImageLoader ) imgLoader ).getHdf5File();
 		}
 		return file;
+	}
+
+	default ArrayList< Partition > getPartitions()
+	{
+		final AbstractSequenceDescription< ?, ?, ? > sequenceDescription = getSequenceDescription();
+		return MergePartitionList.getPartitions( sequenceDescription );
 	}
 
 	default int getNKeepAxials()
