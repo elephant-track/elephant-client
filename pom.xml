@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>29.2.1</version>
+		<version>31.1.0</version>
 	</parent>
 	<groupId>org.elephant</groupId>
 	<artifactId>elephant</artifactId>
@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
-			<version>2.6.4</version>
+			<version>2.10.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scijava</groupId>
@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>org.mastodon</groupId>
 			<artifactId>mastodon</artifactId>
-			<version>1.0.0-beta-20</version>
+			<version>1.0.0-beta-21</version>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
@@ -107,6 +107,12 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-realtransform</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -163,7 +169,8 @@
 		<license.projectName>elephant</license.projectName>
 		<license.copyrightOwners>Ko Sugawara</license.copyrightOwners>
 
-		<bigdataviewer-core.version>10.2.0</bigdataviewer-core.version>
+		<bigdataviewer-core.version>10.2.1</bigdataviewer-core.version>
+		<imglib2-realtransform.version>3.1.2</imglib2-realtransform.version>
 
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<!-- <releaseProfiles>deploy-to-imagej</releaseProfiles> -->
