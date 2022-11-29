@@ -317,7 +317,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		REFIT
 	}
 
-	private static class SpotStruct
+	public static class SpotStruct
 	{
 		int t;
 
@@ -325,14 +325,14 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 
 		final double[][] covariance;
 
-		private SpotStruct( final double[] pos, final double[][] covariance )
+		SpotStruct( final double[] pos, final double[][] covariance )
 		{
 			this.pos = pos;
 			this.covariance = covariance;
 		}
 	}
 
-	private void getNextFromJson( final SpotStruct jsonRef, final JsonObject jsonObject )
+	public static void getNextFromJson( final SpotStruct jsonRef, final JsonObject jsonObject )
 	{
 		final JsonArray posArray = jsonObject.get( "pos" ).asArray();
 		final JsonArray covArray = jsonObject.get( "covariance" ).asArray();
