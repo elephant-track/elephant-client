@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>31.1.0</version>
+		<version>33.2.0</version>
 	</parent>
 	<groupId>org.elephant</groupId>
 	<artifactId>elephant</artifactId>
@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>org.mastodon</groupId>
 			<artifactId>mastodon</artifactId>
-			<version>1.0.0-beta-21</version>
+			<version>1.0.0-beta-26</version>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
