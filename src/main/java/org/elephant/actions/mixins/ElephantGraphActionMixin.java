@@ -44,9 +44,9 @@ public interface ElephantGraphActionMixin extends BdvDataMixin, ElephantSettings
 	default void calculateCropBoxAround( final double[] pos, final long[] cropOrigin, final long[] cropSize )
 	{
 		final int[] cropBoxSize = new int[] {
-				getMainSettings().getPatchSizeX(),
-				getMainSettings().getPatchSizeY(),
-				getMainSettings().getPatchSizeZ()
+				getMainSettings().getPredictionCropSizeX(),
+				getMainSettings().getPredictionCropSizeY(),
+				getMainSettings().getPredictionCropSizeZ()
 		};
 		final Dimensions dimensions = getDimensions();
 		for ( int i = 0; i < pos.length; i++ )

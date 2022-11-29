@@ -146,6 +146,10 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				intElement( "training crop size y", 1, 9999, style::getTrainingCropSizeY, style::setTrainingCropSizeY ),
 				intElement( "training crop size z", 1, 9999, style::getTrainingCropSizeZ, style::setTrainingCropSizeZ ),
 
+				intElement( "prediction crop size x", 1, 9999, style::getPredictionCropSizeX, style::setPredictionCropSizeX ),
+				intElement( "prediction crop size y", 1, 9999, style::getPredictionCropSizeY, style::setPredictionCropSizeY ),
+				intElement( "prediction crop size z", 1, 9999, style::getPredictionCropSizeZ, style::setPredictionCropSizeZ ),
+
 				intElement( "batch size", 0, 1000, style::getBatchSize, style::setBatchSize ),
 
 				doubleElementEx( "class weight background", 0.0, 100, 0.1, style::getClassWeightBG, style::setClassWeightBG ),

@@ -62,6 +62,12 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 
 	public static final int DEFAULT_TRAINING_CROP_SIZE_Z = 16;
 
+	public static final int DEFAULT_PREDICTION_CROP_SIZE_X = 256;
+
+	public static final int DEFAULT_PREDICTION_CROP_SIZE_Y = 256;
+
+	public static final int DEFAULT_PREDICTION_CROP_SIZE_Z = 16;
+
 	public static final double DEFAULT_RESCALE_X = 1.0;
 
 	public static final double DEFAULT_RESCALE_Y = 1.0;
@@ -170,6 +176,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		trainingCropSizeX = settings.trainingCropSizeX;
 		trainingCropSizeY = settings.trainingCropSizeY;
 		trainingCropSizeZ = settings.trainingCropSizeZ;
+		predictionCropSizeX = settings.predictionCropSizeX;
+		predictionCropSizeY = settings.predictionCropSizeY;
+		predictionCropSizeZ = settings.predictionCropSizeZ;
 		rescaleX = settings.rescaleX;
 		rescaleY = settings.rescaleY;
 		rescaleZ = settings.rescaleZ;
@@ -235,6 +244,12 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 	private int trainingCropSizeY = DEFAULT_TRAINING_CROP_SIZE_Y;
 
 	private int trainingCropSizeZ = DEFAULT_TRAINING_CROP_SIZE_Z;
+
+	private int predictionCropSizeX = DEFAULT_PREDICTION_CROP_SIZE_X;
+
+	private int predictionCropSizeY = DEFAULT_PREDICTION_CROP_SIZE_Y;
+
+	private int predictionCropSizeZ = DEFAULT_PREDICTION_CROP_SIZE_Z;
 
 	private double rescaleX = DEFAULT_RESCALE_X;
 
@@ -468,6 +483,48 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		if ( this.trainingCropSizeZ != trainingCropSizeZ )
 		{
 			this.trainingCropSizeZ = trainingCropSizeZ;
+			notifyListeners();
+		}
+	}
+
+	public int getPredictionCropSizeX()
+	{
+		return predictionCropSizeX;
+	}
+
+	public synchronized void setPredictionCropSizeX( final int predictionCropSizeX )
+	{
+		if ( this.predictionCropSizeX != predictionCropSizeX )
+		{
+			this.predictionCropSizeX = predictionCropSizeX;
+			notifyListeners();
+		}
+	}
+
+	public int getPredictionCropSizeY()
+	{
+		return predictionCropSizeY;
+	}
+
+	public synchronized void setPredictionCropSizeY( final int predictionCropSizeY )
+	{
+		if ( this.predictionCropSizeY != predictionCropSizeY )
+		{
+			this.predictionCropSizeY = predictionCropSizeY;
+			notifyListeners();
+		}
+	}
+
+	public int getPredictionCropSizeZ()
+	{
+		return predictionCropSizeZ;
+	}
+
+	public synchronized void setPredictionCropSizeZ( final int predictionCropSizeZ )
+	{
+		if ( this.predictionCropSizeZ != predictionCropSizeZ )
+		{
+			this.predictionCropSizeZ = predictionCropSizeZ;
 			notifyListeners();
 		}
 	}
@@ -1066,6 +1123,9 @@ public class ElephantMainSettings extends AbstractElephantSettings< ElephantMain
 		df.trainingCropSizeX = DEFAULT_TRAINING_CROP_SIZE_X;
 		df.trainingCropSizeY = DEFAULT_TRAINING_CROP_SIZE_Y;
 		df.trainingCropSizeZ = DEFAULT_TRAINING_CROP_SIZE_Z;
+		df.predictionCropSizeX = DEFAULT_PREDICTION_CROP_SIZE_X;
+		df.predictionCropSizeY = DEFAULT_PREDICTION_CROP_SIZE_Y;
+		df.predictionCropSizeZ = DEFAULT_PREDICTION_CROP_SIZE_Z;
 		df.rescaleX = DEFAULT_RESCALE_X;
 		df.rescaleY = DEFAULT_RESCALE_Y;
 		df.rescaleZ = DEFAULT_RESCALE_Z;
