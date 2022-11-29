@@ -118,6 +118,10 @@
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
 	</dependencies>
 	<developers>
 		<developer>

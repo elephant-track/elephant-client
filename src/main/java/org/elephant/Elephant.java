@@ -62,6 +62,7 @@ import org.elephant.actions.ElephantServerStatusListener;
 import org.elephant.actions.ElephantStatusService;
 import org.elephant.actions.ElephantUndoActions;
 import org.elephant.actions.ExportCTCAction;
+import org.elephant.actions.ExportLabelAction;
 import org.elephant.actions.GraphListenerService;
 import org.elephant.actions.HighlightListenerService;
 import org.elephant.actions.ImportMastodonAction;
@@ -241,6 +242,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	private final AbstractElephantAction exportCTCAction;
 
+	private final AbstractElephantAction exportLabelAction;
+
 	private final AbstractElephantAction downloadDetectionModelAction;
 
 	private final AbstractElephantAction downloadFlowModelAction;
@@ -373,6 +376,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		pluginActions.add( importMastodonAction );
 		exportCTCAction = new ExportCTCAction();
 		pluginActions.add( exportCTCAction );
+		exportLabelAction = new ExportLabelAction();
+		pluginActions.add( exportLabelAction );
 		downloadDetectionModelAction = new DownloadModelAction( DownloadModelActionMode.DETECTION );
 		pluginActions.add( downloadDetectionModelAction );
 		downloadFlowModelAction = new DownloadModelAction( DownloadModelActionMode.FLOW );
@@ -487,6 +492,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 										item( recordSnapshotMovieAction.name() ),
 										item( importMastodonAction.name() ),
 										item( exportCTCAction.name() ),
+										item( exportLabelAction.name() ),
 										item( changeDetectionTagSetColorsAction.name() ) ),
 								menu( "Analysis",
 										item( tagProgenitorAction.name() ),
