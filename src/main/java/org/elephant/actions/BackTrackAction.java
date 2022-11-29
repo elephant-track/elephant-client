@@ -27,21 +27,31 @@
 package org.elephant.actions;
 
 import java.net.HttpURLConnection;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.stream.IntStream;
 
+import org.elephant.actions.PredictSpotsAction.SpotStruct;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
+import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
 import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.UnirestMixin;
+import org.mastodon.collection.util.HashBimap;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
+import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.spatial.SpatialIndexImp;
 import org.mastodon.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.ui.keymap.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
@@ -50,10 +60,14 @@ import org.scijava.plugin.Plugin;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
+import kong.unirest.HttpResponse;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Dimensions;
+import net.imglib2.RealPoint;
+import net.imglib2.neighborsearch.NearestNeighborSearch;
 
 /**
  * Track the highlighted spot backward, creating a new spot based on a flow
@@ -62,7 +76,7 @@ import net.imglib2.Dimensions;
  * @author Ko Sugawara
  */
 public class BackTrackAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantGraphActionMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
+		implements BdvDataMixin, ElephantGraphActionMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -73,8 +87,6 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 
 	private static final String DESCRIPTION = "Track the highlighted vertex backward in time.";
 
-	private int timepoint;
-
 	private JsonObject jsonRootObject;
 
 	private final double[] pos = new double[ 3 ];
@@ -82,6 +94,10 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 	private final double[][] cov = new double[ 3 ][ 3 ];
 
 	private final double[] cov1d = new double[ 9 ];
+
+	private int spotPoolIndex;
+
+	private Iterator< Integer > timepointIterator;
 
 	/*
 	 * Command description.
@@ -118,8 +134,13 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 	@Override
 	boolean prepare()
 	{
-		timepoint = getCurrentTimepoint( 0 );
-		if ( timepoint < 1 )
+		final int timepointEnd = getCurrentTimepoint( 0 );
+		final int timeRange = getActionStateManager().isLivemode() ? 1 : getMainSettings().getTimeRange();
+		final int timepointStart = Math.max( 1, timepointEnd - timeRange + 1 );
+		timepointIterator = IntStream.rangeClosed( timepointStart, timepointEnd )
+				.boxed().sorted( Collections.reverseOrder() ).iterator();
+		getActionStateManager().setAborted( false );
+		if ( timepointEnd < 1 )
 			return false;
 		final VoxelDimensions voxelSize = getVoxelDimensions();
 		final JsonArray scales = new JsonArray()
@@ -141,14 +162,18 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 				.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
 				.add( JSON_KEY_INPUT_SIZE, inputSize )
 				.add( JSON_KEY_CACHE_MAXBYTES, getMainSettings().getCacheMaxbytes() )
-				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() );
-		if ( getMainSettings().getPatch() )
-		{
-			jsonRootObject.add( JSON_KEY_PATCH, new JsonArray()
-					.add( getMainSettings().getPatchSizeX() )
-					.add( getMainSettings().getPatchSizeY() )
-					.add( getMainSettings().getPatchSizeZ() ) );
-		}
+				.add( JSON_KEY_IS_3D, !is2D() )
+				.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() )
+				.add( JSON_KEY_PATCH, new JsonArray()
+						.add( getMainSettings().getPatchSizeX() )
+						.add( getMainSettings().getPatchSizeY() )
+						.add( getMainSettings().getPatchSizeZ() ) );
+		final long[] cropOrigin = new long[ 3 ];
+		final long[] cropSize = new long[ 3 ];
+		calculateCropBoxAround( pos, cropOrigin, cropSize );
+		jsonRootObject.add( JSON_KEY_PREDICT_CROP_BOX, Json.array()
+				.add( cropOrigin[ 0 ] ).add( cropOrigin[ 1 ] ).add( cropOrigin[ 2 ] )
+				.add( cropSize[ 0 ] ).add( cropSize[ 1 ] ).add( cropSize[ 2 ] ) );
 		final Spot spotRef = getGraph().vertexRef();
 		getGraph().getLock().readLock().lock();
 		try
@@ -158,23 +183,7 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 				return false;
 			spot.localize( pos );
 			spot.getCovariance( cov );
-			for ( int i = 0; i < 3; i++ )
-				for ( int j = 0; j < 3; j++ )
-					cov1d[ i * 3 + j ] = cov[ i ][ j ];
-			final int id = spot.getInternalPoolIndex();
-			final JsonObject jsonSpot = Json.object()
-					.add( "pos", Json.array( pos ) )
-					.add( "covariance", Json.array( cov1d ) )
-					.add( "id", id );
-			final JsonArray jsonSpots = Json.array().add( jsonSpot );
-			jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
-			jsonRootObject.set( "spots", jsonSpots );
-			final long[] cropOrigin = new long[ 3 ];
-			final long[] cropSize = new long[ 3 ];
-			calculateCropBoxAround( pos, cropOrigin, cropSize );
-			jsonRootObject.add( JSON_KEY_PREDICT_CROP_BOX, Json.array()
-					.add( cropOrigin[ 0 ] ).add( cropOrigin[ 1 ] ).add( cropOrigin[ 2 ] )
-					.add( cropSize[ 0 ] ).add( cropSize[ 1 ] ).add( cropSize[ 2 ] ) );
+			spotPoolIndex = spot.getInternalPoolIndex();
 		}
 		finally
 		{
@@ -187,82 +196,260 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 	@Override
 	public void processDataset()
 	{
+		processNext();
+	}
+
+	private void processNext()
+	{
+		if ( !timepointIterator.hasNext() )
+			return;
+
+		final int timepoint = timepointIterator.next();
+		for ( int i = 0; i < 3; i++ )
+			for ( int j = 0; j < 3; j++ )
+				cov1d[ i * 3 + j ] = cov[ i ][ j ];
+		final JsonObject jsonSpot = Json.object()
+				.add( "pos", Json.array( pos ) )
+				.add( "covariance", Json.array( cov1d ) )
+				.add( "id", spotPoolIndex );
+		final JsonArray jsonSpots = Json.array().add( jsonSpot );
+		jsonRootObject.set( JSON_KEY_TIMEPOINT, timepoint );
+		jsonRootObject.set( "spots", jsonSpots );
+
+		if ( getMainSettings().getUseOpticalflow() )
+		{
+			try
+			{
+				postAsStringAsync( getEndpointURL( ENDPOINT_FLOW_PREDICT ), jsonRootObject.toString(),
+						response -> {
+							if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+							{
+								final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
+								backTrackAt( rootObject.get( "spots" ).asArray().get( 0 ).asObject(), timepoint );
+								if ( getActionStateManager().isAborted() )
+									showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
+								else
+									processNext();
+							}
+							else
+							{
+								final StringBuilder sb = new StringBuilder( response.getStatusText() );
+								if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
+								{
+									sb.append( ": " );
+									sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
+								}
+								showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+								getClientLogger().severe( sb.toString() );
+							}
+						} );
+			}
+			catch ( final ElephantConnectException e )
+			{
+				// already handled by UnirestMixin
+			}
+		}
+		else
+		{
+			backTrackAt( jsonSpot, timepoint );
+			if ( getActionStateManager().isAborted() )
+				showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
+			else
+				processNext();
+		}
+
+	}
+
+	private void backTrackAt( final JsonObject jsonSpot, final int timepoint )
+	{
+		final int spotId = jsonSpot.get( "id" ).asInt();
+		final Spot orgSpotRef = getGraph().vertexRef();
+		final Spot newSpotRef = getGraph().vertexRef();
+		final Link edgeRef = getGraph().edgeRef();
+		Spot targetSpot = null;
+		getGraph().getLock().writeLock().lock();
 		try
 		{
-			postAsStringAsync( getEndpointURL( ENDPOINT_FLOW_PREDICT ), jsonRootObject.toString(),
-					response -> {
-						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
+			final Spot spot = getGraph().vertices().stream().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
+			if ( spot == null )
+			{
+				final String msg = "spot " + spot + " was not found";
+				getClientLogger().info( msg );
+				showTextOverlayAnimator( msg, 3000, TextPosition.CENTER );
+			}
+			else
+			{
+				orgSpotRef.refTo( spot );
+				final JsonArray jsonPositions = jsonSpot.get( "pos" ).asArray();
+				for ( int j = 0; j < 3; j++ )
+					pos[ j ] = jsonPositions.get( j ).asDouble();
+				final SpatialIndex< Spot > spatialIndex = getSpatioTemporalIndex().getSpatialIndex( timepoint - 1 );
+				final NearestNeighborSearch< Spot > nns = spatialIndex.getNearestNeighborSearch();
+				final RealEllipsoid predictedPosition = new RealEllipsoid( pos, cov );
+				nns.search( predictedPosition );
+				targetSpot = nns.getSampler().get();
+				if ( targetSpot != null && targetSpot.outgoingEdges().size() < getMainSettings().getNNMaxEdges() && nns.getDistance() < getMainSettings().getNNLinkingThreshold() )
+				{
+					final Tag trackingUnlabeledTag = getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME );
+					final Link edge = getGraph().addEdge( targetSpot, spot, edgeRef ).init();
+					final ObjTagMap< Link, Tag > tagMapTrackingLink = getEdgeTagMap( getTrackingTagSet() );
+					tagMapTrackingLink.set( edge, trackingUnlabeledTag );
+				}
+				else
+				{
+					targetSpot = null;
+					JsonObject jsonRootObjectDetection = Json.object()
+							.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
+							.add( JSON_KEY_MODEL_NAME, getMainSettings().getDetectionModelName() )
+							.add( JSON_KEY_N_KEEP_AXIALS, getNKeepAxials() )
+							.add( JSON_KEY_SCALES, jsonRootObject.get( JSON_KEY_SCALES ) )
+							.add( JSON_KEY_C_RATIO, getMainSettings().getCenterRatio() )
+							.add( JSON_KEY_P_THRESH, getMainSettings().getProbThreshold() )
+							.add( JSON_KEY_R_MIN, getMainSettings().getMinRadius() )
+							.add( JSON_KEY_R_MAX, getMainSettings().getMaxRadius() )
+							.add( JSON_KEY_DEBUG, getMainSettings().getDebug() )
+							.add( JSON_KEY_OUTPUT_PREDICTION, getMainSettings().getOutputPrediction() )
+							.add( JSON_KEY_USE_MEDIAN, getMainSettings().getMedianCorrection() )
+							.add( JSON_KEY_IS_PAD, getMainSettings().getPad() )
+							.add( JSON_KEY_CACHE_MAXBYTES, getMainSettings().getCacheMaxbytes() )
+							.add( JSON_KEY_IS_3D, !is2D() )
+							.add( JSON_KEY_USE_2D_MODEL, getMainSettings().getUse2dModel() )
+							.add( JSON_KEY_USE_MEMMAP, getMainSettings().getUseMemmap() )
+							.add( JSON_KEY_BATCH_SIZE, getMainSettings().getBatchSize() )
+							.add( JSON_KEY_INPUT_SIZE, jsonRootObject.get( JSON_KEY_INPUT_SIZE ) )
+							.add( JSON_KEY_PATCH, new JsonArray()
+									.add( getMainSettings().getPatchSizeX() )
+									.add( getMainSettings().getPatchSizeY() )
+									.add( getMainSettings().getPatchSizeZ() ) )
+							.set( JSON_KEY_TIMEPOINT, timepoint - 1 );
+					final long[] cropOrigin = new long[ 3 ];
+					final long[] cropSize = new long[ 3 ];
+					calculateCropBoxAround( pos, cropOrigin, cropSize );
+					jsonRootObjectDetection.add( JSON_KEY_PREDICT_CROP_BOX, Json.array()
+							.add( cropOrigin[ 0 ] ).add( cropOrigin[ 1 ] ).add( cropOrigin[ 2 ] )
+							.add( cropSize[ 0 ] ).add( cropSize[ 1 ] ).add( cropSize[ 2 ] ) );
+					HttpResponse< String > responseDetectioin = postAsString( getEndpointURL( ENDPOINT_DETECTION_PREDICT ), jsonRootObjectDetection.toString() );
+					if ( responseDetectioin.getStatus() == HttpURLConnection.HTTP_OK )
+					{
+						final String body = responseDetectioin.getBody();
+						final JsonObject jsonDetectionObject = Json.parse( body ).asObject();
+						if ( Json.parse( body ).asObject().get( "completed" ).asBoolean() )
 						{
-							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final JsonArray jsonSpots = rootObject.get( "spots" ).asArray();
-							final JsonObject jsonSpot = jsonSpots.get( 0 ).asObject();
-							final int spotId = jsonSpot.get( "id" ).asInt();
-							final Spot orgSpotRef = getGraph().vertexRef();
-							final Spot newSpotRef = getGraph().vertexRef();
-							final Link edgeRef = getGraph().edgeRef();
-							getGraph().getLock().writeLock().lock();
-							try
+							final Collection< RealEllipsoid > refSet = new HashSet< RealEllipsoid >();
+							final JsonArray jsonSpotsDetection = jsonDetectionObject.get( "spots" ).asArray();
+							final SpotStruct jsonRef = new SpotStruct( pos, cov );
+							for ( final JsonValue jsonValue : jsonSpotsDetection )
 							{
-								final Spot spot = getGraph().vertices().stream().filter( s -> s.getInternalPoolIndex() == spotId ).findFirst().orElse( null );
-								if ( spot == null )
+								PredictSpotsAction.getNextFromJson( jsonRef, jsonValue.asObject() );
+								refSet.add( new RealEllipsoid( jsonRef.pos, jsonRef.covariance ) );
+							}
+							if ( !refSet.isEmpty() )
+							{
+								final HashBimap< RealEllipsoid > bimap = new HashBimap<>( RealEllipsoid.class );
+								final SpatialIndexImp< RealEllipsoid > spatialIndexDetection = new SpatialIndexImp<>( refSet, bimap );
+								final NearestNeighborSearch< RealEllipsoid > nnsDetection = spatialIndexDetection.getNearestNeighborSearch();
+								nnsDetection.search( predictedPosition );
+								if ( nnsDetection.getDistance() < getMainSettings().getNNLinkingThreshold() )
 								{
-									final String msg = "spot " + spot + " was not found";
-									getClientLogger().info( msg );
-									showTextOverlayAnimator( msg, 3000, TextPosition.CENTER );
+									final RealEllipsoid nearestEllipsoid = nnsDetection.getSampler().get();
+									targetSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, nearestEllipsoid.getPosition(), nearestEllipsoid.getCovariance() );
 								}
-								else
+								else if ( getMainSettings().getUseInterpolation() )
 								{
-									orgSpotRef.refTo( spot );
-									final JsonArray jsonPositions = jsonSpot.get( "pos" ).asArray();
-									for ( int j = 0; j < 3; j++ )
-										pos[ j ] = jsonPositions.get( j ).asDouble();
-									final Spot newSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, pos, cov );
-									final Tag detectionFNTag = getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME );
-									final Tag trackingApprovedTag = getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME );
-									getVertexTagMap( getDetectionTagSet() ).set( newSpot, detectionFNTag );
-									final ObjTagMap< Spot, Tag > tagMapTrackingSpot = getVertexTagMap( getTrackingTagSet() );
-									tagMapTrackingSpot.set( newSpot, trackingApprovedTag );
-									final Link edge = getGraph().addEdge( newSpot, spot, edgeRef ).init();
-									final ObjTagMap< Link, Tag > tagMapTrackingLink = getEdgeTagMap( getTrackingTagSet() );
-									tagMapTrackingLink.set( edge, trackingApprovedTag );
+									targetSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, predictedPosition.getPosition(), predictedPosition.getCovariance() );
 								}
 							}
-							finally
+							if ( targetSpot == null )
 							{
-								getModel().setUndoPoint();
-								getGraph().getLock().writeLock().unlock();
-								getGraph().getLock().readLock().lock();
-								try
-								{
-									getGroupHandle().getModel( getAppModel().NAVIGATION ).notifyNavigateToVertex( newSpotRef );
-								}
-								finally
-								{
-									getGraph().getLock().readLock().unlock();
-								}
-								notifyGraphChanged();
-								getGraph().releaseRef( orgSpotRef );
-								getGraph().releaseRef( newSpotRef );
-								getGraph().releaseRef( edgeRef );
+								while ( timepointIterator.hasNext() )
+									timepointIterator.next();
+								showTextOverlayAnimator( "Target spot not found", 3000, TextPosition.CENTER );
+								return;
 							}
+							final Tag detectionTag = getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME );
+							final Tag trackingTag = getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME );
+							getVertexTagMap( getDetectionTagSet() ).set( targetSpot, detectionTag );
+							final ObjTagMap< Spot, Tag > tagMapTrackingSpot = getVertexTagMap( getTrackingTagSet() );
+							tagMapTrackingSpot.set( targetSpot, trackingTag );
+							final Link edge = getGraph().addEdge( targetSpot, spot, edgeRef ).init();
+							final ObjTagMap< Link, Tag > tagMapTrackingLink = getEdgeTagMap( getTrackingTagSet() );
+							tagMapTrackingLink.set( edge, trackingTag );
 						}
-						else
+					}
+					else
+					{
+						final StringBuilder sb = new StringBuilder( responseDetectioin.getStatusText() );
+						if ( responseDetectioin.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
 						{
-							final StringBuilder sb = new StringBuilder( response.getStatusText() );
-							if ( response.getStatus() == HttpURLConnection.HTTP_INTERNAL_ERROR )
-							{
-								sb.append( ": " );
-								sb.append( Json.parse( response.getBody() ).asObject().get( "error" ).asString() );
-							}
-							showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
-							getClientLogger().severe( sb.toString() );
+							sb.append( ": " );
+							sb.append( Json.parse( responseDetectioin.getBody() ).asObject().get( "error" ).asString() );
 						}
-					} );
+						showTextOverlayAnimator( sb.toString(), 3000, TextPosition.CENTER );
+						getClientLogger().severe( sb.toString() );
+					}
+				}
+				targetSpot.localize( pos );
+				targetSpot.getCovariance( cov );
+				spotPoolIndex = targetSpot.getInternalPoolIndex();
+				newSpotRef.refTo( targetSpot );
+				if ( 0 < targetSpot.incomingEdges().size() )
+				{
+					while ( timepointIterator.hasNext() )
+						timepointIterator.next();
+					showTextOverlayAnimator( "Target spot has an incoming edge", 3000, TextPosition.CENTER );
+					return;
+				}
+			}
 		}
-		catch ( final ElephantConnectException e )
+		catch ( ElephantConnectException e )
 		{
 			// already handled by UnirestMixin
 		}
+		finally
+		{
+			getModel().setUndoPoint();
+			getGraph().getLock().writeLock().unlock();
+			if ( targetSpot != null )
+			{
+				getGraph().getLock().readLock().lock();
+				try
+				{
+					getGroupHandle().getModel( getAppModel().NAVIGATION ).notifyNavigateToVertex( newSpotRef );
+				}
+				finally
+				{
+					getGraph().getLock().readLock().unlock();
+				}
+			}
+			notifyGraphChanged();
+			getGraph().releaseRef( orgSpotRef );
+			getGraph().releaseRef( newSpotRef );
+			getGraph().releaseRef( edgeRef );
+		}
+	}
+
+	class RealEllipsoid extends RealPoint
+	{
+		private final double[][] covariance;
+
+		RealEllipsoid( final double[] position, final double[][] covariance )
+		{
+			super( position );
+			this.covariance = new double[ covariance.length ][];
+			for ( int i = 0; i < covariance.length; i++ )
+				this.covariance[ i ] = covariance[ i ].clone();
+		}
+
+		double[] getPosition()
+		{
+			return position;
+		}
+
+		double[][] getCovariance()
+		{
+			return covariance;
+		}
+
 	}
 
 }
