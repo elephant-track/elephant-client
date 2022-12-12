@@ -48,12 +48,13 @@ import org.elephant.setting.main.ElephantMainSettingsPanel;
 import org.elephant.setting.main.ElephantMainSettingsPanel.MainSettingsMode;
 import org.elephant.setting.server.ElephantServerSettings;
 import org.elephant.setting.server.ElephantServerSettingsPanel;
-import org.mastodon.app.ui.settings.ModificationListener;
-import org.mastodon.app.ui.settings.SelectAndEditProfileSettingsPage.ProfileEditPanel;
-import org.mastodon.app.ui.settings.SelectAndEditProfileSettingsPage.ProfileManager;
-import org.mastodon.app.ui.settings.style.StyleProfile;
-import org.mastodon.app.ui.settings.style.StyleProfileManager;
 import org.scijava.listeners.Listeners;
+
+import bdv.ui.settings.ModificationListener;
+import bdv.ui.settings.SelectAndEditProfileSettingsPage.ProfileEditPanel;
+import bdv.ui.settings.SelectAndEditProfileSettingsPage.ProfileManager;
+import bdv.ui.settings.style.StyleProfile;
+import bdv.ui.settings.style.StyleProfileManager;
 
 public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettingsManager< M, S >, S extends AbstractElephantSettings< S > >
 {
@@ -87,8 +88,8 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 
 	public ElephantSettingsConfigPageFactory( final M settingsManager )
 	{
-		profileManager = new StyleProfileManager< M, S >( settingsManager, settingsManager.getStaticInstanceNoBuiltInStyles() );
-		editedStyle = settingsManager.getDefaultStyle().copy( "Edited" );
+		profileManager = new StyleProfileManager< >( settingsManager, settingsManager.getStaticInstanceNoBuiltInStyles() );
+		editedStyle = settingsManager.getSelectedStyle().copy( "Edited" );
 	}
 
 	public ElephantSettingsConfigPage< S > create( final TreePath treePath ) throws TypeMismatchException
@@ -138,7 +139,7 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 				basicSettingsButton.addActionListener( new ActionListener()
 				{
 					@Override
-					public void actionPerformed( ActionEvent e )
+					public void actionPerformed( final ActionEvent e )
 					{
 						basicSettingsButton.setSelected( true );
 						advancedSettingsButton.setSelected( false );
@@ -149,7 +150,7 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 				advancedSettingsButton.addActionListener( new ActionListener()
 				{
 					@Override
-					public void actionPerformed( ActionEvent e )
+					public void actionPerformed( final ActionEvent e )
 					{
 						basicSettingsButton.setSelected( false );
 						advancedSettingsButton.setSelected( true );
@@ -168,9 +169,9 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 		default:
 			throw new TypeMismatchException( "treePath " + treePath.toString() + " and class " + editedStyle.getClass() + " are not compatible" );
 		}
-		return new ElephantSettingsConfigPage< S >( treePath.toString(),
+		return new ElephantSettingsConfigPage< >( treePath.toString(),
 				profileManager,
-				new ElephantSettingsProfileEditPanel< S >( editedStyle, styleEditorPanel, listeners ) );
+				new ElephantSettingsProfileEditPanel< >( editedStyle, styleEditorPanel, listeners ) );
 	}
 
 	static class ElephantSettingsProfileEditPanel< S extends AbstractElephantSettings< S > > implements SettingsUpdateListener, ProfileEditPanel< StyleProfile< S > >
@@ -196,7 +197,7 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 		public void settingsUpdated()
 		{
 			if ( trackModifications )
-				modificationListeners.list.forEach( ModificationListener::modified );
+				modificationListeners.list.forEach( ModificationListener::setModified );
 		}
 
 		@Override
@@ -232,7 +233,7 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 	static class UnderlineJButtonUI extends BasicButtonUI
 	{
 		@Override
-		public void paint( Graphics g, JComponent c )
+		public void paint( final Graphics g, final JComponent c )
 		{
 			super.paint( g, c );
 			final AbstractButton b = ( AbstractButton ) c;

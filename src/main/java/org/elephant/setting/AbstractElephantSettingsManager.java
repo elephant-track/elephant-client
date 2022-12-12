@@ -38,9 +38,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.mastodon.app.ui.settings.style.AbstractStyleManager;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
+
+import bdv.ui.settings.style.AbstractStyleManager;
 
 public abstract class AbstractElephantSettingsManager< M extends AbstractElephantSettingsManager< M, S >, S extends AbstractElephantSettings< S > > extends AbstractStyleManager< M, S >
 {
@@ -49,11 +50,11 @@ public abstract class AbstractElephantSettingsManager< M extends AbstractElephan
 
 	private final SettingsUpdateListener updateForwardDefaultListener;
 
-	protected AbstractElephantSettingsManager( boolean loadStyles )
+	protected AbstractElephantSettingsManager( final boolean loadStyles )
 	{
 		forwardDefaultStyle = getDefaultStyleCopy();
-		updateForwardDefaultListener = () -> forwardDefaultStyle.set( defaultStyle );
-		defaultStyle.updateListeners().add( updateForwardDefaultListener );
+		updateForwardDefaultListener = () -> forwardDefaultStyle.set( selectedStyle );
+		selectedStyle.updateListeners().add( updateForwardDefaultListener );
 		if ( loadStyles )
 			loadStyles();
 	}
@@ -77,12 +78,12 @@ public abstract class AbstractElephantSettingsManager< M extends AbstractElephan
 	}
 
 	@Override
-	public synchronized void setDefaultStyle( final S settings )
+	public synchronized void setSelectedStyle( final S settings )
 	{
-		defaultStyle.updateListeners().remove( updateForwardDefaultListener );
-		defaultStyle = settings;
-		forwardDefaultStyle.set( defaultStyle );
-		defaultStyle.updateListeners().add( updateForwardDefaultListener );
+		selectedStyle.updateListeners().remove( updateForwardDefaultListener );
+		selectedStyle = settings;
+		forwardDefaultStyle.set( selectedStyle );
+		selectedStyle.updateListeners().add( updateForwardDefaultListener );
 	}
 
 	public S getForwardDefaultStyle()
@@ -127,7 +128,7 @@ public abstract class AbstractElephantSettingsManager< M extends AbstractElephan
 					}
 				}
 			}
-			setDefaultStyle( styleForName( defaultStyleName ).orElseGet( () -> builtinStyles.get( 0 ) ) );
+			setSelectedStyle( styleForName( defaultStyleName ).orElseGet( () -> builtinStyles.get( 0 ) ) );
 		}
 		catch ( final FileNotFoundException e )
 		{
@@ -149,7 +150,7 @@ public abstract class AbstractElephantSettingsManager< M extends AbstractElephan
 			final FileWriter output = new FileWriter( filename );
 			final Yaml yaml = ElephantSettingsIO.createYaml( getTag() );
 			final ArrayList< Object > objects = new ArrayList<>();
-			objects.add( defaultStyle.getName() );
+			objects.add( selectedStyle.getName() );
 			objects.addAll( userStyles );
 			yaml.dumpAll( objects.iterator(), output );
 			output.close();

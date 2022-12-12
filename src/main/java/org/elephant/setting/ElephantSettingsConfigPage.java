@@ -26,13 +26,13 @@
  ******************************************************************************/
 package org.elephant.setting;
 
-import org.mastodon.app.ui.settings.SelectAndEditProfileSettingsPage;
-import org.mastodon.app.ui.settings.style.StyleProfile;
+import bdv.ui.settings.SelectAndEditProfileSettingsPage;
+import bdv.ui.settings.style.StyleProfile;
 
 public class ElephantSettingsConfigPage< S extends UpdatableStyle< S > > extends SelectAndEditProfileSettingsPage< StyleProfile< S > >
 {
 
-	public ElephantSettingsConfigPage( final String treePath, ProfileManager< StyleProfile< S > > profileManager, ProfileEditPanel< StyleProfile< S > > profileEditPanel )
+	public ElephantSettingsConfigPage( final String treePath, final ProfileManager< StyleProfile< S > > profileManager, final ProfileEditPanel< StyleProfile< S > > profileEditPanel )
 	{
 		super( treePath, profileManager, profileEditPanel );
 	}
