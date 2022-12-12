@@ -32,9 +32,9 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-import org.mastodon.app.ui.settings.StyleElements.IntElement;
-import org.mastodon.app.ui.settings.StyleElements.StyleElement;
-import org.mastodon.app.ui.settings.StyleElements.StyleElementVisitor;
+import org.mastodon.app.ui.StyleElements.IntElement;
+import org.mastodon.app.ui.StyleElements.StyleElement;
+import org.mastodon.app.ui.StyleElements.StyleElementVisitor;
 
 import bdv.util.BoundedValueDouble;
 
@@ -123,7 +123,7 @@ public class StyleElementsEx
 	public static abstract class PasswordElement extends StringElement
 	{
 
-		public PasswordElement( String label )
+		public PasswordElement( final String label )
 		{
 			super( label );
 		}

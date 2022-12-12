@@ -28,16 +28,16 @@ package org.elephant.setting.main;
 
 import static org.elephant.setting.StyleElementsEx.doubleElementEx;
 import static org.elephant.setting.StyleElementsEx.stringElement;
-import static org.mastodon.app.ui.settings.StyleElements.booleanElement;
-import static org.mastodon.app.ui.settings.StyleElements.intElement;
-import static org.mastodon.app.ui.settings.StyleElements.label;
-import static org.mastodon.app.ui.settings.StyleElements.separator;
+import static org.mastodon.app.ui.StyleElements.booleanElement;
+import static org.mastodon.app.ui.StyleElements.intElement;
+import static org.mastodon.app.ui.StyleElements.label;
+import static org.mastodon.app.ui.StyleElements.separator;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.elephant.setting.AbstractElephantSettingsPanel;
-import org.mastodon.app.ui.settings.StyleElements.StyleElement;
+import org.mastodon.app.ui.StyleElements.StyleElement;
 
 /**
  * Settings panel for main settings.
