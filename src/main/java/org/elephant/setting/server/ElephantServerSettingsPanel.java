@@ -29,13 +29,13 @@ package org.elephant.setting.server;
 import static org.elephant.setting.StyleElementsEx.intElementEx;
 import static org.elephant.setting.StyleElementsEx.passwordElement;
 import static org.elephant.setting.StyleElementsEx.stringElement;
-import static org.mastodon.app.ui.settings.StyleElements.separator;
+import static org.mastodon.app.ui.StyleElements.separator;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.elephant.setting.AbstractElephantSettingsPanel;
-import org.mastodon.app.ui.settings.StyleElements.StyleElement;
+import org.mastodon.app.ui.StyleElements.StyleElement;
 
 /**
  * Settings panel for server settings.
@@ -47,7 +47,7 @@ public class ElephantServerSettingsPanel extends AbstractElephantSettingsPanel< 
 
 	private static final long serialVersionUID = 1L;
 
-	public ElephantServerSettingsPanel( ElephantServerSettings style )
+	public ElephantServerSettingsPanel( final ElephantServerSettings style )
 	{
 		super();
 		build( style );

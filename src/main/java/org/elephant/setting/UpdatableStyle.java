@@ -26,8 +26,9 @@
  ******************************************************************************/
 package org.elephant.setting;
 
-import org.mastodon.app.ui.settings.style.Style;
 import org.scijava.listeners.Listeners;
+
+import bdv.ui.settings.style.Style;
 
 public interface UpdatableStyle< S extends UpdatableStyle< S > > extends Style< S >
 {

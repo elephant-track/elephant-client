@@ -26,7 +26,7 @@
  ******************************************************************************/
 package org.elephant.setting;
 
-import static org.mastodon.app.ui.settings.StyleElements.linkedCheckBox;
+import static org.mastodon.app.ui.StyleElements.linkedCheckBox;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,11 +53,11 @@ import org.elephant.setting.StyleElementsEx.StringElement;
 import org.elephant.setting.StyleElementsEx.StyleElementVisitorEx;
 import org.elephant.swing.DoubleSpinner;
 import org.elephant.swing.IntSpinner;
-import org.mastodon.app.ui.settings.StyleElements.BooleanElement;
-import org.mastodon.app.ui.settings.StyleElements.IntElement;
-import org.mastodon.app.ui.settings.StyleElements.LabelElement;
-import org.mastodon.app.ui.settings.StyleElements.Separator;
-import org.mastodon.app.ui.settings.StyleElements.StyleElement;
+import org.mastodon.app.ui.StyleElements.BooleanElement;
+import org.mastodon.app.ui.StyleElements.IntElement;
+import org.mastodon.app.ui.StyleElements.LabelElement;
+import org.mastodon.app.ui.StyleElements.Separator;
+import org.mastodon.app.ui.StyleElements.StyleElement;
 
 public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S > > extends JPanel
 {
@@ -127,7 +127,7 @@ public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S
 						{
 
 							@Override
-							public void itemStateChanged( ItemEvent e )
+							public void itemStateChanged( final ItemEvent e )
 							{
 								if ( checkBox.isSelected() )
 								{
@@ -223,19 +223,19 @@ public abstract class AbstractElephantSettingsPanel< S extends UpdatableStyle< S
 		{
 
 			@Override
-			public void removeUpdate( DocumentEvent e )
+			public void removeUpdate( final DocumentEvent e )
 			{
 				element.set( textField.getText() );
 			}
 
 			@Override
-			public void insertUpdate( DocumentEvent e )
+			public void insertUpdate( final DocumentEvent e )
 			{
 				element.set( textField.getText() );
 			}
 
 			@Override
-			public void changedUpdate( DocumentEvent e )
+			public void changedUpdate( final DocumentEvent e )
 			{
 				element.set( textField.getText() );
 			}

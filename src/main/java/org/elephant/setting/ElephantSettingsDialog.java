@@ -37,8 +37,9 @@ import javax.swing.JDialog;
 import javax.swing.WindowConstants;
 
 import org.elephant.setting.main.ElephantMainSettingsListener;
-import org.mastodon.app.ui.settings.SettingsPage;
-import org.mastodon.app.ui.settings.SettingsPanel;
+import org.mastodon.app.ui.SettingsPanel;
+
+import bdv.ui.settings.SettingsPage;
 
 /**
  * A base dialog for ELEPHHANT Preferences.
