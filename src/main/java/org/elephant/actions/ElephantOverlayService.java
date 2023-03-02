@@ -32,6 +32,7 @@ import java.awt.Graphics;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdvWrapper;
 import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
@@ -56,7 +57,7 @@ public class ElephantOverlayService extends AbstractElephantService implements E
 			@Override
 			public void bdvViewCreated( MamutViewBdv view )
 			{
-				view.getViewerPanelMamut().getDisplay().overlays().add( new ElephantOverlay() );
+				new MamutViewBdvWrapper( view ).getViewerPanelMamut().getDisplay().overlays().add( new ElephantOverlay() );
 			}
 		} );
 	}

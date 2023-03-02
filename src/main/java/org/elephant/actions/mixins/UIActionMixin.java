@@ -30,6 +30,8 @@ import java.awt.EventQueue;
 
 import javax.swing.SwingUtilities;
 
+import org.mastodon.mamut.MamutViewBdvWrapper;
+
 import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 
@@ -46,11 +48,11 @@ public interface UIActionMixin extends WindowManagerMixin
 		final TextOverlayAnimator overlayAnimator = new TextOverlayAnimator( text, duration, position );
 		if ( EventQueue.isDispatchThread() )
 		{
-			forEachBdvView( bdv -> bdv.getViewerPanelMamut().addOverlayAnimator( overlayAnimator ) );
+			forEachBdvView( bdv -> new MamutViewBdvWrapper( bdv ).getViewerPanelMamut().addOverlayAnimator( overlayAnimator ) );
 		}
 		else
 		{
-			SwingUtilities.invokeLater( () -> forEachBdvView( bdv -> bdv.getViewerPanelMamut().addOverlayAnimator( overlayAnimator ) ) );
+			SwingUtilities.invokeLater( () -> forEachBdvView( bdv -> new MamutViewBdvWrapper( bdv ).getViewerPanelMamut().addOverlayAnimator( overlayAnimator ) ) );
 		}
 	}
 

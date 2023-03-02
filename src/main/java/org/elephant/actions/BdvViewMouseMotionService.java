@@ -30,6 +30,7 @@ import java.awt.event.MouseEvent;
 
 import org.elephant.actions.mixins.BdvViewMouseMotionMixin;
 import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdvWrapper;
 import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
@@ -85,8 +86,9 @@ public class BdvViewMouseMotionService extends AbstractElephantService
 			@Override
 			public void bdvViewCreated( MamutViewBdv view )
 			{
-				view.getViewerPanelMamut().getDisplay().addHandler( BdvViewMouseMotionService.this );
-				view.getViewerPanelMamut().renderTransformListeners().add( BdvViewMouseMotionService.this );
+				final MamutViewBdvWrapper bdvWrapper = new MamutViewBdvWrapper(view);
+				bdvWrapper.getViewerPanelMamut().getDisplay().addHandler( BdvViewMouseMotionService.this );
+				bdvWrapper.getViewerPanelMamut().renderTransformListeners().add( BdvViewMouseMotionService.this );
 			}
 		} );
 	}

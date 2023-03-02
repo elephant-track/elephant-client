@@ -3,6 +3,7 @@ package org.elephant.actions;
 import org.elephant.actions.mixins.ElephantTagActionMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdvWrapper;
 import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
@@ -22,7 +23,7 @@ public class BdvColoringService extends AbstractElephantService implements Eleph
 			@Override
 			public void bdvViewCreated( MamutViewBdv bdv )
 			{
-				bdv.getColoringModel().colorByTagSet( getDetectionTagSet() );
+				new MamutViewBdvWrapper( bdv ).getColoringModel().colorByTagSet( getDetectionTagSet() );
 			}
 		};
 	}

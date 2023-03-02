@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdvWrapper;
 import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
@@ -43,12 +44,13 @@ public class BdvContextService extends AbstractElephantService implements Contex
 			@Override
 			public void bdvViewCreated( MamutViewBdv bdv )
 			{
-				bdv.getContextProvider().listeners().add( BdvContextService.this );
-				contextProviders.add( bdv.getContextProvider() );
+				final MamutViewBdvWrapper bdvWrapper = new MamutViewBdvWrapper( bdv );
+				bdvWrapper.getContextProvider().listeners().add( BdvContextService.this );
+				contextProviders.add( bdvWrapper.getContextProvider() );
 				contextChooser.updateContextProviders( contextProviders );
 				contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
 				bdv.onClose( () -> {
-					contextProviders.remove( bdv.getContextProvider() );
+					contextProviders.remove( bdvWrapper.getContextProvider() );
 					contextChooser.updateContextProviders( contextProviders );
 					contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
 				} );

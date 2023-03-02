@@ -41,6 +41,7 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdvWrapper;
 
 import bdv.viewer.ViewerPanel;
 
@@ -77,7 +78,7 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 		{
 			final String[] bdvNames = new String[ bdvWindows.size() ];
 			for ( int i = 0; i < bdvWindows.size(); i++ )
-				bdvNames[ i ] = bdvWindows.get( i ).getContextProvider().getName();
+				bdvNames[ i ] = new MamutViewBdvWrapper( bdvWindows.get( i ) ).getContextProvider().getName();
 			final AtomicReference< String > selectedWindowName = new AtomicReference<>();
 			final AtomicReference< String > saveDirPath = new AtomicReference<>();
 			final AtomicInteger minTimepoint = new AtomicInteger( 0 );
@@ -111,9 +112,10 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 			{
 				for ( final MamutViewBdv bdvWindow : bdvWindows )
 				{
-					if ( bdvWindow.getContextProvider().getName().equals( selectedWindowName.get() ) )
+					final MamutViewBdvWrapper bdvWrapper = new MamutViewBdvWrapper( bdvWindow );
+					if ( bdvWrapper.getContextProvider().getName().equals( selectedWindowName.get() ) )
 					{
-						final ViewerPanel viewerPanel = bdvWindow.getViewerPanelMamut();
+						final ViewerPanel viewerPanel = bdvWrapper.getViewerPanelMamut();
 						for ( int i = minTimepoint.get(); i <= maxTimepoint.get(); i++ )
 						{
 							viewerPanel.setTimepoint( i );

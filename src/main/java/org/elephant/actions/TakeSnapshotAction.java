@@ -40,6 +40,7 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.MamutViewBdvWrapper;
 import org.mastodon.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.ui.keymap.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
@@ -109,7 +110,7 @@ public class TakeSnapshotAction extends AbstractElephantAction
 		{
 			final String[] bdvNames = new String[ bdvWindows.size() ];
 			for ( int i = 0; i < bdvWindows.size(); i++ )
-				bdvNames[ i ] = bdvWindows.get( i ).getContextProvider().getName();
+				bdvNames[ i ] = new MamutViewBdvWrapper( bdvWindows.get( i ) ).getContextProvider().getName();
 			final AtomicReference< String > selectedWindowName = new AtomicReference<>();
 			final AtomicReference< String > saveFilePath = new AtomicReference<>();
 			try
@@ -139,7 +140,7 @@ public class TakeSnapshotAction extends AbstractElephantAction
 			{
 				for ( final MamutViewBdv bdvWindow : bdvWindows )
 				{
-					if ( bdvWindow.getContextProvider().getName().equals( selectedWindowName.get() ) )
+					if ( new MamutViewBdvWrapper( bdvWindow ).getContextProvider().getName().equals( selectedWindowName.get() ) )
 					{
 						final JComponent displayComponent = ( ( ViewerFrameMamut ) bdvWindow.getFrame() ).getViewerPanel().getDisplay();
 						final BufferedImage image = new BufferedImage( displayComponent.getWidth(), displayComponent.getHeight(), BufferedImage.TYPE_INT_ARGB );
