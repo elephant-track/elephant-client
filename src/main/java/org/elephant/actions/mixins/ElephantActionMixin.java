@@ -26,9 +26,8 @@
  ******************************************************************************/
 package org.elephant.actions.mixins;
 
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Model;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
 
 /**
  * Provide basic functionality for ELEPHANT actions.
@@ -38,11 +37,11 @@ import org.mastodon.mamut.plugin.MamutPluginAppModel;
 public interface ElephantActionMixin
 {
 
-	MamutPluginAppModel getPluginAppModel();
+	ProjectModel getPluginAppModel();
 
-	default MamutAppModel getAppModel()
+	default ProjectModel getAppModel()
 	{
-		return getPluginAppModel().getAppModel();
+		return getPluginAppModel();
 	}
 
 	default Model getModel()

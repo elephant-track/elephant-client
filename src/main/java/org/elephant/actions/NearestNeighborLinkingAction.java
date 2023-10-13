@@ -59,14 +59,15 @@ import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.kdtree.IncrementalNearestNeighborSearch;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.model.tag.TagSetStructure.TagSet;
 import org.mastodon.spatial.SpatialIndex;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.plugin.Plugin;
 
@@ -87,7 +88,8 @@ import net.imglib2.RealPoint;
  * @author Ko Sugawara
  */
 public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantGraphTagActionMixin, UIActionMixin, SpatioTemporalIndexActionMinxin, TimepointMixin, URLMixin
+		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantGraphTagActionMixin,
+		UIActionMixin, SpatioTemporalIndexActionMinxin, TimepointMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -168,7 +170,7 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -328,7 +330,8 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 									{
 										final JsonArray jsonSpotsRes = rootObject.get( "spots" ).asArray();
 										linkSpots( jsonSpotsRes, timepoint, tagsToProcess, timepointIterator, pos, cov );
-										showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000, TextPosition.BOTTOM_RIGHT );
+										showTextOverlayAnimator( String.format( "Linked %d->%d", timepoint, timepoint - 1 ), 1000,
+												TextPosition.BOTTOM_RIGHT );
 									}
 									if ( getActionStateManager().isAborted() )
 										showTextOverlayAnimator( "Aborted", 3000, TextPosition.BOTTOM_RIGHT );
@@ -366,7 +369,8 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 		}
 	}
 
-	private void linkSpots( final JsonArray jsonSpots, final int timepoint, final List< Tag > tagsToProcess, final Iterator< Integer > timepointIterator, final double[] pos, final double[][] cov )
+	private void linkSpots( final JsonArray jsonSpots, final int timepoint, final List< Tag > tagsToProcess,
+			final Iterator< Integer > timepointIterator, final double[] pos, final double[][] cov )
 	{
 		final ObjTagMap< Spot, Tag > tagMapDetection = getVertexTagMap( getDetectionTagSet() );
 		final ObjTagMap< Spot, Tag > tagMapTrackingSpot = getVertexTagMap( getTrackingTagSet() );
@@ -406,7 +410,8 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 		try
 		{
 			final RefList< Link > linksToRemove = RefCollections.createRefList( getGraph().edges() );
-			final Supplier< Stream< Spot > > spotSupplier = () -> getGraph().vertices().stream().filter( s -> s.getTimepoint() == timepoint );
+			final Supplier< Stream< Spot > > spotSupplier =
+					() -> getGraph().vertices().stream().filter( s -> s.getTimepoint() == timepoint );
 			for ( int n = 0; n < 5; n++ )
 			{
 				for ( final JsonValue jsonValue : jsonSpots )
@@ -452,16 +457,21 @@ public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
 									if ( ( squaredDistance < 1.0 ) && ( distMap.getOrDefault( edge.getInternalPoolIndex(), 0.0 ) < 1.0 ) )
 										acceptableEdges = maxEdges;
 								}
-								final Supplier< Stream< Link > > edgeSupplier = () -> StreamSupport.stream( nearestSpot.outgoingEdges().spliterator(), false );
-								final long nApprovedEdges = edgeSupplier.get().filter( edge -> tagMapTrackingLink.get( edge ) == trackingApprovedTag ).count();
+								final Supplier< Stream< Link > > edgeSupplier =
+										() -> StreamSupport.stream( nearestSpot.outgoingEdges().spliterator(), false );
+								final long nApprovedEdges =
+										edgeSupplier.get().filter( edge -> tagMapTrackingLink.get( edge ) == trackingApprovedTag ).count();
 								if ( nApprovedEdges < acceptableEdges )
 								{
 									if ( acceptableEdges <= edgeSupplier.get().count() )
 									{
-										final Link longestEdge = edgeSupplier.get().filter( edge -> tagMapTrackingLink.get( edge ) != trackingApprovedTag ).max( comparatorLink ).orElse( null );
+										final Link longestEdge =
+												edgeSupplier.get().filter( edge -> tagMapTrackingLink.get( edge ) != trackingApprovedTag )
+														.max( comparatorLink ).orElse( null );
 										if ( longestEdge != null )
 										{
-											if ( distMap.getOrDefault( longestEdge.getInternalPoolIndex(), squaredDistanceOf( longestEdge ) ) < squaredDistance )
+											if ( distMap.getOrDefault( longestEdge.getInternalPoolIndex(),
+													squaredDistanceOf( longestEdge ) ) < squaredDistance )
 												continue;
 											else
 											{

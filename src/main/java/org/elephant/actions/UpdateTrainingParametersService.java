@@ -35,7 +35,7 @@ import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.UnirestMixin;
 import org.elephant.setting.main.ElephantMainSettingsListener;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
@@ -48,12 +48,13 @@ import bdv.viewer.animate.TextOverlayAnimator;
  * @author Ko Sugawara
  */
 public class UpdateTrainingParametersService extends AbstractElephantService
-		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin, UnirestMixin, URLMixin
+		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin,
+		UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	public UpdateTrainingParametersService( final MamutPluginAppModel pluginAppModel )
+	public UpdateTrainingParametersService( final ProjectModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );
@@ -62,7 +63,10 @@ public class UpdateTrainingParametersService extends AbstractElephantService
 	@Override
 	public void mainSettingsUpdated()
 	{
-		if ( getServerStateManager().getElephantServerStatus() == ElephantStatus.UNAVAILABLE ) { return; }
+		if ( getServerStateManager().getElephantServerStatus() == ElephantStatus.UNAVAILABLE )
+		{
+			return;
+		}
 
 		final JsonObject jsonRootObject = Json.object()
 				.add( JSON_KEY_LR, getMainSettings().getLearningRate() )

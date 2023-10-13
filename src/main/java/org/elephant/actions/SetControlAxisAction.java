@@ -29,8 +29,9 @@ package org.elephant.actions;
 import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.plugin.Plugin;
 
@@ -114,7 +115,7 @@ public class SetControlAxisAction extends AbstractElephantAction
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -152,7 +153,8 @@ public class SetControlAxisAction extends AbstractElephantAction
 	{
 		if ( is2D() && axis == ControlAxis.Z )
 		{
-			showTextOverlayAnimator( "Invalid control axis " + axis.name() + " for 2D data", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+			showTextOverlayAnimator( "Invalid control axis " + axis.name() + " for 2D data", 3000,
+					TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 		}
 		else
 		{

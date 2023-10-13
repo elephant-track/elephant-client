@@ -4,28 +4,34 @@ import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.model.branch.BranchLink;
 import org.mastodon.mamut.model.branch.BranchSpot;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
 import org.mastodon.ui.coloring.ColoringModelMain;
 import org.mastodon.views.context.ContextProvider;
 
 import bdv.viewer.ViewerPanel;
 
-public class MamutViewBdvWrapper {
-	
+public class MamutViewBdvWrapper
+{
+
 	private MamutViewBdv bdv;
-	
-	public MamutViewBdvWrapper( final MamutViewBdv bdv ) {
+
+	public MamutViewBdvWrapper( final MamutViewBdv bdv )
+	{
 		this.bdv = bdv;
 	}
-	
-	public ColoringModelMain< Spot, Link, BranchSpot, BranchLink > getColoringModel() {
+
+	public ColoringModelMain< Spot, Link, BranchSpot, BranchLink > getColoringModel()
+	{
 		return bdv.getColoringModel();
 	}
-	
-	public ContextProvider<Spot> getContextProvider() {
+
+	public ContextProvider< Spot > getContextProvider()
+	{
 		return bdv.getContextProvider();
 	}
-	
-	public ViewerPanel getViewerPanelMamut() {
+
+	public ViewerPanel getViewerPanelMamut()
+	{
 		return bdv.getViewerPanelMamut();
 	}
 

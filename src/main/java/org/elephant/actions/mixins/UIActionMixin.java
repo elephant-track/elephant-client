@@ -52,7 +52,8 @@ public interface UIActionMixin extends WindowManagerMixin
 		}
 		else
 		{
-			SwingUtilities.invokeLater( () -> forEachBdvView( bdv -> new MamutViewBdvWrapper( bdv ).getViewerPanelMamut().addOverlayAnimator( overlayAnimator ) ) );
+			SwingUtilities.invokeLater( () -> forEachBdvView(
+					bdv -> new MamutViewBdvWrapper( bdv ).getViewerPanelMamut().addOverlayAnimator( overlayAnimator ) ) );
 		}
 	}
 

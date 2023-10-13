@@ -44,10 +44,11 @@ import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.TagSetStructure.Tag;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.plugin.Plugin;
 
@@ -66,7 +67,8 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
-		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin, ElephantStateManagerMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
+		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
+		ElephantStateManagerMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -90,7 +92,7 @@ public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -151,7 +153,8 @@ public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
 				spots = getVisibleVertices( timepointStart );
 				if ( spots != null )
 				{
-					final Predicate< Spot > spotFilter = spot -> tagsToProcess.contains( getVertexTagMap( getDetectionTagSet() ).get( spot ) );
+					final Predicate< Spot > spotFilter =
+							spot -> tagsToProcess.contains( getVertexTagMap( getDetectionTagSet() ).get( spot ) );
 					addSpotsToJson( spots, jsonSpots, spotFilter );
 				}
 			}
@@ -194,7 +197,8 @@ public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
 							final JsonObject rootObject = Json.parse( response.getBody() ).asObject();
-							final String message = rootObject.get( "completed" ).asBoolean() ? "Detection labels are updated" : "Update aborted";
+							final String message =
+									rootObject.get( "completed" ).asBoolean() ? "Detection labels are updated" : "Update aborted";
 							showTextOverlayAnimator( message, 3000, TextOverlayAnimator.TextPosition.CENTER );
 						}
 						else

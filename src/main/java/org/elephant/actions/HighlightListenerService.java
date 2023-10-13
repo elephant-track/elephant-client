@@ -32,7 +32,8 @@ import org.elephant.actions.mixins.GraphActionMixin;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.ModelOverlayProperties;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.model.HighlightListener;
 import org.mastodon.model.NavigationHandler;
 import org.mastodon.views.bdv.overlay.wrap.OverlayEdgeWrapper;
@@ -57,7 +58,7 @@ public class HighlightListenerService extends AbstractElephantService
 
 	private int lastHightedVertexId;
 
-	public HighlightListenerService( final MamutPluginAppModel pluginAppModel )
+	public HighlightListenerService( final ProjectModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );
@@ -85,11 +86,14 @@ public class HighlightListenerService extends AbstractElephantService
 			if ( highlightedVertex != null && highlightedVertex.getInternalPoolIndex() != lastHightedVertexId )
 			{
 				overlayGraphWrapper.getVertexMap().getRight( highlightedVertex, reusableRightRef );
-				getPluginAppModel().getWindowManager().forEachBdvView( view -> {
+				getPluginAppModel().getWindowManager().forEachView( MamutViewBdv.class, view -> {
 					try
 					{
 						@SuppressWarnings( "unchecked" )
-						final NavigationHandler< OverlayVertexWrapper< Spot, Link >, OverlayEdgeWrapper< Spot, Link > > navigationHandler = ( NavigationHandler< OverlayVertexWrapper< Spot, Link >, OverlayEdgeWrapper< Spot, Link > > ) FieldUtils.readField( view, "navigationHandler", true );
+						final NavigationHandler< OverlayVertexWrapper< Spot, Link >,
+								OverlayEdgeWrapper< Spot, Link > > navigationHandler = ( NavigationHandler<
+										OverlayVertexWrapper< Spot, Link >,
+										OverlayEdgeWrapper< Spot, Link > > ) FieldUtils.readField( view, "navigationHandler", true );
 						navigationHandler.notifyNavigateToVertex( reusableRightRef );
 					}
 					catch ( final IllegalAccessException e )

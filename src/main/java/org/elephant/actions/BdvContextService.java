@@ -10,11 +10,11 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
-import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
 import org.mastodon.mamut.MamutViewBdvWrapper;
-import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.mamut.WindowManager.ViewCreatedListener;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.views.context.Context;
 import org.mastodon.views.context.ContextChooser;
 import org.mastodon.views.context.ContextListener;
@@ -28,7 +28,7 @@ public class BdvContextService extends AbstractElephantService implements Contex
 
 	private ContextChooser< Spot > contextChooser;
 
-	private final BdvViewCreatedListener bdvViewCreatedListener;
+	private final ViewCreatedListener< MamutViewBdv > bdvViewCreatedListener;
 
 	/**
 	 * The {@link ContextProvider}s of all currently open BigDataViewer windows.
@@ -38,11 +38,11 @@ public class BdvContextService extends AbstractElephantService implements Contex
 	public BdvContextService()
 	{
 		super();
-		bdvViewCreatedListener = new BdvViewCreatedListener()
+		bdvViewCreatedListener = new ViewCreatedListener< MamutViewBdv >()
 		{
 
 			@Override
-			public void bdvViewCreated( MamutViewBdv bdv )
+			public void viewCreated( MamutViewBdv bdv )
 			{
 				final MamutViewBdvWrapper bdvWrapper = new MamutViewBdvWrapper( bdv );
 				bdvWrapper.getContextProvider().listeners().add( BdvContextService.this );
@@ -59,18 +59,21 @@ public class BdvContextService extends AbstractElephantService implements Contex
 	}
 
 	@Override
-	public void init( final MamutPluginAppModel pluginAppModel )
+	public void init( final ProjectModel pluginAppModel )
 	{
 		super.init( pluginAppModel, null );
 
 		contextChooser = new ContextChooser<>( this );
 		contextChooser.getProviders().remove( 0 ); // remove the default "full graph" option
-		getWindowManager().bdvViewCreatedListeners().add( bdvViewCreatedListener );
+		getWindowManager().viewCreatedListeners( MamutViewBdv.class ).add( bdvViewCreatedListener );
 	}
 
 	public Iterable< Spot > getVisibleVertices( final int timepoint )
 	{
-		if ( context == null ) { return null; }
+		if ( context == null )
+		{
+			return null;
+		}
 		return context.getInsideVertices( timepoint );
 	}
 

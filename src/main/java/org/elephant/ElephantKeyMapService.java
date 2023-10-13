@@ -71,7 +71,7 @@ public class ElephantKeyMapService extends AbstractService
 		final File elephantKeymapFile = new File( KEYMAPS_PATH + ELEPHANT_KEYMAP_FILENAME );
 		if ( !elephantKeymapFile.exists() )
 		{
-			try (final InputStream in = ElephantKeyMapService.class.getResourceAsStream( "/org/elephant/" + ELEPHANT_KEYMAP_FILENAME ))
+			try ( final InputStream in = ElephantKeyMapService.class.getResourceAsStream( "/org/elephant/" + ELEPHANT_KEYMAP_FILENAME ) )
 			{
 				Files.copy( in, elephantKeymapFile.toPath() );
 			}

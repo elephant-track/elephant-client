@@ -32,9 +32,10 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.elephant.actions.mixins.UIActionMixin;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.plugin.Plugin;
 
@@ -115,7 +116,7 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -150,7 +151,8 @@ public class ChangeEllipsoidSizeAction extends AbstractElephantAction
 		// Validation for 2D data
 		if ( is2D() && getActionStateManager().getAxis() == ControlAxis.Z )
 		{
-			showTextOverlayAnimator( "Invalid control axis " + getActionStateManager().getAxis().name() + " for 2D data", 3000, TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
+			showTextOverlayAnimator( "Invalid control axis " + getActionStateManager().getAxis().name() + " for 2D data", 3000,
+					TextOverlayAnimator.TextPosition.BOTTOM_RIGHT );
 			return;
 		}
 		final Spot ref = getGraph().vertexRef();

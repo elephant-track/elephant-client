@@ -29,9 +29,9 @@ package org.elephant.actions.mixins;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
 import org.mastodon.mamut.WindowManager;
-import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
+import org.mastodon.mamut.WindowManager.ViewCreatedListener;
 import org.mastodon.views.bdv.ViewerFrameMamut;
 
 import bdv.viewer.animate.TextOverlayAnimator;
@@ -52,7 +52,7 @@ public interface WindowManagerMixin extends ElephantActionMixin
 
 	default List< MamutViewBdv > getBdvWindows()
 	{
-		return getWindowManager().getBdvWindows();
+		return getWindowManager().getViewList( MamutViewBdv.class );
 	}
 
 	default void forEachBdvView( final Consumer< ? super MamutViewBdv > action )
@@ -60,14 +60,14 @@ public interface WindowManagerMixin extends ElephantActionMixin
 		getBdvWindows().forEach( action );
 	}
 
-	default void addBdvCreatedListener( final BdvViewCreatedListener listener )
+	default void addBdvCreatedListener( final ViewCreatedListener< MamutViewBdv > listener )
 	{
-		getWindowManager().bdvViewCreatedListeners().add( listener );
+		getWindowManager().viewCreatedListeners( MamutViewBdv.class ).add( listener );
 	}
 
-	default void removeBdvCreatedListener( final BdvViewCreatedListener listener )
+	default void removeBdvCreatedListener( final ViewCreatedListener< MamutViewBdv > listener )
 	{
-		getWindowManager().bdvViewCreatedListeners().remove( listener );
+		getWindowManager().viewCreatedListeners( MamutViewBdv.class ).remove( listener );
 	}
 
 	default void addTextOverlayAnimator( final String text, final long duration, final TextPosition position )

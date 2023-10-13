@@ -48,12 +48,13 @@ import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.collection.RefCollection;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.spatial.SpatialIndex;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.plugin.Plugin;
 
@@ -75,7 +76,8 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  * @author Ko Sugawara
  */
 public class PredictSpotsAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, EllipsoidActionMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantStateManagerMixin, ElephantGraphTagActionMixin,
+		implements BdvDataMixin, EllipsoidActionMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin,
+		ElephantStateManagerMixin, ElephantGraphTagActionMixin,
 		SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
 {
 
@@ -147,7 +149,7 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -277,13 +279,16 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 								if ( mode == PredictSpotsActionMode.AROUND_MOUSE )
 									predicate = predicate.and( spot -> ElephantUtils.spotIsInside( spot, cropBoxOrigin, cropBoxSize ) );
 								refreshLabels( spots, predicate );
-								predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
-								predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) != getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
+								predicate = predicate.and( spot -> getVertexTagMap( getDetectionTagSet() ).get( spot )
+										== getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) );
+								predicate = predicate.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot )
+										!= getTag( getTrackingTagSet(), TRACKING_APPROVED_TAG_NAME ) );
 								removeSpots( spots, predicate );
 								final JsonArray jsonSpots = jsonRootObject.get( "spots" ).asArray();
 								addSpotsFromJson( jsonSpots );
 								summary( timepoint );
-								showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000, TextPosition.BOTTOM_RIGHT );
+								showTextOverlayAnimator( String.format( "Detected at frame %d", timepoint ), 1000,
+										TextPosition.BOTTOM_RIGHT );
 							}
 
 							if ( getActionStateManager().isAborted() )
@@ -503,13 +508,20 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		{
 			getClientLogger().info( String.format( "FRAME: %d, TP: %d, FP: %d, TN: %d, FN: %d, TB: %d, FB: %d, unlabeled: %d",
 					timepoint,
-					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TP_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
-					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FP_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
-					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TN_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
-					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
-					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TB_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
-					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FB_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count(),
-					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) ).stream().filter( s -> s.getTimepoint() == timepoint ).count() ) );
+					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TP_TAG_NAME ) ).stream()
+							.filter( s -> s.getTimepoint() == timepoint ).count(),
+					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FP_TAG_NAME ) ).stream()
+							.filter( s -> s.getTimepoint() == timepoint ).count(),
+					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TN_TAG_NAME ) ).stream()
+							.filter( s -> s.getTimepoint() == timepoint ).count(),
+					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FN_TAG_NAME ) ).stream()
+							.filter( s -> s.getTimepoint() == timepoint ).count(),
+					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_TB_TAG_NAME ) ).stream()
+							.filter( s -> s.getTimepoint() == timepoint ).count(),
+					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_FB_TAG_NAME ) ).stream()
+							.filter( s -> s.getTimepoint() == timepoint ).count(),
+					getVerticesTaggedWith( getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME ) ).stream()
+							.filter( s -> s.getTimepoint() == timepoint ).count() ) );
 		}
 		finally
 		{

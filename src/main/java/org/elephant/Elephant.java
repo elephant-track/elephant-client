@@ -39,9 +39,11 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.elephant.actions.AbortProcessingAction;
 import org.elephant.actions.AbstractElephantAction;
@@ -116,10 +118,12 @@ import org.mastodon.grouping.GroupHandle;
 import org.mastodon.mamut.MainWindow;
 import org.mastodon.mamut.WindowManager;
 import org.mastodon.mamut.plugin.MamutPlugin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.mamut.project.MamutProject;
-import org.mastodon.mamut.project.MamutProjectIO;
-import org.mastodon.ui.keymap.Keymap.UpdateListener;
+import org.mastodon.mamut.ProjectModel;
+import org.mastodon.mamut.io.ProjectCreator;
+import org.mastodon.mamut.io.ProjectLoader;
+import org.mastodon.mamut.io.project.MamutProject;
+import org.mastodon.mamut.io.project.MamutProjectIO;
+import bdv.ui.keymap.Keymap.UpdateListener;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.command.ContextCommand;
@@ -141,7 +145,7 @@ import mpicbg.spim.data.SpimDataException;
 public class Elephant extends AbstractContextual implements MamutPlugin, UpdateListener
 {
 
-	private MamutPluginAppModel pluginAppModel;
+	private ProjectModel pluginAppModel;
 
 	private GroupHandle groupHandle;
 
@@ -387,14 +391,14 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 	 * Set up {@link MastodonPluginAppModel}-dependent modules.
 	 */
 	@Override
-	public void setAppPluginModel( final MamutPluginAppModel pluginAppModel )
+	public void setAppPluginModel( final ProjectModel pluginAppModel )
 	{
 		loggerService.setupSciJavaHandler( scijavaLogService );
 		( ( ShowLogWindowAction ) showLogWindowAction ).setUIService( uiService );
 
 		this.pluginAppModel = pluginAppModel;
 		// Create a GroupHandle instance
-		groupHandle = pluginAppModel.getAppModel().getGroupManager().createGroupHandle();
+		groupHandle = pluginAppModel.getGroupManager().createGroupHandle();
 		groupHandle.setGroupId( 0 );
 		// Initialize actions
 		for ( final AbstractElephantAction pluginAction : pluginActions )
@@ -403,7 +407,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		}
 
 		// Overwrite Undo/Redo app actions
-		ElephantUndoActions.installOverwrite( pluginAppModel.getAppModel().getAppActions(), pluginAppModel.getAppModel().getModel() );
+		ElephantUndoActions.installOverwrite( pluginAppModel.getModelActions(), pluginAppModel.getModel() );
 
 		// Initialize MastodonPluginAppModel-dependent services
 		// BdvViewMouseMotionService
@@ -437,15 +441,15 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( loggerService );
 		// HighlightListener
 		final HighlightListenerService highlightListenerService = new HighlightListenerService( pluginAppModel );
-		pluginAppModel.getAppModel().getHighlightModel().listeners().add( highlightListenerService );
+		pluginAppModel.getHighlightModel().listeners().add( highlightListenerService );
 		// GraphListener
 		final GraphListenerService graphListenerService = new GraphListenerService( pluginAppModel );
-		pluginAppModel.getAppModel().getModel().getGraph().addGraphListener( graphListenerService );
+		pluginAppModel.getModel().getGraph().addGraphListener( graphListenerService );
 		// VertexPositionListenerService
 		final VertexPositionListenerService vertexPositionListenerService = new VertexPositionListenerService( pluginAppModel );
-		pluginAppModel.getAppModel().getModel().getGraph().addVertexPositionListener( vertexPositionListenerService );
+		pluginAppModel.getModel().getGraph().addVertexPositionListener( vertexPositionListenerService );
 		// UpdateListener
-		pluginAppModel.getAppModel().getKeymap().updateListeners().add( 0, this );
+		pluginAppModel.getKeymap().updateListeners().add( 0, this );
 		// Create tag sets if not exists
 		new SetUpTagSetsService( pluginAppModel );
 		// Reset ControlAxis
@@ -522,29 +526,45 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 	@Override
 	public void keymapChanged()
 	{
-		installGlobalActions( pluginAppModel.getAppModel().getPlugins().getPluginActions() );
+		installGlobalActions( pluginAppModel.getPlugins().getPluginActions() );
 	}
 
 	class Mastodon extends ContextCommand
 	{
 
-		private WindowManager windowManager;
+		private ProjectModel projectModel;
 
 		private MainWindow mainWindow;
+
+		private String fileOpenDialog()
+		{
+			JFileChooser fileChooser = new JFileChooser( "Open Mastodon Project" );
+			fileChooser.setFileFilter( new FileNameExtensionFilter( "Mastodon Project (*.mastodon)", "mastodon" ) );
+			fileChooser.showOpenDialog( null );
+			return fileChooser.getSelectedFile().getAbsolutePath();
+		}
 
 		@Override
 		public void run()
 		{
 			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
-			windowManager = new WindowManager( getContext() );
-			mainWindow = new MainWindow( windowManager );
+			String projectPath = fileOpenDialog();
+			try
+			{
+				projectModel = ProjectLoader.open( projectPath, getContext() );
+			}
+			catch ( IOException | SpimDataException e )
+			{
+				e.printStackTrace();
+			}
+			mainWindow = new MainWindow( projectModel );
 			mainWindow.setVisible( true );
 		}
 
 		// FOR TESTING ONLY!
 		public void openProject( final MamutProject project ) throws IOException, SpimDataException
 		{
-			windowManager.getProjectManager().open( project );
+			ProjectCreator.createProjectFromBdvFile( project.getDatasetXmlFile(), pluginAppModel.getContext() );
 		}
 
 		// FOR TESTING ONLY!
@@ -553,11 +573,6 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 			mainWindow.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
 		}
 
-		// FOR TESTING ONLY!
-		public WindowManager getWindowManager()
-		{
-			return windowManager;
-		}
 	}
 
 	/**
@@ -568,9 +583,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 		setSystemLookAndFeelAndLocale();
 
 		final Elephant elephant = new Elephant();
-		final Mastodon mastodon = elephant.new Mastodon();
-		final Context context = new Context();
-		try
+		final Mastodon mastodon = elephant.new Mastodon();;
+		try ( final Context context = new Context() )
 		{
 			context.inject( mastodon );
 			mastodon.run();
@@ -585,10 +599,6 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 			{
 				System.out.println( "Loading from resource failed. Start with empty project." );
 			}
-		}
-		finally
-		{
-			context.dispose();
 		}
 	}
 

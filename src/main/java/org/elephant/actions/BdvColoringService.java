@@ -2,26 +2,26 @@ package org.elephant.actions;
 
 import org.elephant.actions.mixins.ElephantTagActionMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
-import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
 import org.mastodon.mamut.MamutViewBdvWrapper;
-import org.mastodon.mamut.WindowManager.BdvViewCreatedListener;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.WindowManager.ViewCreatedListener;
+import org.mastodon.mamut.ProjectModel;
 
 public class BdvColoringService extends AbstractElephantService implements ElephantTagActionMixin, WindowManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private final BdvViewCreatedListener bdvViewCreatedListener;
+	private final ViewCreatedListener< MamutViewBdv > bdvViewCreatedListener;
 
 	public BdvColoringService()
 	{
 		super();
-		bdvViewCreatedListener = new BdvViewCreatedListener()
+		bdvViewCreatedListener = new ViewCreatedListener< MamutViewBdv >()
 		{
 
 			@Override
-			public void bdvViewCreated( MamutViewBdv bdv )
+			public void viewCreated( MamutViewBdv bdv )
 			{
 				new MamutViewBdvWrapper( bdv ).getColoringModel().colorByTagSet( getDetectionTagSet() );
 			}
@@ -29,10 +29,10 @@ public class BdvColoringService extends AbstractElephantService implements Eleph
 	}
 
 	@Override
-	public void init( MamutPluginAppModel pluginAppModel )
+	public void init( ProjectModel pluginAppModel )
 	{
 		super.init( pluginAppModel, null );
 
-		getWindowManager().bdvViewCreatedListeners().add( bdvViewCreatedListener );
+		getWindowManager().viewCreatedListeners( MamutViewBdv.class ).add( bdvViewCreatedListener );
 	}
 }

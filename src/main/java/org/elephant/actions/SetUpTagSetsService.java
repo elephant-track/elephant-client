@@ -27,7 +27,7 @@
 package org.elephant.actions;
 
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
 
 /**
  * Create the tag sets used in ELEPHANT if they are not exist.
@@ -39,7 +39,7 @@ public class SetUpTagSetsService extends AbstractElephantService
 {
 	private static final long serialVersionUID = 1L;
 
-	public SetUpTagSetsService( final MamutPluginAppModel pluginAppModel )
+	public SetUpTagSetsService( final ProjectModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );

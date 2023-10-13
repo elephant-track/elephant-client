@@ -46,14 +46,15 @@ import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.UnirestMixin;
 import org.mastodon.collection.util.HashBimap;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.spatial.SpatialIndex;
 import org.mastodon.spatial.SpatialIndexImp;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.plugin.Plugin;
 
@@ -76,7 +77,8 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  * @author Ko Sugawara
  */
 public class BackTrackAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantGraphActionMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin, SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
+		implements BdvDataMixin, ElephantGraphActionMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin,
+		SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -107,7 +109,7 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -288,7 +290,8 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 				final RealEllipsoid predictedPosition = new RealEllipsoid( pos, cov );
 				nns.search( predictedPosition );
 				targetSpot = nns.getSampler().get();
-				if ( targetSpot != null && targetSpot.outgoingEdges().size() < getMainSettings().getNNMaxEdges() && nns.getDistance() < getMainSettings().getNNLinkingThreshold() )
+				if ( targetSpot != null && targetSpot.outgoingEdges().size() < getMainSettings().getNNMaxEdges()
+						&& nns.getDistance() < getMainSettings().getNNLinkingThreshold() )
 				{
 					final Tag trackingUnlabeledTag = getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME );
 					final Link edge = getGraph().addEdge( targetSpot, spot, edgeRef ).init();
@@ -328,7 +331,8 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 					jsonRootObjectDetection.add( JSON_KEY_PREDICT_CROP_BOX, Json.array()
 							.add( cropOrigin[ 0 ] ).add( cropOrigin[ 1 ] ).add( cropOrigin[ 2 ] )
 							.add( cropSize[ 0 ] ).add( cropSize[ 1 ] ).add( cropSize[ 2 ] ) );
-					HttpResponse< String > responseDetectioin = postAsString( getEndpointURL( ENDPOINT_DETECTION_PREDICT ), jsonRootObjectDetection.toString() );
+					HttpResponse< String > responseDetectioin =
+							postAsString( getEndpointURL( ENDPOINT_DETECTION_PREDICT ), jsonRootObjectDetection.toString() );
 					if ( responseDetectioin.getStatus() == HttpURLConnection.HTTP_OK )
 					{
 						final String body = responseDetectioin.getBody();
@@ -347,16 +351,19 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 							{
 								final HashBimap< RealEllipsoid > bimap = new HashBimap<>( RealEllipsoid.class );
 								final SpatialIndexImp< RealEllipsoid > spatialIndexDetection = new SpatialIndexImp<>( refSet, bimap );
-								final NearestNeighborSearch< RealEllipsoid > nnsDetection = spatialIndexDetection.getNearestNeighborSearch();
+								final NearestNeighborSearch< RealEllipsoid > nnsDetection =
+										spatialIndexDetection.getNearestNeighborSearch();
 								nnsDetection.search( predictedPosition );
 								if ( nnsDetection.getDistance() < getMainSettings().getNNLinkingThreshold() )
 								{
 									final RealEllipsoid nearestEllipsoid = nnsDetection.getSampler().get();
-									targetSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, nearestEllipsoid.getPosition(), nearestEllipsoid.getCovariance() );
+									targetSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, nearestEllipsoid.getPosition(),
+											nearestEllipsoid.getCovariance() );
 								}
 								else if ( getMainSettings().getUseInterpolation() )
 								{
-									targetSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, predictedPosition.getPosition(), predictedPosition.getCovariance() );
+									targetSpot = getGraph().addVertex( newSpotRef ).init( timepoint - 1, predictedPosition.getPosition(),
+											predictedPosition.getCovariance() );
 								}
 							}
 							if ( targetSpot == null )

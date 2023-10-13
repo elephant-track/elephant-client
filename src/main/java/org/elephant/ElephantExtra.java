@@ -46,8 +46,8 @@ import org.elephant.actions.UploadAction;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.grouping.GroupHandle;
 import org.mastodon.mamut.plugin.MamutPlugin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.ui.keymap.Keymap.UpdateListener;
+import org.mastodon.mamut.ProjectModel;
+import bdv.ui.keymap.Keymap.UpdateListener;
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.Actions;
@@ -62,12 +62,12 @@ import org.scijava.ui.behaviour.util.Actions;
 public class ElephantExtra implements MamutPlugin, UpdateListener
 {
 
-	private MamutPluginAppModel pluginAppModel;
+	private ProjectModel pluginAppModel;
 
 	private GroupHandle groupHandle;
 
 	// ToggleAutoFocusAction is experimental
-//	private final AbstractElephantAction toggleAutoFocusAction;
+	//	private final AbstractElephantAction toggleAutoFocusAction;
 
 	private final AbstractElephantAction startMeasurementAction;
 
@@ -83,8 +83,8 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 
 	public ElephantExtra()
 	{
-//		toggleAutoFocusAction = new ToggleAutoFocusAction();
-//		pluginActions.add( toggleAutoFocusAction );
+		//		toggleAutoFocusAction = new ToggleAutoFocusAction();
+		//		pluginActions.add( toggleAutoFocusAction );
 		startMeasurementAction = new StartMeasurementAction();
 		pluginActions.add( startMeasurementAction );
 		stopMeasurementAction = new StopMeasurementAction();
@@ -101,11 +101,11 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 	 * Set up {@link MastodonPluginAppModel}-dependent modules.
 	 */
 	@Override
-	public void setAppPluginModel( final MamutPluginAppModel pluginAppModel )
+	public void setAppPluginModel( final ProjectModel pluginAppModel )
 	{
 		this.pluginAppModel = pluginAppModel;
 		// Create a GroupHandle instance
-		groupHandle = pluginAppModel.getAppModel().getGroupManager().createGroupHandle();
+		groupHandle = pluginAppModel.getGroupManager().createGroupHandle();
 		groupHandle.setGroupId( 0 );
 		// Initialize actions
 		for ( final AbstractElephantAction pluginAction : pluginActions )
@@ -154,7 +154,7 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 	@Override
 	public void keymapChanged()
 	{
-		installGlobalActions( pluginAppModel.getAppModel().getPlugins().getPluginActions() );
+		installGlobalActions( pluginAppModel.getPlugins().getPluginActions() );
 	}
 
 }

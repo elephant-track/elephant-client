@@ -44,12 +44,12 @@ public interface TimepointMixin extends ElephantActionMixin, GroupHandleMixin
 
 	default int getMinTimepoint()
 	{
-		return getPluginAppModel().getAppModel().getMinTimepoint();
+		return getPluginAppModel().getMinTimepoint();
 	}
 
 	default int getMaxTimepoint()
 	{
-		return getPluginAppModel().getAppModel().getMaxTimepoint();
+		return getPluginAppModel().getMaxTimepoint();
 	}
 
 }

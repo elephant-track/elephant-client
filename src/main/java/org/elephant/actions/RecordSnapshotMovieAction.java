@@ -40,7 +40,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
-import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
 import org.mastodon.mamut.MamutViewBdvWrapper;
 
 import bdv.viewer.ViewerPanel;
@@ -128,7 +128,8 @@ public class RecordSnapshotMovieAction extends AbstractElephantAction implements
 								getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 							}
 							final JComponent displayComponent = viewerPanel.getDisplay();
-							final BufferedImage image = new BufferedImage( displayComponent.getWidth(), displayComponent.getHeight(), BufferedImage.TYPE_INT_ARGB );
+							final BufferedImage image = new BufferedImage( displayComponent.getWidth(), displayComponent.getHeight(),
+									BufferedImage.TYPE_INT_ARGB );
 							displayComponent.paint( image.getGraphics() );
 							try
 							{

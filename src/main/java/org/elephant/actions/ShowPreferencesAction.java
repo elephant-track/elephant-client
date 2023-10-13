@@ -41,7 +41,7 @@ import org.elephant.setting.main.ElephantMainSettingsManager;
 import org.elephant.setting.server.ElephantServerSettings;
 import org.elephant.setting.server.ElephantServerSettingsManager;
 import org.mastodon.grouping.GroupHandle;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
 
 /**
  * Show a preferences dialog.
@@ -71,16 +71,19 @@ public class ShowPreferencesAction extends AbstractElephantAction implements Bdv
 	}
 
 	@Override
-	public void init( MamutPluginAppModel pluginAppModel, GroupHandle groupHandle )
+	public void init( ProjectModel pluginAppModel, GroupHandle groupHandle )
 	{
 		super.init( pluginAppModel, groupHandle );
 
 		dialog = new ElephantSettingsDialog();
-		final ElephantSettingsConfigPageFactory< ElephantMainSettingsManager, ElephantMainSettings > mainPageFactory = new ElephantSettingsConfigPageFactory<>( ElephantMainSettingsManager.getInstance() );
-		final ElephantSettingsConfigPageFactory< ElephantServerSettingsManager, ElephantServerSettings > serverPageFactory = new ElephantSettingsConfigPageFactory<>( ElephantServerSettingsManager.getInstance() );
+		final ElephantSettingsConfigPageFactory< ElephantMainSettingsManager, ElephantMainSettings > mainPageFactory =
+				new ElephantSettingsConfigPageFactory<>( ElephantMainSettingsManager.getInstance() );
+		final ElephantSettingsConfigPageFactory< ElephantServerSettingsManager, ElephantServerSettings > serverPageFactory =
+				new ElephantSettingsConfigPageFactory<>( ElephantServerSettingsManager.getInstance() );
 		try
 		{
-			final ElephantSettingsConfigPage< ElephantMainSettings > mainConfigPage = mainPageFactory.create( TreePath.MAIN, getVoxelDimensions().unit() );
+			final ElephantSettingsConfigPage< ElephantMainSettings > mainConfigPage =
+					mainPageFactory.create( TreePath.MAIN, getVoxelDimensions().unit() );
 			final ElephantSettingsConfigPage< ElephantServerSettings > serverConfigPage = serverPageFactory.create( TreePath.SERVER );
 
 			dialog.addPage( mainConfigPage );

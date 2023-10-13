@@ -30,7 +30,7 @@ import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.mastodon.graph.GraphListener;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.model.tag.TagSetStructure.TagSet;
@@ -47,7 +47,7 @@ public class GraphListenerService extends AbstractElephantService
 
 	private static final long serialVersionUID = 1L;
 
-	public GraphListenerService( final MamutPluginAppModel pluginAppModel )
+	public GraphListenerService( final ProjectModel pluginAppModel )
 	{
 		super();
 		super.init( pluginAppModel, null );

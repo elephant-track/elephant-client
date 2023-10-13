@@ -39,10 +39,11 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.WindowManagerMixin;
-import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.KeyConfigScopes;
+import org.mastodon.mamut.views.bdv.MamutViewBdv;
 import org.mastodon.mamut.MamutViewBdvWrapper;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.mastodon.views.bdv.ViewerFrameMamut;
 import org.scijava.plugin.Plugin;
@@ -72,7 +73,7 @@ public class TakeSnapshotAction extends AbstractElephantAction
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -143,7 +144,8 @@ public class TakeSnapshotAction extends AbstractElephantAction
 					if ( new MamutViewBdvWrapper( bdvWindow ).getContextProvider().getName().equals( selectedWindowName.get() ) )
 					{
 						final JComponent displayComponent = ( ( ViewerFrameMamut ) bdvWindow.getFrame() ).getViewerPanel().getDisplay();
-						final BufferedImage image = new BufferedImage( displayComponent.getWidth(), displayComponent.getHeight(), BufferedImage.TYPE_INT_ARGB );
+						final BufferedImage image =
+								new BufferedImage( displayComponent.getWidth(), displayComponent.getHeight(), BufferedImage.TYPE_INT_ARGB );
 						displayComponent.paint( image.getGraphics() );
 						try
 						{
