@@ -592,7 +592,7 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 			try
 			{
 				final ResourceBundle rb = ResourceBundle.getBundle( "default" );
-				final MamutProject project = new MamutProjectIO().load( rb.getString( "project" ) );
+				final MamutProject project = MamutProjectIO.load( rb.getString( "project" ) );
 				mastodon.openProject( project );
 			}
 			catch ( final Exception e )
