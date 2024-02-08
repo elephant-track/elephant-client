@@ -7,7 +7,7 @@
 	</parent>
 	<groupId>org.elephant</groupId>
 	<artifactId>elephant</artifactId>
-	<version>0.5.0</version>
+	<version>0.5.1-SNAPSHOT</version>
 	<name>ELEPHANT: Tracking cell lineages in 3D by incremental deep learning</name>
 	<description>ELEPHANT client application implemented as a Mastodon plugin</description>
 	<url>https://github.com/elephant-track/elephant-client</url>
@@ -152,7 +152,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/elephant-track/elephant-client</connection>
 		<developerConnection>scm:git:git@github.com:elephant-track/elephant-client</developerConnection>
-		<tag>v0.5.0</tag>
+		<tag>HEAD</tag>
 		<url>https://github.com/elephant-track/elephant-client</url>
 	</scm>
 	<issueManagement>
