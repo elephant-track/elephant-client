@@ -34,7 +34,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.elephant.setting.main.ElephantMainSettingsListener;
+import org.elephant.setting.main.ElephantSettingsListener;
 import org.scijava.log.LogService;
 
 /**
@@ -42,7 +42,7 @@ import org.scijava.log.LogService;
  * 
  * @author Ko Sugawara
  */
-public class LoggerService extends AbstractElephantService implements ElephantMainSettingsListener
+public class LoggerService extends AbstractElephantService implements ElephantSettingsListener
 {
 
 	private static final long serialVersionUID = 1L;
@@ -55,7 +55,7 @@ public class LoggerService extends AbstractElephantService implements ElephantMa
 	{
 		clientLogger = getClientLogger();
 		serverLogger = getServerLogger();
-		try (final InputStream is = getClass().getClassLoader().getResourceAsStream( "logging.properties" ))
+		try ( final InputStream is = getClass().getClassLoader().getResourceAsStream( "logging.properties" ) )
 		{
 			LogManager.getLogManager().readConfiguration( is );
 		}

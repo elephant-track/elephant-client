@@ -27,11 +27,13 @@
 package org.elephant.actions;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeoutException;
 
+import javax.net.ssl.SSLContext;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.scijava.listeners.Listeners;
@@ -46,6 +48,7 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.ExceptionHandler;
 import com.rabbitmq.client.TopologyRecoveryException;
+import com.rabbitmq.client.impl.SocketFrameHandler;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 
@@ -55,7 +58,7 @@ import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
  * @author Ko Sugawara
  */
 public class RabbitMQService extends AbstractElephantService
-		implements ElephantStateManagerMixin, ElephantSettingsMixin, WindowManagerMixin
+		implements ElephantStateManagerMixin, WindowManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -83,55 +86,75 @@ public class RabbitMQService extends AbstractElephantService
 		rabbitMQDatasetListeners = new Listeners.SynchronizedList<>();
 	}
 
+	private ConnectionFactory getBaseConnectionFactory() throws KeyManagementException, NoSuchAlgorithmException
+	{
+		final ConnectionFactory factory = new ConnectionFactory();
+		if ( getServerSettings().getUseSslProtocol() )
+		{
+			SSLContext sslContext = getServerSettings().getVerifySSL() ? SSLContext.getDefault()
+					: SSLUtils.getSSLContextWithoutCertificateValidation();
+			factory.useSslProtocol( sslContext );
+		}
+		factory.setHost( getServerSettings().getRabbitMQHost() );
+		factory.setPort( getServerSettings().getRabbitMQPort() );
+		factory.setVirtualHost( getServerSettings().getRabbitMQVirtualHost() );
+		factory.setUsername( getServerSettings().getRabbitMQUsername() );
+		factory.setPassword( getServerSettings().getRabbitMQPassword() );
+		factory.setRequestedHeartbeat( 0 );
+		return factory;
+	}
+
 	public void start()
 	{
 		new Thread( () -> {
 			while ( true )
 			{
-				final ConnectionFactory factory = new ConnectionFactory();
-				factory.setHost( getServerSettings().getRabbitMQHost() );
-				factory.setPort( getServerSettings().getRabbitMQPort() );
-				factory.setUsername( getServerSettings().getRabbitMQUsername() );
-				factory.setPassword( getServerSettings().getRabbitMQPassword() );
-				factory.setExceptionHandler( emptyExceptionHandler );
 				boolean isAvailable = false;
-				try (final Connection tempConnection = factory.newConnection())
-				{
-					if ( connection == null )
-					{
-						openConnection();
-					}
-					isAvailable = true;
-					getServerStateManager().setRabbitMQErrorMessage( ElephantServerStateManager.NO_ERROR_MESSAGE );
-				}
-				catch ( IOException | TimeoutException e )
-				{
-					getServerStateManager().setRabbitMQErrorMessage( e.getMessage() );
-					closeConnection();
-				}
-				final ElephantStatus rabbitMQStatus = isAvailable ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE;
-				getServerStateManager().setRabbitMQStatus( rabbitMQStatus );
-				rabbitMQStatusListeners.list.forEach( l -> l.rabbitMQStatusUpdated() );
 				try
 				{
-					Thread.sleep( 1000 );
+					ConnectionFactory factory = getBaseConnectionFactory();
+					factory.setExceptionHandler( emptyExceptionHandler );
+
+					try ( final Connection tempConnection = factory.newConnection() )
+					{
+						if ( connection == null )
+						{
+							openConnection();
+						}
+						isAvailable = true;
+						getServerStateManager().setRabbitMQErrorMessage( ElephantServerStateManager.NO_ERROR_MESSAGE );
+					}
+					catch ( IOException | TimeoutException e )
+					{
+						getServerStateManager().setRabbitMQErrorMessage( e.getMessage() );
+						closeConnection();
+					}
 				}
-				catch ( final InterruptedException e )
+				catch ( KeyManagementException | NoSuchAlgorithmException e )
 				{
-					getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+					getServerStateManager().setRabbitMQErrorMessage( e.getMessage() );
+				}
+				finally
+				{
+					final ElephantStatus rabbitMQStatus = isAvailable ? ElephantStatus.AVAILABLE : ElephantStatus.UNAVAILABLE;
+					getServerStateManager().setRabbitMQStatus( rabbitMQStatus );
+					rabbitMQStatusListeners.list.forEach( l -> l.rabbitMQStatusUpdated() );
+					try
+					{
+						Thread.sleep( 1000 );
+					}
+					catch ( final InterruptedException e )
+					{
+						getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
+					}
 				}
 			}
 		} ).start();
 	}
 
-	private synchronized void openConnection() throws IOException, TimeoutException
+	private synchronized void openConnection() throws IOException, TimeoutException, KeyManagementException, NoSuchAlgorithmException
 	{
-		final ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost( getServerSettings().getRabbitMQHost() );
-		factory.setPort( getServerSettings().getRabbitMQPort() );
-		factory.setUsername( getServerSettings().getRabbitMQUsername() );
-		factory.setPassword( getServerSettings().getRabbitMQPassword() );
-		factory.setRequestedHeartbeat( 0 );
+		final ConnectionFactory factory = getBaseConnectionFactory();
 		connection = factory.newConnection();
 		channel = connection.createChannel();
 		// RABBITMQ_QUEUE_UPDATE
@@ -227,7 +250,8 @@ public class RabbitMQService extends AbstractElephantService
 		{}
 
 		@Override
-		public void handleConsumerException( Channel channel, Throwable exception, Consumer consumer, String consumerTag, String methodName )
+		public void handleConsumerException( Channel channel, Throwable exception, Consumer consumer, String consumerTag,
+				String methodName )
 		{}
 
 		@Override

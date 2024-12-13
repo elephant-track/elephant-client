@@ -29,6 +29,7 @@ package org.elephant.setting.server;
 import static org.elephant.setting.StyleElementsEx.intElementEx;
 import static org.elephant.setting.StyleElementsEx.passwordElement;
 import static org.elephant.setting.StyleElementsEx.stringElement;
+import static org.mastodon.app.ui.StyleElements.booleanElement;
 import static org.mastodon.app.ui.StyleElements.separator;
 
 import java.util.Arrays;
@@ -63,7 +64,13 @@ public class ElephantServerSettingsPanel extends AbstractElephantSettingsPanel< 
 
 				stringElement( "RabbitMQ server host name", style::getRabbitMQHost, style::setRabbitMQHost ),
 				intElementEx( "RabbitMQ server port", 1, 65535, "#", style::getRabbitMQPort, style::setRabbitMQPort ),
+				stringElement( "RabbitMQ server virtual host name", style::getRabbitMQVirtualHost, style::setRabbitMQVirtualHost ),
 				stringElement( "RabbitMQ server username", style::getRabbitMQUsername, style::setRabbitMQUsername ),
-				passwordElement( "RabbitMQ server password", style::getRabbitMQPassword, style::setRabbitMQPassword ) );
+				passwordElement( "RabbitMQ server password", style::getRabbitMQPassword, style::setRabbitMQPassword ),
+				booleanElement( "Use SSL (amqps)", style::getUseSslProtocol, style::setUseSslProtocol ),
+
+				separator(),
+
+				booleanElement( "Verify SSL", style::getVerifySSL, style::setVerifySSL ) );
 	}
 }

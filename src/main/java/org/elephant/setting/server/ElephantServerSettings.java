@@ -46,9 +46,15 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 
 	public static final int DEFAULT_RABBITMQ_PORT = 5672;
 
+	public static final String DEFAULT_RABBITMQ_VIRTUALHOST = "/";
+
 	public static final String DEFAULT_RABBITMQ_USERNAME = "user";
 
 	public static final String DEFAULT_RABBITMQ_PASSWORD = "user";
+
+	public static final boolean DEFAULT_RABBITMQ_USE_SSL_PROTOCOL = false;
+
+	public static final boolean DEFAULT_RABBITMQ_VERIFY_SSL = false;
 
 	@Override
 	public ElephantServerSettings copy( String name )
@@ -73,8 +79,11 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 		serverURL = settings.serverURL;
 		rabbitMQHost = settings.rabbitMQHost;
 		rabbitMQPort = settings.rabbitMQPort;
+		rabbitMQVirtualHost = settings.rabbitMQVirtualHost;
 		rabbitMQUsername = settings.rabbitMQUsername;
 		rabbitMQPassword = settings.rabbitMQPassword;
+		useSslProtocol = settings.useSslProtocol;
+		verifySSL = settings.verifySSL;
 		notifyListeners();
 	}
 
@@ -84,9 +93,15 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 
 	private int rabbitMQPort;
 
+	private String rabbitMQVirtualHost;
+
 	private String rabbitMQUsername;
 
 	private String rabbitMQPassword;
+
+	private boolean useSslProtocol;
+
+	private boolean verifySSL;
 
 	public String getServerURL()
 	{
@@ -130,6 +145,20 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 		}
 	}
 
+	public String getRabbitMQVirtualHost()
+	{
+		return rabbitMQVirtualHost;
+	}
+
+	public synchronized void setRabbitMQVirtualHost( String rabbitMQVirtualHost )
+	{
+		if ( this.rabbitMQVirtualHost != rabbitMQVirtualHost )
+		{
+			this.rabbitMQVirtualHost = rabbitMQVirtualHost;
+			notifyListeners();
+		}
+	}
+
 	public String getRabbitMQUsername()
 	{
 		return rabbitMQUsername != null ? rabbitMQUsername : DEFAULT_RABBITMQ_USERNAME;
@@ -158,6 +187,34 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 		}
 	}
 
+	public boolean getUseSslProtocol()
+	{
+		return useSslProtocol;
+	}
+
+	public synchronized void setUseSslProtocol( final boolean useSslProtocol )
+	{
+		if ( this.useSslProtocol != useSslProtocol )
+		{
+			this.useSslProtocol = useSslProtocol;
+			notifyListeners();
+		}
+	}
+
+	public boolean getVerifySSL()
+	{
+		return verifySSL;
+	}
+
+	public synchronized void setVerifySSL( final boolean verifySSL )
+	{
+		if ( this.verifySSL != verifySSL )
+		{
+			this.verifySSL = verifySSL;
+			notifyListeners();
+		}
+	}
+
 	private static final ElephantServerSettings df;
 	static
 	{
@@ -165,8 +222,11 @@ public class ElephantServerSettings extends AbstractElephantSettings< ElephantSe
 		df.serverURL = DEFAULT_SERVER_URL;
 		df.rabbitMQHost = DEFAULT_RABBITMQ_HOST;
 		df.rabbitMQPort = DEFAULT_RABBITMQ_PORT;
+		df.rabbitMQVirtualHost = DEFAULT_RABBITMQ_VIRTUALHOST;
 		df.rabbitMQUsername = DEFAULT_RABBITMQ_USERNAME;
 		df.rabbitMQPassword = DEFAULT_RABBITMQ_PASSWORD;
+		df.useSslProtocol = DEFAULT_RABBITMQ_USE_SSL_PROTOCOL;
+		df.verifySSL = DEFAULT_RABBITMQ_VERIFY_SSL;
 		df.name = "Default";
 	}
 

@@ -34,7 +34,7 @@ import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.UnirestMixin;
-import org.elephant.setting.main.ElephantMainSettingsListener;
+import org.elephant.setting.main.ElephantSettingsListener;
 import org.mastodon.mamut.ProjectModel;
 
 import com.eclipsesource.json.Json;
@@ -48,7 +48,7 @@ import bdv.viewer.animate.TextOverlayAnimator;
  * @author Ko Sugawara
  */
 public class UpdateTrainingParametersService extends AbstractElephantService
-		implements ElephantConstantsMixin, ElephantMainSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin,
+		implements ElephantConstantsMixin, ElephantSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin,
 		UnirestMixin, URLMixin
 {
 

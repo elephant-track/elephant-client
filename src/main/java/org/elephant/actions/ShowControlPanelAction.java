@@ -61,7 +61,10 @@ public class ShowControlPanelAction extends AbstractElephantAction
 	public void rabbitMQStatusUpdated()
 	{
 		final ElephantStatus status = getServerStateManager().getRabbitMQStatus();
-		final String url = "amqp://" + getServerSettings().getRabbitMQHost() + ":" + String.valueOf( getServerSettings().getRabbitMQPort() );
+		final String protocol = getServerSettings().getUseSslProtocol() ? "amqps://" : "amqp://";
+		final String url = protocol + getServerSettings().getRabbitMQHost() + ":"
+				+ String.valueOf( getServerSettings().getRabbitMQPort() )
+				+ getServerSettings().getRabbitMQVirtualHost();
 		final String errorMessage = getServerStateManager().getRabbitMQErrorMessage();
 		try
 		{

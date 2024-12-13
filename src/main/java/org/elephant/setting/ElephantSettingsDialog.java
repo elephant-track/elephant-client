@@ -36,7 +36,7 @@ import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.WindowConstants;
 
-import org.elephant.setting.main.ElephantMainSettingsListener;
+import org.elephant.setting.main.ElephantSettingsListener;
 import org.mastodon.app.ui.SettingsPanel;
 
 import bdv.ui.settings.SettingsPage;
@@ -52,14 +52,14 @@ public class ElephantSettingsDialog extends JDialog
 
 	private final SettingsPanel settingsPanel;
 
-	private final List< ElephantMainSettingsListener > listeners = new ArrayList<>();
+	private final List< ElephantSettingsListener > settingsListeners = new ArrayList<>();
 
 	public ElephantSettingsDialog()
 	{
 		super( ( Frame ) null, "ELEPHANT Preferences", false );
 		settingsPanel = new SettingsPanel();
 		settingsPanel.onOk( () -> {
-			for ( final ElephantMainSettingsListener listener : listeners )
+			for ( final ElephantSettingsListener listener : settingsListeners )
 				listener.mainSettingsUpdated();
 			setVisible( false );
 		} );
@@ -79,9 +79,9 @@ public class ElephantSettingsDialog extends JDialog
 		pack();
 	}
 
-	public void addSettingsListener( final ElephantMainSettingsListener listener )
+	public void addSettingsListener( final ElephantSettingsListener listener )
 	{
-		listeners.add( listener );
+		settingsListeners.add( listener );
 	}
 
 	public void addPage( final SettingsPage page )

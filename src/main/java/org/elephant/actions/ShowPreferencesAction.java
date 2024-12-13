@@ -34,9 +34,10 @@ import org.elephant.setting.ElephantSettingsConfigPage;
 import org.elephant.setting.ElephantSettingsConfigPageFactory;
 import org.elephant.setting.ElephantSettingsConfigPageFactory.TreePath;
 import org.elephant.setting.ElephantSettingsDialog;
+import org.elephant.setting.SettingsApplyListener;
 import org.elephant.setting.TypeMismatchException;
 import org.elephant.setting.main.ElephantMainSettings;
-import org.elephant.setting.main.ElephantMainSettingsListener;
+import org.elephant.setting.main.ElephantSettingsListener;
 import org.elephant.setting.main.ElephantMainSettingsManager;
 import org.elephant.setting.server.ElephantServerSettings;
 import org.elephant.setting.server.ElephantServerSettingsManager;
@@ -58,6 +59,8 @@ public class ShowPreferencesAction extends AbstractElephantAction implements Bdv
 	private static final String MENU_TEXT = "Preferences...";
 
 	private ElephantSettingsDialog dialog = new ElephantSettingsDialog();
+
+	ElephantSettingsConfigPage< ElephantServerSettings > serverConfigPage;
 
 	@Override
 	public String getMenuText()
@@ -84,7 +87,7 @@ public class ShowPreferencesAction extends AbstractElephantAction implements Bdv
 		{
 			final ElephantSettingsConfigPage< ElephantMainSettings > mainConfigPage =
 					mainPageFactory.create( TreePath.MAIN, getVoxelDimensions().unit() );
-			final ElephantSettingsConfigPage< ElephantServerSettings > serverConfigPage = serverPageFactory.create( TreePath.SERVER );
+			serverConfigPage = serverPageFactory.create( TreePath.SERVER );
 
 			dialog.addPage( mainConfigPage );
 			dialog.addPage( serverConfigPage );
@@ -101,9 +104,14 @@ public class ShowPreferencesAction extends AbstractElephantAction implements Bdv
 		SwingUtilities.invokeLater( () -> dialog.setVisible( true ) );
 	}
 
-	public void addSettingsListener( ElephantMainSettingsListener listener )
+	public void addSettingsListener( ElephantSettingsListener listener )
 	{
 		dialog.addSettingsListener( listener );
+	}
+
+	public void addSettingsApplyListener( SettingsApplyListener listener )
+	{
+		serverConfigPage.addSettingsApplyListener( listener );
 	}
 
 }

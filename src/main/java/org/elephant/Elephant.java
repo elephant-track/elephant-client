@@ -433,7 +433,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 						.collect( Collectors.toList() ) );
 		rabbitMQService.start();
 		// UnirestService
-		new UnirestService();
+		UnirestService unirestService = new UnirestService();
+		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsApplyListener( unirestService );
 		// UpdateTrainingParameters
 		final UpdateTrainingParametersService updateTrainingParametersService = new UpdateTrainingParametersService( pluginAppModel );
 		( ( ShowPreferencesAction ) showPreferencesAction ).addSettingsListener( updateTrainingParametersService );

@@ -24,14 +24,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.elephant.setting.main;
+package org.elephant.setting;
 
-/**
- * Used to notify that the main settings are updated.
- * 
- * @author Ko Sugawara
- */
-public interface ElephantMainSettingsListener
+public interface SettingsApplyListener
 {
-	void mainSettingsUpdated();
+    void applySettings();
 }

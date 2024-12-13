@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.scijava.listeners.Listeners;
@@ -25,7 +26,7 @@ import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 
 public class ElephantStatusService extends AbstractElephantService
-		implements ElephantConstantsMixin, ElephantSettingsMixin, ElephantStateManagerMixin, URLMixin
+		implements ElephantConstantsMixin, ElephantStateManagerMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -103,6 +104,10 @@ public class ElephantStatusService extends AbstractElephantService
 				{
 					getServerStateManager().setElephantServerErrorMessage( e.getMessage() );
 				}
+				catch ( final URISyntaxException e )
+				{
+					getServerStateManager().setElephantServerErrorMessage( e.getMessage() );
+				}
 				getServerStateManager().setElephantServerStatus( serverStatus );
 				getServerStateManager().setGpus( gpus );
 				elephantServerStatusListeners.list.forEach( l -> l.serverStatusUpdated() );
@@ -118,10 +123,22 @@ public class ElephantStatusService extends AbstractElephantService
 		} ).start();
 	}
 
-	public static boolean isAvailable( final String serverUrlString ) throws MalformedURLException
+	public static boolean isAvailable( final String serverUrlString ) throws MalformedURLException, URISyntaxException
 	{
-		final URL serverUrl = new URL( serverUrlString );
-		try (final Socket s = new Socket( serverUrl.getHost(), serverUrl.getPort() ))
+		final URL serverUrl = new URI( serverUrlString ).toURL();
+		int port = serverUrl.getPort();
+		if ( port == -1 )
+		{
+			if ( "http".equalsIgnoreCase( serverUrl.getProtocol() ) )
+			{
+				port = 80;
+			}
+			else if ( "https".equalsIgnoreCase( serverUrl.getProtocol() ) )
+			{
+				port = 443;
+			}
+		}
+		try ( final Socket s = new Socket( serverUrl.getHost(), port ) )
 		{
 			return true;
 		}

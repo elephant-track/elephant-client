@@ -26,6 +26,8 @@
  ******************************************************************************/
 package org.elephant.actions;
 
+import org.elephant.setting.SettingsApplyListener;
+
 import kong.unirest.Unirest;
 
 /**
@@ -33,7 +35,7 @@ import kong.unirest.Unirest;
  * 
  * @author Ko Sugawara
  */
-public class UnirestService extends AbstractElephantService
+public class UnirestService extends AbstractElephantService implements SettingsApplyListener
 {
 
 	private static final long serialVersionUID = 1L;
@@ -49,6 +51,13 @@ public class UnirestService extends AbstractElephantService
 				.connectTimeout( UNIREST_TIMEOUT )
 				.concurrency( 200, 20 )
 				.addDefaultHeader( "Cache-Control", "no-cache" )
-				.addDefaultHeader( "Connection", "keep-alive" );
+				.addDefaultHeader( "Connection", "keep-alive" )
+				.verifySsl( getServerSettings().getVerifySSL() );
+	}
+
+	@Override
+	public void applySettings()
+	{
+		Unirest.config().reset().verifySsl( getServerSettings().getVerifySSL() );
 	}
 }

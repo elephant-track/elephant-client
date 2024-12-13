@@ -24,35 +24,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package org.elephant.setting;
+package org.elephant.setting.main;
 
-import org.scijava.listeners.Listeners;
-
-import bdv.ui.settings.SelectAndEditProfileSettingsPage;
-import bdv.ui.settings.style.StyleProfile;
-
-public class ElephantSettingsConfigPage< S extends UpdatableStyle< S > > extends SelectAndEditProfileSettingsPage< StyleProfile< S > >
+/**
+ * Used to notify that the main settings are updated.
+ * 
+ * @author Ko Sugawara
+ */
+public interface ElephantSettingsListener
 {
-
-	private final Listeners.SynchronizedList< SettingsApplyListener > settingsApplyListeners;
-
-	public ElephantSettingsConfigPage( final String treePath, final ProfileManager< StyleProfile< S > > profileManager,
-			final ProfileEditPanel< StyleProfile< S > > profileEditPanel )
-	{
-		super( treePath, profileManager, profileEditPanel );
-		this.settingsApplyListeners = new Listeners.SynchronizedList<>();
-	}
-
-	public void addSettingsApplyListener( final SettingsApplyListener listener )
-	{
-		settingsApplyListeners.add( listener );
-	}
-
-	@Override
-	public void apply()
-	{
-		super.apply();
-		settingsApplyListeners.list.forEach( SettingsApplyListener::applySettings );
-	}
-
+	void mainSettingsUpdated();
 }
