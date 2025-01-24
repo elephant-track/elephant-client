@@ -25,7 +25,7 @@ public class KeymapParser
 	public KeymapParser()
 	{
 		keymapsList = new KeymapsListIO( INITIAL_DEFAULT_KEYMAP_NAME, Collections.emptyList() );
-		try (final FileReader input = new FileReader( KEYMAPS_PATH ))
+		try ( final FileReader input = new FileReader( KEYMAPS_PATH ) )
 		{
 			keymapsList = createYaml().loadAs( input, KeymapsListIO.class );
 		}
@@ -51,7 +51,7 @@ public class KeymapParser
 	public void dump()
 	{
 		new File( KEYMAPS_PATH ).getParentFile().mkdirs();
-		try (final FileWriter output = new FileWriter( KEYMAPS_PATH ))
+		try ( final FileWriter output = new FileWriter( KEYMAPS_PATH ) )
 		{
 			createYaml().dump( keymapsList, output );
 		}
@@ -65,9 +65,9 @@ public class KeymapParser
 	{
 		final DumperOptions dumperOptions = new DumperOptions();
 		dumperOptions.setDefaultFlowStyle( DumperOptions.FlowStyle.BLOCK );
-		final Representer representer = new Representer();
+		final Representer representer = new Representer( dumperOptions );
 		representer.addClassTag( KeymapsListIO.class, new Tag( "!keymapslist" ) );
-		final Constructor constructor = new Constructor();
+		final Constructor constructor = new Constructor( new org.yaml.snakeyaml.LoaderOptions() );
 		constructor.addTypeDescription( new TypeDescription( KeymapsListIO.class, "!keymapslist" ) );
 		return new Yaml( constructor, representer, dumperOptions );
 	}

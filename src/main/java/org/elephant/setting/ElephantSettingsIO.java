@@ -37,6 +37,7 @@ import org.mastodon.io.yaml.WorkaroundRepresenter;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.inspector.TagInspector;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -61,11 +62,12 @@ public class ElephantSettingsIO
 		}
 	}
 
-	public static Yaml createYaml( final Tag tag )
+	public static Yaml createYaml( final Tag tag, final TagInspector tagInspector )
 	{
 		final DumperOptions dumperOptions = new DumperOptions();
 		final Representer representer = new RenderSettingsRepresenter( tag );
 		final Constructor constructor = new RenderSettingsConstructor( tag );
+		constructor.getLoadingConfig().setTagInspector( tagInspector );
 		final Yaml yaml = new Yaml( constructor, representer, dumperOptions );
 		return yaml;
 	}

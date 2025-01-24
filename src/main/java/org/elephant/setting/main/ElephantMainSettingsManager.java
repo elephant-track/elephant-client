@@ -29,6 +29,7 @@ package org.elephant.setting.main;
 import java.util.Collection;
 
 import org.elephant.setting.AbstractElephantSettingsManager;
+import org.yaml.snakeyaml.inspector.TagInspector;
 import org.yaml.snakeyaml.nodes.Tag;
 
 /**
@@ -52,7 +53,8 @@ public class ElephantMainSettingsManager extends AbstractElephantSettingsManager
 	// STYLE_FILE and ELEPHANT_MAIN_SETTINGS_TAG should be declared before INSTANCE
 	// and INSTANCE_NO_BUILT_IN_STYLES
 
-	private static final String STYLE_FILE = System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/Plugins/Elephant/elephant_main_settings.yaml";
+	private static final String STYLE_FILE =
+			System.getProperty( "user.home" ).replace( "\\", "/" ) + "/.mastodon/Plugins/Elephant/elephant_main_settings.yaml";
 
 	private static final Tag ELEPHANT_MAIN_SETTINGS_TAG = new Tag( "!elephantmainsettings" );
 
@@ -86,6 +88,13 @@ public class ElephantMainSettingsManager extends AbstractElephantSettingsManager
 	protected Tag getTag()
 	{
 		return ELEPHANT_MAIN_SETTINGS_TAG;
+	}
+
+	@Override
+	protected TagInspector getTagInspector()
+	{
+		TagInspector taginspector = tag -> tag.getClassName().equals( ElephantMainSettings.class.getName() );
+		return taginspector;
 	}
 
 	@Override

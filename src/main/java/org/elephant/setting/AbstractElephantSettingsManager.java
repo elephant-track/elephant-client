@@ -39,11 +39,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.inspector.TagInspector;
 import org.yaml.snakeyaml.nodes.Tag;
 
 import bdv.ui.settings.style.AbstractStyleManager;
 
-public abstract class AbstractElephantSettingsManager< M extends AbstractElephantSettingsManager< M, S >, S extends AbstractElephantSettings< S > > extends AbstractStyleManager< M, S >
+public abstract class AbstractElephantSettingsManager< M extends AbstractElephantSettingsManager< M, S >,
+		S extends AbstractElephantSettings< S > > extends AbstractStyleManager< M, S >
 {
 
 	private final S forwardDefaultStyle;
@@ -64,6 +66,8 @@ public abstract class AbstractElephantSettingsManager< M extends AbstractElephan
 	public abstract M getStaticInstanceNoBuiltInStyles();
 
 	protected abstract Tag getTag();
+
+	protected abstract TagInspector getTagInspector();
 
 	protected abstract String getStyleFile();
 
@@ -103,7 +107,7 @@ public abstract class AbstractElephantSettingsManager< M extends AbstractElephan
 		try
 		{
 			final FileReader input = new FileReader( filename );
-			final Yaml yaml = ElephantSettingsIO.createYaml( getTag() );
+			final Yaml yaml = ElephantSettingsIO.createYaml( getTag(), getTagInspector() );
 			final Iterable< Object > objs = yaml.loadAll( input );
 			String defaultStyleName = null;
 			for ( final Object obj : objs )
@@ -148,7 +152,7 @@ public abstract class AbstractElephantSettingsManager< M extends AbstractElephan
 		{
 			mkdirs( filename );
 			final FileWriter output = new FileWriter( filename );
-			final Yaml yaml = ElephantSettingsIO.createYaml( getTag() );
+			final Yaml yaml = ElephantSettingsIO.createYaml( getTag(), getTagInspector() );
 			final ArrayList< Object > objects = new ArrayList<>();
 			objects.add( selectedStyle.getName() );
 			objects.addAll( userStyles );

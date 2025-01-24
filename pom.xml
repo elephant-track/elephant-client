@@ -3,11 +3,32 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>33.2.0</version>
+		<version>40.0.0</version>
 	</parent>
+
 	<groupId>org.elephant</groupId>
 	<artifactId>elephant</artifactId>
 	<version>0.6.1-SNAPSHOT</version>
+
+	<properties>
+		<package-name>elephant</package-name>
+
+		<license.licenseName>BSD-2-Clause</license.licenseName>
+		<license.projectName>elephant</license.projectName>
+		<license.copyrightOwners>Ko Sugawara</license.copyrightOwners>
+
+		<mastodon.version>1.0.0-beta-34</mastodon.version>
+        <mastodon.group>org.mastodon</mastodon.group>
+
+		<!-- when a pom-scijava exists that references the scijava-common 2.99.1 release, this can be removed again -->
+        <scijava-common.version>2.99.1-SNAPSHOT</scijava-common.version>
+
+		<enforcer.skip>true</enforcer.skip>
+
+		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<!-- <releaseProfiles>deploy-to-imagej</releaseProfiles> -->
+	</properties>
+
 	<name>ELEPHANT: Tracking cell lineages in 3D by incremental deep learning</name>
 	<description>ELEPHANT client application implemented as a Mastodon plugin</description>
 	<url>https://github.com/elephant-track/elephant-client</url>
@@ -24,6 +45,13 @@
 	</licenses>
 
 	<dependencies>
+        <!-- Mastodon Core -->
+        <dependency>
+            <groupId>org.mastodon</groupId>
+            <artifactId>mastodon</artifactId>
+            <version>${mastodon.version}</version>
+        </dependency>
+
 		<dependency>
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
@@ -54,66 +82,20 @@
 		<dependency>
 			<groupId>com.rabbitmq</groupId>
 			<artifactId>amqp-client</artifactId>
-			<version>5.16.0</version>
+			<version>5.24.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
-			<version>2.10.0</version>
+			<version>2.11.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mastodon</groupId>
-			<artifactId>mastodon</artifactId>
-			<version>1.0.0-beta-27</version>
-		</dependency>
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>bigdataviewer-core</artifactId>
-			<version>10.4.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.scijava</groupId>
-			<artifactId>scijava-ui-swing</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.scijava</groupId>
-			<artifactId>scijava-ui-awt</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5.1</version>
-		</dependency>
-		<!-- ImgLib2 dependencies -->
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm-gpl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-ij</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-realtransform</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -163,19 +145,6 @@
 		<system>Travis CI</system>
 		<!-- <url>TBD</url> -->
 	</ciManagement>
-	<properties>
-		<package-name>elephant</package-name>
-
-		<license.licenseName>BSD-2-Clause</license.licenseName>
-		<license.projectName>elephant</license.projectName>
-		<license.copyrightOwners>Ko Sugawara</license.copyrightOwners>
-
-		<bigdataviewer-core.version>10.2.1</bigdataviewer-core.version>
-		<imglib2-realtransform.version>3.1.2</imglib2-realtransform.version>
-
-		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
-		<!-- <releaseProfiles>deploy-to-imagej</releaseProfiles> -->
-	</properties>
 
 	<build>
 		<plugins>
