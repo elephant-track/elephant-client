@@ -8,7 +8,7 @@
 
 	<groupId>org.elephant</groupId>
 	<artifactId>elephant</artifactId>
-	<version>0.7.0-SNAPSHOT</version>
+	<version>0.7.0</version>
 
 	<properties>
 		<package-name>elephant</package-name>
@@ -19,9 +19,6 @@
 
 		<mastodon.version>1.0.0-beta-34</mastodon.version>
         <mastodon.group>org.mastodon</mastodon.group>
-
-		<!-- when a pom-scijava exists that references the scijava-common 2.99.1 release, this can be removed again -->
-        <scijava-common.version>2.99.1-SNAPSHOT</scijava-common.version>
 
 		<enforcer.skip>true</enforcer.skip>
 
@@ -134,7 +131,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/elephant-track/elephant-client</connection>
 		<developerConnection>scm:git:git@github.com:elephant-track/elephant-client</developerConnection>
-		<tag>HEAD</tag>
+		<tag>v0.7.0</tag>
 		<url>https://github.com/elephant-track/elephant-client</url>
 	</scm>
 	<issueManagement>
