@@ -42,13 +42,8 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.TimepointMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
-import org.elephant.actions.mixins.UnirestMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.mamut.model.Link;
@@ -66,7 +61,6 @@ import bdv.viewer.animate.TextOverlayAnimator;
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.util.Zip4jUtil;
 
@@ -80,7 +74,7 @@ import net.lingala.zip4j.util.Zip4jUtil;
  * @author Ko Sugawara
  */
 public class ExportCTCAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantGraphTagActionMixin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
+		implements ElephantGraphTagActionMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -200,9 +194,10 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 		}
 
 		final File file = Paths.get( dir.getAbsolutePath(), RES_FILENAME ).toFile();
-		try (final FileWriter fileWriter = new FileWriter( file ))
+		try ( final FileWriter fileWriter = new FileWriter( file ) )
 		{
-			final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
+			final CSVWriter writer = new CSVWriter( fileWriter, ' ', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+					CSVWriter.DEFAULT_LINE_END );
 			try
 			{
 				for ( int i = 0; i < trackList.size(); i++ )
@@ -219,9 +214,10 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 		}
 
 		final File idMapFile = Paths.get( dir.getAbsolutePath(), ID_MAP_FILENAME ).toFile();
-		try (final FileWriter fileWriter = new FileWriter( idMapFile ))
+		try ( final FileWriter fileWriter = new FileWriter( idMapFile ) )
 		{
-			final CSVWriter writer = new CSVWriter( fileWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
+			final CSVWriter writer = new CSVWriter( fileWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
+					CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END );
 			writer.writeNext( new String[] { "Original ID", "ID" } );
 			try
 			{
@@ -263,15 +259,15 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 					response -> {
 						if ( response.getStatus() == HttpURLConnection.HTTP_OK )
 						{
-							try
+							try ( final ZipFile zipFile = new ZipFile( zipAbsolutePath ) )
 							{
-								final ZipFile zipFile = new ZipFile( zipAbsolutePath );
 								final List< FileHeader > fileHeaders = zipFile.getFileHeaders();
 								final long currentTime = System.currentTimeMillis();
-								fileHeaders.forEach( header -> header.setLastModifiedTime( Zip4jUtil.epochToExtendedDosTime( currentTime ) ) );
+								fileHeaders.forEach(
+										header -> header.setLastModifiedTime( Zip4jUtil.epochToExtendedDosTime( currentTime ) ) );
 								zipFile.extractAll( dir.getAbsolutePath() );
 							}
-							catch ( final ZipException e )
+							catch ( final IOException e )
 							{
 								getClientLogger().severe( ExceptionUtils.getStackTrace( e ) );
 							}
@@ -354,7 +350,8 @@ public class ExportCTCAction extends AbstractElephantDatasetAction
 		}
 	}
 
-	private void buildResult( Spot spot, List< IdMapEntity > idMapList, List< CTCTrackEntity > trackList, int start, int parent, final JsonArray jsonSpots )
+	private void buildResult( Spot spot, List< IdMapEntity > idMapList, List< CTCTrackEntity > trackList, int start, int parent,
+			final JsonArray jsonSpots )
 	{
 		final RefList< Link > outgoingEdges = RefCollections.createRefList( getGraph().edges() );
 		for ( final Link edge : spot.outgoingEdges() )

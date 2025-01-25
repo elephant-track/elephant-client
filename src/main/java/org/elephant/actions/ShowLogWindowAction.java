@@ -28,7 +28,6 @@ package org.elephant.actions;
 
 import javax.swing.SwingUtilities;
 
-import org.elephant.actions.mixins.LoggerMixin;
 import org.scijava.ui.UIService;
 import org.scijava.ui.UserInterface;
 import org.scijava.ui.console.ConsolePane;
@@ -39,7 +38,7 @@ import org.scijava.ui.swing.console.SwingConsolePane;
  * 
  * @author Ko Sugawara
  */
-public class ShowLogWindowAction extends AbstractElephantAction implements LoggerMixin
+public class ShowLogWindowAction extends AbstractElephantAction
 {
 	private static final long serialVersionUID = 1L;
 

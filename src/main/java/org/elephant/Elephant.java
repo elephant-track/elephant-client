@@ -116,7 +116,6 @@ import org.mastodon.app.plugin.MastodonPlugin;
 import org.mastodon.app.ui.ViewMenuBuilder.MenuItem;
 import org.mastodon.grouping.GroupHandle;
 import org.mastodon.mamut.MainWindow;
-import org.mastodon.mamut.WindowManager;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.io.ProjectCreator;

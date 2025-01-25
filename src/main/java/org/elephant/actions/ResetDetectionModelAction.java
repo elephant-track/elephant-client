@@ -36,12 +36,7 @@ import java.util.function.Consumer;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
-
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
@@ -57,7 +52,6 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class ResetDetectionModelAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantConstantsMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -155,7 +149,8 @@ public class ResetDetectionModelAction extends AbstractElephantDatasetAction
 				}
 				else
 				{
-					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_DETECTION_RESET_MODEL ), atomoicFile.get(), jsonRootObject.toString(), completed );
+					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_DETECTION_RESET_MODEL ), atomoicFile.get(),
+							jsonRootObject.toString(), completed );
 				}
 			}
 			catch ( final ElephantConnectException e )

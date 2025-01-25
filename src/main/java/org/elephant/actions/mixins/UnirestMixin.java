@@ -48,7 +48,7 @@ import kong.unirest.UnirestException;
  * 
  * @author Ko Sugawara
  */
-public interface UnirestMixin extends ElephantActionMixin, ElephantStateManagerMixin, LoggerMixin, UIActionMixin
+public interface UnirestMixin extends ElephantStateManagerMixin, LoggerMixin, UIActionMixin
 {
 
 	default void validateServerAvailability() throws ElephantConnectException

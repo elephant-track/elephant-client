@@ -29,9 +29,6 @@ package org.elephant.actions;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
 import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.UnirestMixin;
 import org.elephant.setting.main.ElephantSettingsListener;
@@ -48,8 +45,7 @@ import bdv.viewer.animate.TextOverlayAnimator;
  * @author Ko Sugawara
  */
 public class UpdateTrainingParametersService extends AbstractElephantService
-		implements ElephantConstantsMixin, ElephantSettingsListener, ElephantSettingsMixin, ElephantStateManagerMixin, UIActionMixin,
-		UnirestMixin, URLMixin
+		implements ElephantConstantsMixin, ElephantSettingsListener, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;

@@ -35,10 +35,6 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.ElephantConnectException;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
@@ -52,7 +48,6 @@ import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
  * @author Ko Sugawara
  */
 public class ResetDetectionLabelsAction extends AbstractElephantDatasetAction
-		implements ElephantConstantsMixin, ElephantSettingsMixin, UIActionMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -78,7 +73,8 @@ public class ResetDetectionLabelsAction extends AbstractElephantDatasetAction
 		final AtomicInteger option = new AtomicInteger();
 		try
 		{
-			SwingUtilities.invokeAndWait( () -> option.set( JOptionPane.showConfirmDialog( null, "Detection labels will be reset", "Select an option", JOptionPane.OK_CANCEL_OPTION ) ) );
+			SwingUtilities.invokeAndWait( () -> option.set( JOptionPane.showConfirmDialog( null, "Detection labels will be reset",
+					"Select an option", JOptionPane.OK_CANCEL_OPTION ) ) );
 		}
 		catch ( InvocationTargetException | InterruptedException e )
 		{

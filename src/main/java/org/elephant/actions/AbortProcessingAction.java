@@ -28,8 +28,6 @@ package org.elephant.actions;
 
 import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantConstantsMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.UIActionMixin;
 import org.elephant.actions.mixins.URLMixin;
 import org.elephant.actions.mixins.UnirestMixin;
 import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
@@ -49,7 +47,7 @@ import bdv.viewer.animate.TextOverlayAnimator;
  * @author Ko Sugawara
  */
 public class AbortProcessingAction extends AbstractElephantAction
-		implements ElephantConstantsMixin, ElephantStateManagerMixin, UIActionMixin, UnirestMixin, URLMixin
+		implements ElephantConstantsMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;

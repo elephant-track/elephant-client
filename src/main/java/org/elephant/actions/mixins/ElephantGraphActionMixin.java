@@ -36,7 +36,7 @@ import net.imglib2.Dimensions;
  * 
  * @author Ko Sugawara
  */
-public interface ElephantGraphActionMixin extends BdvDataMixin, ElephantSettingsMixin, GraphActionMixin
+public interface ElephantGraphActionMixin extends BdvDataMixin, GraphActionMixin
 {
 
 	static final int[] DEFAULT_CROP_BOX_SIZE = new int[] { 256, 256, 16 };

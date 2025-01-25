@@ -29,8 +29,6 @@ package org.elephant.actions;
 import java.util.function.Predicate;
 
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
 
@@ -41,7 +39,7 @@ import org.mastodon.mamut.model.Spot;
  * @author Ko Sugawara
  */
 public class RemoveSelfLinksAction extends AbstractElephantAction
-		implements ElephantGraphTagActionMixin, GraphChangeActionMixin, ElephantStateManagerMixin
+		implements ElephantGraphTagActionMixin
 {
 
 	private static final long serialVersionUID = 1L;

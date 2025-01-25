@@ -34,17 +34,10 @@ import java.util.Iterator;
 import java.util.stream.IntStream;
 
 import org.elephant.actions.PredictSpotsAction.SpotStruct;
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
-import org.elephant.actions.mixins.TimepointMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
-import org.elephant.actions.mixins.UnirestMixin;
 import org.mastodon.collection.util.HashBimap;
 import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Link;
@@ -77,8 +70,7 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  * @author Ko Sugawara
  */
 public class BackTrackAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantGraphActionMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, GraphChangeActionMixin,
-		SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, UnirestMixin, URLMixin
+		implements ElephantGraphActionMixin, ElephantGraphTagActionMixin, SpatioTemporalIndexActionMinxin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -395,16 +387,19 @@ public class BackTrackAction extends AbstractElephantDatasetAction
 						getClientLogger().severe( sb.toString() );
 					}
 				}
-				targetSpot.localize( pos );
-				targetSpot.getCovariance( cov );
-				spotPoolIndex = targetSpot.getInternalPoolIndex();
-				newSpotRef.refTo( targetSpot );
-				if ( 0 < targetSpot.incomingEdges().size() )
+				if ( targetSpot != null )
 				{
-					while ( timepointIterator.hasNext() )
-						timepointIterator.next();
-					showTextOverlayAnimator( "Target spot has an incoming edge", 3000, TextPosition.CENTER );
-					return;
+					targetSpot.localize( pos );
+					targetSpot.getCovariance( cov );
+					spotPoolIndex = targetSpot.getInternalPoolIndex();
+					newSpotRef.refTo( targetSpot );
+					if ( 0 < targetSpot.incomingEdges().size() )
+					{
+						while ( timepointIterator.hasNext() )
+							timepointIterator.next();
+						showTextOverlayAnimator( "Target spot has an incoming edge", 3000, TextPosition.CENTER );
+						return;
+					}
 				}
 			}
 		}

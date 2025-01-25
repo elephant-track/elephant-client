@@ -33,8 +33,6 @@ import java.util.stream.IntStream;
 
 import org.elephant.actions.mixins.BdvContextMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.TimepointMixin;
 import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.collection.RefCollection;
@@ -51,7 +49,7 @@ import org.mastodon.mamut.model.Spot;
  * @author Ko Sugawara
  */
 public class RemoveVisibleSpotsAction extends AbstractElephantAction
-		implements BdvContextMixin, ElephantGraphTagActionMixin, ElephantStateManagerMixin, ElephantSettingsMixin, TimepointMixin, WindowManagerMixin
+		implements BdvContextMixin, ElephantGraphTagActionMixin, TimepointMixin, WindowManagerMixin
 {
 	private static final long serialVersionUID = 1L;
 
@@ -101,8 +99,10 @@ public class RemoveVisibleSpotsAction extends AbstractElephantAction
 						final RefCollection< Spot > refSet = RefCollections.createRefSet( getGraph().vertices() );
 						for ( final Spot spot : spots )
 							refSet.add( spot );
-						Predicate< Spot > spotFilter = spot -> getVertexTagMap( getDetectionTagSet() ).get( spot ) == getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME );
-						spotFilter = spotFilter.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot ) == getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME ) );
+						Predicate< Spot > spotFilter = spot -> getVertexTagMap( getDetectionTagSet() ).get( spot )
+								== getTag( getDetectionTagSet(), DETECTION_UNLABELED_TAG_NAME );
+						spotFilter = spotFilter.and( spot -> getVertexTagMap( getTrackingTagSet() ).get( spot )
+								== getTag( getTrackingTagSet(), TRACKING_UNLABELED_TAG_NAME ) );
 						removeSpots( refSet, spotFilter );
 					}
 				}

@@ -45,17 +45,11 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantUtils;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
-import org.elephant.actions.mixins.TimepointMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.kdtree.IncrementalNearestNeighborSearch;
@@ -88,8 +82,7 @@ import net.imglib2.RealPoint;
  * @author Ko Sugawara
  */
 public class NearestNeighborLinkingAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin, ElephantGraphTagActionMixin,
-		UIActionMixin, SpatioTemporalIndexActionMinxin, TimepointMixin, URLMixin
+		implements ElephantGraphActionMixin, ElephantGraphTagActionMixin, SpatioTemporalIndexActionMinxin
 {
 
 	private static final long serialVersionUID = 1L;

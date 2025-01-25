@@ -112,7 +112,7 @@ public class ImportMastodonAction extends AbstractElephantAction implements Elep
 			getActionStateManager().setWriting( true );
 			try
 			{
-				final MamutProject project = new MamutProjectIO().load( file.getAbsolutePath() );
+				final MamutProject project = MamutProjectIO.load( file.getAbsolutePath() );
 				final MamutProject.ProjectReader reader = project.openForReading();
 				final Model model = new Model( project.getSpaceUnits(), project.getTimeUnits() );
 				model.loadRaw( reader );

@@ -36,14 +36,7 @@ import java.util.function.Consumer;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
-import org.elephant.actions.mixins.UnirestMixin;
-
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 
@@ -57,7 +50,6 @@ import kong.unirest.HttpResponse;
  * @author Ko Sugawara
  */
 public class ResetFlowModelAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantSettingsMixin, UIActionMixin, UnirestMixin, URLMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -136,7 +128,8 @@ public class ResetFlowModelAction extends AbstractElephantDatasetAction
 				}
 				else
 				{
-					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_FLOW_RESET_MODEL ), atomoicFile.get(), jsonRootObject.toString(), completed );
+					postMultipartFormDataAsStringAsync( getEndpointURL( ENDPOINT_FLOW_RESET_MODEL ), atomoicFile.get(),
+							jsonRootObject.toString(), completed );
 				}
 			}
 			catch ( final ElephantConnectException e )

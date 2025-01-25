@@ -34,16 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.elephant.actions.mixins.BdvContextMixin;
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.TimepointMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
-import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.TagSetStructure.Tag;
@@ -67,8 +59,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
  * @author Ko Sugawara
  */
 public class UpdateDetectionLabelsAction extends AbstractElephantDatasetAction
-		implements BdvContextMixin, BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, ElephantSettingsMixin,
-		ElephantStateManagerMixin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
+		implements BdvContextMixin, ElephantGraphTagActionMixin
 {
 	private static final long serialVersionUID = 1L;
 

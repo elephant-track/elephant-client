@@ -7,11 +7,10 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.ElephantStatusService.ElephantStatus;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
 
 public class ShowControlPanelAction extends AbstractElephantAction
-		implements ElephantServerStatusListener, ElephantSettingsMixin, ElephantStateManagerMixin, RabbitMQStatusListener
+		implements ElephantServerStatusListener, ElephantStateManagerMixin, RabbitMQStatusListener
 {
 	private static final long serialVersionUID = 1L;
 

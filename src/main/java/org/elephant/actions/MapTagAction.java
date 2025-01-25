@@ -34,7 +34,6 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Spot;
@@ -48,7 +47,7 @@ import org.mastodon.model.tag.TagSetStructure.TagSet;
  * @author Ko Sugawara
  */
 public class MapTagAction extends AbstractElephantAction
-		implements ElephantConstantsMixin, ElephantGraphTagActionMixin
+		implements ElephantGraphTagActionMixin
 {
 
 	private static final long serialVersionUID = 1L;
@@ -108,7 +107,8 @@ public class MapTagAction extends AbstractElephantAction
 	@Override
 	public void process()
 	{
-		final String[] tagSetNames = getTagSetModel().getTagSetStructure().getTagSets().stream().map( TagSet::getName ).toArray( String[]::new );
+		final String[] tagSetNames =
+				getTagSetModel().getTagSetStructure().getTagSets().stream().map( TagSet::getName ).toArray( String[]::new );
 		final String[] tagNamesDetection = ArrayUtils.insert( 0,
 				getDetectionTagSet().getTags().stream().map( Tag::label ).toArray( String[]::new ),
 				NO_TAG );
@@ -135,7 +135,8 @@ public class MapTagAction extends AbstractElephantAction
 		{
 			SwingUtilities.invokeAndWait( () -> {
 				final ChangeTagDialog dialog = new ChangeTagDialog(
-						tagSetNames, tagNamesDetection, tagNamesTracking, tagNamesProgenitor, tagNamesStatus, tagNamesProliferator, tagNamesDivision );
+						tagSetNames, tagNamesDetection, tagNamesTracking, tagNamesProgenitor, tagNamesStatus, tagNamesProliferator,
+						tagNamesDivision );
 				dialog.setVisible( true );
 				try
 				{

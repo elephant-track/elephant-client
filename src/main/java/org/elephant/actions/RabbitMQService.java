@@ -48,7 +48,6 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.ExceptionHandler;
 import com.rabbitmq.client.TopologyRecoveryException;
-import com.rabbitmq.client.impl.SocketFrameHandler;
 
 import bdv.viewer.animate.TextOverlayAnimator.TextPosition;
 

@@ -56,7 +56,8 @@ import net.imglib2.Dimensions;
  * 
  * @author Ko Sugawara
  */
-public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerMixin, ElephantConstantsMixin, ElephantSettingsMixin, TimepointMixin, UnirestMixin, URLMixin, RabbitMQDatasetListener
+public interface ElephantDatasetMixin
+		extends ActionMixin, BdvDataMixin, ElephantConstantsMixin, TimepointMixin, UnirestMixin, URLMixin, RabbitMQDatasetListener
 {
 	ProgressDialog progressDialog = new ProgressDialog();
 
@@ -90,14 +91,16 @@ public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerM
 					{
 						final AtomicInteger reply = new AtomicInteger( -1 );
 						SwingUtilities.invokeAndWait( () -> {
-							reply.set( JOptionPane.showConfirmDialog( null, message + "\n Initialize the dataset?", "Confirm", JOptionPane.YES_NO_OPTION ) );
+							reply.set( JOptionPane.showConfirmDialog( null, message + "\n Initialize the dataset?", "Confirm",
+									JOptionPane.YES_NO_OPTION ) );
 						} );
 						if ( reply.get() == JOptionPane.YES_OPTION )
 						{
 							final JsonObject jsonDatasetGenerate = Json.object()
 									.add( JSON_KEY_DATASET_NAME, getMainSettings().getDatasetName() )
 									.add( JSON_KEY_IS_2D, is2D() );
-							final HttpResponse< String > resGenerate = postAsString( getEndpointURL( ENDPOINT_DATASET_GENERATE ), jsonDatasetGenerate.toString() );
+							final HttpResponse< String > resGenerate =
+									postAsString( getEndpointURL( ENDPOINT_DATASET_GENERATE ), jsonDatasetGenerate.toString() );
 							if ( resGenerate.getStatus() == HttpURLConnection.HTTP_OK )
 							{
 								isDatasetReadyAtomic.set( true );
@@ -105,7 +108,8 @@ public interface ElephantDatasetMixin extends ActionMixin, BdvDataMixin, LoggerM
 							else if ( resGenerate.getStatus() == HttpURLConnection.HTTP_NO_CONTENT )
 							{
 								runPluginAction( UploadAction.NAME );
-								final HttpResponse< String > resGenerate2 = postAsString( getEndpointURL( ENDPOINT_DATASET_GENERATE ), jsonDatasetGenerate.toString() );
+								final HttpResponse< String > resGenerate2 =
+										postAsString( getEndpointURL( ENDPOINT_DATASET_GENERATE ), jsonDatasetGenerate.toString() );
 								if ( resGenerate2.getStatus() == HttpURLConnection.HTTP_OK )
 								{
 									isDatasetReadyAtomic.set( true );

@@ -33,20 +33,12 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphActionMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.ElephantSettingsMixin;
-import org.elephant.actions.mixins.ElephantStateManagerMixin;
 import org.elephant.actions.mixins.ElephantUtils;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
-import org.elephant.actions.mixins.TimepointMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
-import org.elephant.actions.mixins.WindowManagerMixin;
 import org.mastodon.collection.RefCollection;
 import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Spot;
@@ -76,9 +68,7 @@ import net.imglib2.neighborsearch.NearestNeighborSearch;
  * @author Ko Sugawara
  */
 public class PredictSpotsAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, EllipsoidActionMixin, ElephantConstantsMixin, ElephantGraphActionMixin, ElephantSettingsMixin,
-		ElephantStateManagerMixin, ElephantGraphTagActionMixin,
-		SpatioTemporalIndexActionMinxin, TimepointMixin, UIActionMixin, URLMixin, WindowManagerMixin
+		implements EllipsoidActionMixin, ElephantGraphActionMixin, ElephantGraphTagActionMixin, SpatioTemporalIndexActionMinxin
 {
 
 	private static final long serialVersionUID = 1L;

@@ -38,7 +38,6 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elephant.actions.mixins.ElephantStateManagerMixin;
-import org.elephant.actions.mixins.GraphActionMixin;
 import org.elephant.actions.mixins.GraphChangeActionMixin;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefSet;
@@ -50,7 +49,7 @@ import org.mastodon.mamut.model.Spot;
  * @author Ko Sugawara
  */
 public class RandomSampleAction extends AbstractElephantAction
-		implements GraphActionMixin, GraphChangeActionMixin, ElephantStateManagerMixin
+		implements GraphChangeActionMixin, ElephantStateManagerMixin
 {
 
 	private static final long serialVersionUID = 1L;

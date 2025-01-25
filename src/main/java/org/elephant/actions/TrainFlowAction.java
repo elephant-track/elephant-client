@@ -32,13 +32,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.elephant.actions.mixins.BdvDataMixin;
 import org.elephant.actions.mixins.ElephantConnectException;
-import org.elephant.actions.mixins.ElephantConstantsMixin;
 import org.elephant.actions.mixins.ElephantGraphTagActionMixin;
-import org.elephant.actions.mixins.TimepointMixin;
-import org.elephant.actions.mixins.UIActionMixin;
-import org.elephant.actions.mixins.URLMixin;
 import org.mastodon.mamut.model.Link;
 
 import com.eclipsesource.json.Json;
@@ -56,7 +51,7 @@ import net.imglib2.Dimensions;
  * @author Ko Sugawara
  */
 public class TrainFlowAction extends AbstractElephantDatasetAction
-		implements BdvDataMixin, ElephantConstantsMixin, ElephantGraphTagActionMixin, TimepointMixin, UIActionMixin, URLMixin
+		implements ElephantGraphTagActionMixin
 {
 
 	private static final long serialVersionUID = 1L;
