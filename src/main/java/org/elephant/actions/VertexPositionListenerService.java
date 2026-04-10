@@ -49,7 +49,7 @@ public class VertexPositionListenerService extends AbstractElephantService
 	}
 
 	/**
-	 * VertexPositionListener< Spot >
+	 * VertexPositionListener&lt;Spot&gt;
 	 */
 
 	@Override
