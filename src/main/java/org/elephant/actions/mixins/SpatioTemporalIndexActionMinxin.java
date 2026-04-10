@@ -30,7 +30,7 @@ import org.mastodon.mamut.model.Spot;
 import org.mastodon.spatial.SpatioTemporalIndex;
 
 /**
- * Provide {@link SpatioTemporalIndex< Spot >}.
+ * Provide access to {@link SpatioTemporalIndex}.
  * 
  * @author Ko Sugawara
  */

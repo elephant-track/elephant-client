@@ -53,6 +53,7 @@ public class SVGIcon extends UserAgentAdapter implements Icon {
     /**
      * Create a new SVGIcon object.
      * @param uri The URI to read the SVG document from.
+     * @throws TranscoderException if an error occurred while transcoding the SVG document
      */
     public SVGIcon(String uri) throws TranscoderException {
         this(uri, 0, 0);
@@ -63,6 +64,7 @@ public class SVGIcon extends UserAgentAdapter implements Icon {
      * @param uri The URI to read the SVG document from.
      * @param w The width of the icon.
      * @param h The height of the icon.
+     * @throws TranscoderException if an error occurred while transcoding the SVG document
      */
     public SVGIcon(String uri, int w, int h) throws TranscoderException {
         generateBufferedImage(new TranscoderInput(uri), w, h);
@@ -71,6 +73,7 @@ public class SVGIcon extends UserAgentAdapter implements Icon {
     /**
      * Create a new SVGIcon object.
      * @param doc The SVG document.
+     * @throws TranscoderException if an error occurred while transcoding the SVG document
      */
     public SVGIcon(Document doc) throws TranscoderException {
         this(doc, 0, 0);
@@ -81,6 +84,7 @@ public class SVGIcon extends UserAgentAdapter implements Icon {
      * @param doc The SVG document.
      * @param w The width of the icon.
      * @param h The height of the icon.
+     * @throws TranscoderException if an error occurred while transcoding the SVG document
      */
     public SVGIcon(Document doc, int w, int h) throws TranscoderException {
         generateBufferedImage(new TranscoderInput(doc), w, h);
@@ -88,6 +92,10 @@ public class SVGIcon extends UserAgentAdapter implements Icon {
 
     /**
      * Generate the BufferedImage.
+     * @param in the TranscoderInput to read the SVG document from
+     * @param w the width of the icon
+     * @param h the height of the icon
+     * @throws TranscoderException if an error occurred while transcoding the SVG document
      */
     protected void generateBufferedImage(TranscoderInput in, int w, int h)
             throws TranscoderException {
@@ -133,6 +141,7 @@ public class SVGIcon extends UserAgentAdapter implements Icon {
 
         /**
          * Returns the BufferedImage generated from the SVG document.
+         * @return the BufferedImage generated from the SVG document
          */
         public BufferedImage getBufferedImage() {
             return bufferedImage;
@@ -140,6 +149,8 @@ public class SVGIcon extends UserAgentAdapter implements Icon {
 
         /**
          * Set the dimensions to be used for the image.
+         * @param w the width of the image
+         * @param h the height of the image
          */
         public void setDimensions(int w, int h) {
             hints.put(KEY_WIDTH, new Float(w));

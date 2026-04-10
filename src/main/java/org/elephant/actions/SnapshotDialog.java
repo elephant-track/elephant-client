@@ -82,6 +82,7 @@ public class SnapshotDialog extends JDialog
 
 	/**
 	 * Create the dialog.
+	 * @param windowNames the names of windows to be shown in the combo box for window selection
 	 */
 	public SnapshotDialog( final String[] windowNames )
 	{

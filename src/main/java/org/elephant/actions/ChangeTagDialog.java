@@ -70,6 +70,14 @@ public class ChangeTagDialog extends JDialog implements ElephantConstantsMixin
 
 	/**
 	 * Create a dialog.
+	 * @param tagSetNames the names of tag sets to be shown in the combo boxes for tag set selection
+	 * @param tagNamesDetection the names of tags in the detection tag set to be shown in the combo boxes for tag selection when the detection tag set is selected
+	 * @param tagNamesTracking the names of tags in the tracking tag set to be shown in the combo boxes for tag selection when the tracking tag set is selected
+	 * @param tagNamesProgenitor the names of tags in the
+	 * @param tagNamesStatus the names of tags in the status tag set to be shown in the combo boxes for tag selection when the status tag set is selected
+	 * progenitor tag set to be shown in the combo boxes for tag selection when the progenitor tag set is selected
+	 * @param tagNamesProliferator the names of tags in the proliferator tag set to be shown in the combo boxes for tag selection when the proliferator tag set is selected
+	 * @param tagNamesDivision the names of tags in the division tag
 	 */
 	public ChangeTagDialog( final String[] tagSetNames, final String[] tagNamesDetection, final String[] tagNamesTracking,
 			final String[] tagNamesProgenitor, final String[] tagNamesStatus, final String[] tagNamesProliferator, final String[] tagNamesDivision )
