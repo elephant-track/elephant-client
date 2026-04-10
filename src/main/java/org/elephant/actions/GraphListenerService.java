@@ -54,7 +54,7 @@ public class GraphListenerService extends AbstractElephantService
 	}
 
 	/**
-	 * GraphListener< Spot, Link >
+	 * GraphListener&lt;Spot, Link&gt;
 	 */
 
 	@Override

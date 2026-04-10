@@ -31,7 +31,7 @@ import java.awt.EventQueue;
 import javax.swing.SwingUtilities;
 
 /**
- * Trigger a {@link GraphChangeListener.graphChanged()} event.
+ * Trigger a graph change event to notify all graph change listeners.
  * 
  * @author Ko Sugawara
  */

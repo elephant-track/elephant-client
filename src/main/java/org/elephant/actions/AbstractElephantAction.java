@@ -49,7 +49,7 @@ import org.mastodon.mamut.ProjectModel;
  * ELEPHANT actions are supposed to extend this class.
  * 
  * <p>
- * This class provides accesses to {@link MastodonPluginAppModel},
+ * This class provides access to {@link ProjectModel},
  * {@link GroupHandle} and {@link Logger} instances, which can be shared among
  * all actions and services.
  * 

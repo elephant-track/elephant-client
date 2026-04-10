@@ -98,7 +98,7 @@ public class ElephantExtra implements MamutPlugin, UpdateListener
 	}
 
 	/**
-	 * Set up {@link MastodonPluginAppModel}-dependent modules.
+	 * Set up {@link ProjectModel}-dependent modules.
 	 */
 	@Override
 	public void setAppPluginModel( final ProjectModel pluginAppModel )

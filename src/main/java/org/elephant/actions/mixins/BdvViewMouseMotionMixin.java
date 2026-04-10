@@ -46,9 +46,8 @@ public interface BdvViewMouseMotionMixin extends MouseMotionListener, TransformL
 	AffineTransform3D getRenderTransform();
 
 	/**
-	 * Copied from {@link org.mastodon.revised.bdv.overlay.OverlayGraphRenderer}.
-	 * 
 	 * Transform viewer coordinates to global (world) coordinates.
+	 * Adapted from Mastodon's OverlayGraphRenderer.
 	 *
 	 * @param x
 	 *            viewer X coordinate
