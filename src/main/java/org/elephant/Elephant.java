@@ -577,6 +577,8 @@ public class Elephant extends AbstractContextual implements MamutPlugin, UpdateL
 
 	/**
 	 * Main method
+	 * @param args
+	 * @throws Exception
 	 */
 	public static void main( final String[] args ) throws Exception
 	{

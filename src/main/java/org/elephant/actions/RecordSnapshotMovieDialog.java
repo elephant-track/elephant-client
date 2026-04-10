@@ -88,6 +88,8 @@ public class RecordSnapshotMovieDialog extends JDialog
 
 	/**
 	 * Create the dialog.
+	 * @param windowNames the names of windows to be shown in the combo box for window selection
+	 * @param maxTimepoint the maximum timepoint to be set as the maximum value of
 	 */
 	public RecordSnapshotMovieDialog( final String[] windowNames, final int maxTimepoint )
 	{
