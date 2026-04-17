@@ -1,13 +1,14 @@
-/*******************************************************************************
- * Copyright (C) 2020, Ko Sugawara
- * All rights reserved.
- * 
+/*-
+ * #%L
+ * elephant
+ * %%
+ * Copyright (C) 2019 - 2026 Ko Sugawara
+ * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
- * 
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
@@ -15,7 +16,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -23,7 +24,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+ * #L%
+ */
+
 package org.elephant.setting;
 
 import java.awt.BorderLayout;
@@ -88,7 +91,7 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 
 	public ElephantSettingsConfigPageFactory( final M settingsManager )
 	{
-		profileManager = new StyleProfileManager< >( settingsManager, settingsManager.getStaticInstanceNoBuiltInStyles() );
+		profileManager = new StyleProfileManager<>( settingsManager, settingsManager.getStaticInstanceNoBuiltInStyles() );
 		editedStyle = settingsManager.getSelectedStyle().copy( "Edited" );
 	}
 
@@ -102,7 +105,8 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 		return create( treePath, unit, Collections.< ModificationListener >emptyList() );
 	}
 
-	public ElephantSettingsConfigPage< S > create( final TreePath treePath, final String unit, final Collection< ModificationListener > listeners ) throws TypeMismatchException
+	public ElephantSettingsConfigPage< S > create( final TreePath treePath, final String unit,
+			final Collection< ModificationListener > listeners ) throws TypeMismatchException
 	{
 		JPanel styleEditorPanel = null;
 		switch ( treePath )
@@ -116,10 +120,12 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 				styleEditorPanel.add( cards, BorderLayout.CENTER );
 				cards.setLayout( new CardLayout( 0, 0 ) );
 
-				final JPanel basicSettingsPanel = new ElephantMainSettingsPanel( ( ElephantMainSettings ) editedStyle, MainSettingsMode.BASIC, unit );
+				final JPanel basicSettingsPanel =
+						new ElephantMainSettingsPanel( ( ElephantMainSettings ) editedStyle, MainSettingsMode.BASIC, unit );
 				cards.add( basicSettingsPanel, BASIC_SETTINGS_KEY );
 
-				final JPanel advancedSettingsPanel = new ElephantMainSettingsPanel( ( ElephantMainSettings ) editedStyle, MainSettingsMode.ADVANCED );
+				final JPanel advancedSettingsPanel =
+						new ElephantMainSettingsPanel( ( ElephantMainSettings ) editedStyle, MainSettingsMode.ADVANCED );
 				cards.add( advancedSettingsPanel, ADVANCED_SETTINGS_KEY );
 
 				final JPanel container = new JPanel();
@@ -167,14 +173,16 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 				break;
 			}
 		default:
-			throw new TypeMismatchException( "treePath " + treePath.toString() + " and class " + editedStyle.getClass() + " are not compatible" );
+			throw new TypeMismatchException(
+					"treePath " + treePath.toString() + " and class " + editedStyle.getClass() + " are not compatible" );
 		}
-		return new ElephantSettingsConfigPage< >( treePath.toString(),
+		return new ElephantSettingsConfigPage<>( treePath.toString(),
 				profileManager,
-				new ElephantSettingsProfileEditPanel< >( editedStyle, styleEditorPanel, listeners ) );
+				new ElephantSettingsProfileEditPanel<>( editedStyle, styleEditorPanel, listeners ) );
 	}
 
-	static class ElephantSettingsProfileEditPanel< S extends AbstractElephantSettings< S > > implements SettingsUpdateListener, ProfileEditPanel< StyleProfile< S > >
+	static class ElephantSettingsProfileEditPanel< S extends AbstractElephantSettings< S > >
+			implements SettingsUpdateListener, ProfileEditPanel< StyleProfile< S > >
 	{
 		private final Listeners.SynchronizedList< ModificationListener > modificationListeners;
 
@@ -182,7 +190,8 @@ public class ElephantSettingsConfigPageFactory< M extends AbstractElephantSettin
 
 		private final JPanel styleEditorPanel;
 
-		public ElephantSettingsProfileEditPanel( final S editedStyle, final JPanel styleEditorPanel, final Collection< ModificationListener > listeners )
+		public ElephantSettingsProfileEditPanel( final S editedStyle, final JPanel styleEditorPanel,
+				final Collection< ModificationListener > listeners )
 		{
 			this.editedStyle = editedStyle;
 			this.styleEditorPanel = styleEditorPanel;

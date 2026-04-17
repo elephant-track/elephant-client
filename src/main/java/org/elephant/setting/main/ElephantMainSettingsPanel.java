@@ -1,13 +1,14 @@
-/*******************************************************************************
- * Copyright (C) 2020, Ko Sugawara
- * All rights reserved.
- * 
+/*-
+ * #%L
+ * elephant
+ * %%
+ * Copyright (C) 2019 - 2026 Ko Sugawara
+ * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
- * 
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
@@ -15,7 +16,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -23,7 +24,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+ * #L%
+ */
+
 package org.elephant.setting.main;
 
 import static org.elephant.setting.StyleElementsEx.doubleElementEx;
@@ -111,10 +114,12 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				doubleElementEx( "auto BG threshold", 0.0, 1, 0.001, style::getAutoBgThreshold, style::setAutoBgThreshold ),
 				doubleElementEx( "learning rate", 0.000001, 1, 0.000001, style::getLearningRate, style::setLearningRate ),
 				doubleElementEx( "probability threshold", 0.0, 1.0, 0.01, style::getProbThreshold, style::setProbThreshold ),
-				doubleElementEx( String.format( "suppression distance (%s)", unit ), 0.0, 100.0, 0.01, style::getSuppressionDistance, style::setSuppressionDistance ),
+				doubleElementEx( String.format( "suppression distance (%s)", unit ), 0.0, 100.0, 0.01, style::getSuppressionDistance,
+						style::setSuppressionDistance ),
 				doubleElementEx( String.format( "min radius (%s)", unit ), 0.0, 100.0, 0.01, style::getMinRadius, style::setMinRadius ),
 				doubleElementEx( String.format( "max radius (%s)", unit ), 0.0, 100.0, 0.01, style::getMaxRadius, style::setMaxRadius ),
-				doubleElementEx( String.format( "NN linking threshold (%s)", unit ), 0.0, 100.0, 0.01, style::getNNLinkingThreshold, style::setNNLinkingThreshold ),
+				doubleElementEx( String.format( "NN linking threshold (%s)", unit ), 0.0, 100.0, 0.01, style::getNNLinkingThreshold,
+						style::setNNLinkingThreshold ),
 				intElement( "NN max edges", 1, 5, style::getNNMaxEdges, style::setNNMaxEdges ),
 				booleanElement( "use optical flow for linking", style::getUseOpticalflow, style::setUseOpticalflow ),
 				booleanElement( "use interpolation for linking", style::getUseInterpolation, style::setUseInterpolation ),
@@ -123,10 +128,14 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 
 				label( "file/dir on the server" ),
 				stringElement( "dataset dir (relative path from /workspace/datasets/)", style::getDatasetName, style::setDatasetName ),
-				stringElement( "detection model file (relative path from /workspace/models/)", style::getDetectionModelName, style::setDetectionModelName ),
-				stringElement( "flow model file (relative path from /workspace/models/)", style::getFlowModelName, style::setFlowModelName ),
-				stringElement( "detection Tensorboard log dir (relative path from /workspace/logs/)", style::getDetectionLogName, style::setDetectionLogName ),
-				stringElement( "flow Tensorboard  log dir (relative path from /workspace/logs/)", style::getFlowLogName, style::setFlowLogName ) );
+				stringElement( "detection model file (relative path from /workspace/models/)", style::getDetectionModelName,
+						style::setDetectionModelName ),
+				stringElement( "flow model file (relative path from /workspace/models/)", style::getFlowModelName,
+						style::setFlowModelName ),
+				stringElement( "detection Tensorboard log dir (relative path from /workspace/logs/)", style::getDetectionLogName,
+						style::setDetectionLogName ),
+				stringElement( "flow Tensorboard  log dir (relative path from /workspace/logs/)", style::getFlowLogName,
+						style::setFlowLogName ) );
 	}
 
 	private List< StyleElement > getAdvancedStyleElements( final ElephantMainSettings style )
@@ -159,8 +168,10 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				doubleElementEx( "false weight", 0.0, 100.0, 0.01, style::getFalseWeight, style::setFalseWeight ),
 				doubleElementEx( "center ratio", 0.0, 1.0, 0.01, style::getCenterRatio, style::setCenterRatio ),
 				doubleElementEx( "max displacement (voxel unit)", 0.0, 1000.0, 1.0, style::getMaxDisplacement, style::setMaxDisplacement ),
-				doubleElementEx( "augmentation scale factor base", 0.0, 0.999999, 0.01, style::getAugScaleFactorBase, style::setAugScaleFactorBase ),
-				doubleElementEx( "augmentation rotation angle (degree)", 0.0, 180.0, 0.01, style::getAugRotationAngle, style::setAugRotationAngle ),
+				doubleElementEx( "augmentation scale factor base", 0.0, 0.999999, 0.01, style::getAugScaleFactorBase,
+						style::setAugScaleFactorBase ),
+				doubleElementEx( "augmentation rotation angle (degree)", 0.0, 180.0, 0.01, style::getAugRotationAngle,
+						style::setAugRotationAngle ),
 				doubleElementEx( "augmentation contrast", 0.0, 1.0, 0.01, style::getAugContrast, style::setAugContrast ),
 				intElement( "NN search depth", 0, Integer.MAX_VALUE, style::getNNSearchDepth, style::setNNSearchDepth ),
 				intElement( "NN search neighbors", 0, Integer.MAX_VALUE, style::getNNSearchNeighbors, style::setNNSearchNeighbors ),
@@ -172,6 +183,7 @@ public class ElephantMainSettingsPanel extends AbstractElephantSettingsPanel< El
 				separator(),
 
 				label( "file on the client" ),
-				stringElement( "log file basename (~/.mastodon/logs/client_BASENAME.log, ~/.mastodon/logs/server_BASENAME.log)", style::getLogFileName, style::setLogFileName ) );
+				stringElement( "log file basename (~/.mastodon/logs/client_BASENAME.log, ~/.mastodon/logs/server_BASENAME.log)",
+						style::getLogFileName, style::setLogFileName ) );
 	}
 }
