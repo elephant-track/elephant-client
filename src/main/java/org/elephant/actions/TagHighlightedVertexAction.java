@@ -198,6 +198,7 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 			if ( spot != null )
 			{
 				tagMapDetection.set( spot, getTag( getDetectionTagSet(), tagMode.name().toLowerCase() ) );
+				getClientLogger().info( spot + " was tagged with " + tagMode.name() );
 			}
 			getGraph().releaseRef( ref );
 		}
@@ -206,7 +207,6 @@ public class TagHighlightedVertexAction extends AbstractElephantAction
 			getActionStateManager().setWriting( false );
 			getModel().setUndoPoint();
 			getGraph().getLock().writeLock().unlock();
-			getClientLogger().info( spot + " was tagged with " + tagMode.name() );
 			notifyGraphChanged();
 		}
 	}
