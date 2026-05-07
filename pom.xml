@@ -18,6 +18,7 @@
 		<license.copyrightOwners>Ko Sugawara</license.copyrightOwners>
 
 		<mastodon.version>1.0.0-beta-34</mastodon.version>
+		<mastodon-tracking.version>1.0.0-beta-20</mastodon-tracking.version>
         <mastodon.group>org.mastodon</mastodon.group>
 
 		<enforcer.skip>true</enforcer.skip>
@@ -48,6 +49,13 @@
             <artifactId>mastodon</artifactId>
             <version>${mastodon.version}</version>
         </dependency>
+
+		<!-- mastodon tracking as base for custom detectors (cellpose, stardist) -->
+		<dependency>
+			<groupId>${mastodon.group}</groupId>
+			<artifactId>mastodon-tracking</artifactId>
+			<version>${mastodon-tracking.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>commons-validator</groupId>
