@@ -352,7 +352,6 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		jsonRef.t = jsonObject.get( "t" ).asInt();
 
 		final JsonValue qualityValue = jsonObject.get("quality");
-		System.out.println("Json returned qualityValue of " + qualityValue);
 		// If field doesn't exist or contains null, set quality to 0
 		jsonRef.quality = ( qualityValue != null && !qualityValue.isNull()) ? qualityValue.asDouble() : 0.0;
 	}
