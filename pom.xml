@@ -23,7 +23,7 @@
 		<enforcer.skip>true</enforcer.skip>
 
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
-		<!-- <releaseProfiles>deploy-to-imagej</releaseProfiles> -->
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 	</properties>
 
 	<name>ELEPHANT: Tracking cell lineages in 3D by incremental deep learning</name>
