@@ -43,11 +43,16 @@ import org.elephant.actions.mixins.ElephantUtils;
 import org.elephant.actions.mixins.EllipsoidActionMixin;
 import org.elephant.actions.mixins.SpatioTemporalIndexActionMinxin;
 import org.mastodon.collection.RefCollection;
+import org.mastodon.feature.DoubleScalarFeature;
+import org.mastodon.feature.Feature;
+import org.mastodon.feature.FeatureSpec;
+import org.mastodon.feature.Multiplicity;
 import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.model.tag.ObjTagMap;
 import org.mastodon.model.tag.TagSetStructure.Tag;
 import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.tracking.mamut.detection.DetectionQualityFeature;
 import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
 import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
@@ -323,6 +328,8 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 
 		final double[][] covariance;
 
+		double quality;
+
 		SpotStruct( final double[] pos, final double[][] covariance )
 		{
 			this.pos = pos;
@@ -343,6 +350,10 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 			}
 		}
 		jsonRef.t = jsonObject.get( "t" ).asInt();
+
+		final JsonValue qualityValue = jsonObject.get("quality");
+		// If field doesn't exist or contains null, set quality to 0
+		jsonRef.quality = ( qualityValue != null && !qualityValue.isNull()) ? qualityValue.asDouble() : 0.0;
 	}
 
 	private void refreshLabels( final Collection< Spot > spots, final Predicate< Spot > filter )
@@ -380,6 +391,11 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 		{
 			final ObjTagMap< Spot, Tag > tagMapDetection = getVertexTagMap( getDetectionTagSet() );
 			final ObjTagMap< Spot, Tag > tagMapTracking = getVertexTagMap( getTrackingTagSet() );
+
+			final DetectionQualityFeature qualityFeature =
+					DetectionQualityFeature.getOrRegister(
+							getModel().getFeatureModel(),
+							getGraph().vertices().getRefPool() );
 
 			final Spot ref = getGraph().vertexRef();
 
@@ -448,6 +464,9 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 						final Spot spot = getGraph().addVertex( ref ).init( jsonRef.t, jsonRef.pos, jsonRef.covariance );
 						tagMapDetection.set( spot, unlabeledTag );
 						tagMapTracking.set( spot, trackingUnlabeledTag );
+						if (qualityFeature != null) {
+							qualityFeature.set(spot, jsonRef.quality);
+						}
 						getGraph().getLock().readLock().lock();
 					}
 					finally
@@ -465,6 +484,9 @@ public class PredictSpotsAction extends AbstractElephantDatasetAction
 						ref.refTo( nearestSpot );
 						ref.setPosition( jsonRef.pos );
 						ref.setCovariance( jsonRef.covariance );
+						if (qualityFeature != null) {
+							qualityFeature.set(ref, jsonRef.quality);
+						}
 						getGraph().getLock().readLock().lock();
 					}
 					finally
